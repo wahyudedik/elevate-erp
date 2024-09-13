@@ -260,7 +260,6 @@ class AccountingResource extends Resource
                                 $toAccount->current_balance += $data['amount'];
                                 $toAccount->save();
 
-                                // You might want to create a transaction dan ledger record here
                                 // Create ledger record for the 'from' account
                                 $fromLedger = Ledger::create([
                                     'account_id' => $record->id,

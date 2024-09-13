@@ -7,13 +7,21 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Exports\TransactionExporter;
+use App\Filament\Imports\TransactionImporter;
+use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementFinancial\Transaction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
+use App\Filament\Resources\TransactionResource\RelationManagers\LedgerRelationManager;
 
 class TransactionResource extends Resource
 {
@@ -91,24 +99,18 @@ class TransactionResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Timestamps')
+                Forms\Components\Section::make('Additional Information')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('created_at')
-                            ->label('Created At')
-                            ->disabled()
-                            ->dehydrated(false),
-                        Forms\Components\DateTimePicker::make('updated_at')
-                            ->label('Updated At')
-                            ->disabled()
-                            ->dehydrated(false),
-                        Forms\Components\DateTimePicker::make('deleted_at')
-                            ->label('Deleted At')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->visible(fn($record) => $record && $record->trashed()),
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
-                    ->columns(3)
-                    ->collapsed(),
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -117,18 +119,22 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('ledger.transaction_date')
                     ->label('Ledger')
                     ->sortable()
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('transaction_number')
                     ->label('Transaction Number')
                     ->searchable()
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
+                    ->toggleable()
                     ->colors([
                         'danger' => 'failed',
                         'warning' => 'pending',
@@ -136,9 +142,11 @@ class TransactionResource extends Resource
                     ]),
                 Tables\Columns\TextColumn::make('amount')
                     ->money('IDR')
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')
                     ->limit(50)
+                    ->toggleable()
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         if (strlen($state) <= 50) {
@@ -153,19 +161,11 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('ledger')
-                    ->relationship('ledger', 'transaction_date')
-                    ->searchable()
-                    ->preload()
-                    ->label('Ledger'),
+                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -174,84 +174,105 @@ class TransactionResource extends Resource
                     ])
                     ->multiple()
                     ->label('Status'),
-                // Tables\Filters\NumberFilter::make('amount')
-                //     ->label('Amount'),
                 Tables\Filters\TernaryFilter::make('has_notes')
                     ->label('Has Notes')
                     ->queries(
                         true: fn($query) => $query->whereNotNull('notes'),
                         false: fn($query) => $query->whereNull('notes'),
                     ),
-                Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\Filter::make('created_from')
+                Tables\Filters\Filter::make('created_range')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
                             ->label('Created From'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query->when(
-                            $data['created_from'],
-                            fn($query, $date) => $query->whereDate('created_at', '>=', $date)
-                        );
-                    }),
-                Tables\Filters\Filter::make('created_until')
-                    ->form([
                         Forms\Components\DatePicker::make('created_until')
                             ->label('Created Until'),
                     ])
                     ->query(function ($query, array $data) {
-                        return $query->when(
-                            $data['created_until'],
-                            fn($query, $date) => $query->whereDate('created_at', '<=', $date)
-                        );
-                    })
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn($query, $date) => $query->whereDate('created_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn($query, $date) => $query->whereDate('created_at', '<=', $date)
+                            );
+                    })->columns(2)
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\Action::make('changeStatus')
-                    ->label('Change Status')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('warning')
-                    ->form([
-                        Forms\Components\Select::make('status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'completed' => 'Completed',
-                                'failed' => 'Failed',
-                            ])
-                            ->required(),
-                    ])
-                    ->action(function (Transaction $record, array $data) {
-                        $record->update(['status' => $data['status']]);
-                        Notification::make()
-                            ->title('Status updated successfully')
-                            ->success()
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('addNote')
-                    ->label('Add Note')
-                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
-                    ->form([
-                        Forms\Components\Textarea::make('notes')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function (Transaction $record, array $data) {
-                        $record->update(['notes' => $data['notes']]);
-                        Notification::make()
-                            ->title('Note added successfully')
-                            ->success()
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('printReceipt')
-                    ->label('Print Receipt')
-                    ->icon('heroicon-o-printer')
-                    ->url(fn(Transaction $record) => route('transaction.print-receipt', $record))
-                    ->openUrlInNewTab()
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\Action::make('changeStatus')
+                        ->label('Change Status')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->form([
+                            Forms\Components\Select::make('status')
+                                ->options([
+                                    'pending' => 'Pending',
+                                    'completed' => 'Completed',
+                                    'failed' => 'Failed',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Transaction $record, array $data) {
+                            $record->update(['status' => $data['status']]);
+                            Notification::make()
+                                ->title('Status updated successfully')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('addNote')
+                        ->label('Add Note')
+                        ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                        ->form([
+                            Forms\Components\Textarea::make('notes')
+                                ->required()
+                                ->maxLength(65535),
+                        ])
+                        ->action(function (Transaction $record, array $data) {
+                            $record->update(['notes' => $data['notes']]);
+                            Notification::make()
+                                ->title('Note added successfully')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('printReceipt')
+                        ->label('Print Receipt')
+                        ->icon('heroicon-o-printer')
+                        ->url(fn(Transaction $record) => route('transaction.print-receipt', $record))
+                        ->openUrlInNewTab()
+                ])
+            ])
+            ->headerActions([
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(TransactionExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Transactions exported successfully' . ' ' . now()->toDateTimeString())
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(TransactionImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Transactions imported successfully' . ' ' . now()->toDateTimeString())
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        })
+                ])->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -297,15 +318,16 @@ class TransactionResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                    Tables\Actions\BulkAction::make('exportSelected')
-                        ->label('Export Selected')
+                    ExportBulkAction::make()
+                        ->exporter(TransactionExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->action(function (Collection $records) {
-                            // Add export logic here
+                        ->color('success')
+                        ->after(function () {
                             Notification::make()
-                                ->title('Selected records exported successfully')
+                                ->title('Transactions exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->icon('heroicon-o-check-circle')
                                 ->success()
-                                ->send();
+                                ->sendToDatabase(Auth::user());
                         }),
                 ]),
             ])
@@ -319,7 +341,7 @@ class TransactionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            LedgerRelationManager::class,
         ];
     }
 
@@ -330,5 +352,13 @@ class TransactionResource extends Resource
             'create' => Pages\CreateTransaction::route('/create'),
             'edit' => Pages\EditTransaction::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }

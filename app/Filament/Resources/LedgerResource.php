@@ -68,6 +68,7 @@ class LedgerResource extends Resource
                             ->label('Transaction Type'),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
+                            ->default(0)
                             ->rule('decimal:0,2')
                             ->label('Amount'),
                         Forms\Components\Textarea::make('transaction_description')
@@ -95,20 +96,24 @@ class LedgerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('account.account_name')
                     ->label('Account')
                     ->sortable()
+                    ->toggleable()
+                    ->wrap()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('transaction_date')
                     ->label('Transaction Date')
                     ->date()
+                    ->toggleable()
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('transaction_type')
                     ->badge()
+                    ->toggleable()
                     ->label('Transaction Type')
                     ->icon(fn(string $state): string => match ($state) {
                         'credit' => 'heroicon-o-arrow-up-circle',
@@ -123,12 +128,15 @@ class LedgerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Amount')
-                    ->money('usd')
+                    ->money('IDR')
                     ->sortable()
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('transaction_description')
                     ->label('Description')
                     ->limit(50)
+                    ->wrap()
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
@@ -143,6 +151,7 @@ class LedgerResource extends Resource
             ])
             ->defaultSort('transaction_date', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('account')
                     ->relationship('account', 'account_name')
                     ->searchable()
@@ -175,7 +184,7 @@ class LedgerResource extends Resource
                             $indicators['until'] = 'Until ' . Carbon::parse($data['until'])->toFormattedDateString();
                         }
                         return $indicators;
-                    }),
+                    })->columns(2),
                 Tables\Filters\SelectFilter::make('transaction_type')
                     ->options([
                         'debit' => 'Debit',
@@ -211,29 +220,25 @@ class LedgerResource extends Resource
                             $indicators['max'] = 'Max: $' . number_format($data['max'], 2);
                         }
                         return $indicators;
-                    }),
+                    })->columns(2),
                 Tables\Filters\TernaryFilter::make('transaction_description')
                     ->label('Has Description')
                     ->nullable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('print')
-                    ->label('Print')
-                    ->icon('heroicon-o-printer')
-                    ->color('success')
-                    ->action(function (Ledger $record) {
-                        // Add print functionality here
-                    }),
-                Tables\Actions\Action::make('export')
-                    ->label('Export')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('warning')
-                    ->action(function (Ledger $record) {
-                        // Add export functionality here
-                    }),
+                ActionGroup::make([
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('print')
+                        ->label('Print')
+                        ->icon('heroicon-o-printer')
+                        ->color('success')
+                        ->url(fn(Ledger $record): string => route('ledger.print', $record))
+                        ->openUrlInNewTab(),
+                ]),
             ])
             ->headerActions([
                 ActionGroup::make([
@@ -263,6 +268,8 @@ class LedgerResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateTransactionType')
                         ->label('Update Transaction Type')
@@ -302,31 +309,18 @@ class LedgerResource extends Resource
                             });
                         })
                         ->deselectRecordsAfterCompletion(),
-                    Tables\Actions\BulkAction::make('exportSelected')
-                        ->label('Export Selected')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->action(function (Collection $records) {
-                            // Add export functionality here
-                        }),
-                    Tables\Actions\BulkAction::make('printSelected')
-                        ->label('Print Selected')
-                        ->icon('heroicon-o-printer')
-                        ->action(function (Collection $records) {
-                            // Add print functionality here
-                        }),
                     ExportBulkAction::make()
                         ->exporter(LedgerExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Account exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Ledger exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ])->label('Bulk Actions')
-                    ->icon('heroicon-m-cog-6-tooth'),
+                ])->label('Bulk Actions'),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
@@ -349,5 +343,13 @@ class LedgerResource extends Resource
             'create' => Pages\CreateLedger::route('/create'),
             'edit' => Pages\EditLedger::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }

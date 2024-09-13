@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\LedgerController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
@@ -37,6 +39,11 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
     return redirect()->to('/admin/login');
 })->middleware(['signed'])->name('verification.verify');
 
+// print ledger
+Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])->name('ledger.print');
+
+// print transaction
+Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])->name('transaction.print-receipt');
 
 // New Artisan routes for migration and seeding
 Route::get('/migrate', function () {

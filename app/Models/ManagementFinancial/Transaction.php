@@ -27,78 +27,78 @@ class Transaction extends Model
     }
 
 
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::saving(function (Model $record) {
-            $ledger = Ledger::find($record->ledger_id);
+    //     static::saving(function (Model $record) {
+    //         $ledger = Ledger::find($record->ledger_id);
 
-            if ($record->status === 'completed') {
-                $ledger->amount += $record->amount;
-            } elseif ($record->status === 'failed') {
-                $ledger->amount -= $record->amount;
-            } elseif ($record->status === 'pending') {
-                // No action needed for pending status
-            }
+    //         if ($record->status === 'completed') {
+    //             $ledger->amount += $record->amount;
+    //         } elseif ($record->status === 'failed') {
+    //             $ledger->amount -= $record->amount;
+    //         } elseif ($record->status === 'pending') {
+    //             // No action needed for pending status
+    //         }
 
-            $ledger->save();
-        });
+    //         $ledger->save();
+    //     });
 
 
-        static::updating(function (Model $record) {
-            $originalRecord = $record->getOriginal();
-            $ledger = Ledger::find($record->ledger_id);
+    //     static::updating(function (Model $record) {
+    //         $originalRecord = $record->getOriginal();
+    //         $ledger = Ledger::find($record->ledger_id);
 
-            if ($originalRecord['status'] !== $record->status) {
-                if ($originalRecord['status'] === 'completed' && $record->status !== 'completed') {
-                    $ledger->amount -= $record->amount;
-                } elseif ($originalRecord['status'] !== 'completed' && $record->status === 'completed') {
-                    $ledger->amount += $record->amount;
-                } elseif ($originalRecord['status'] === 'failed' && $record->status !== 'failed') {
-                    $ledger->amount += $record->amount;
-                } elseif ($originalRecord['status'] !== 'failed' && $record->status === 'failed') {
-                    $ledger->amount -= $record->amount;
-                }
-            } elseif ($originalRecord['amount'] !== $record->amount && $record->status === 'completed') {
-                $ledger->amount += ($record->amount - $originalRecord['amount']);
-            } elseif ($originalRecord['amount'] !== $record->amount && $record->status === 'failed') {
-                $ledger->amount -= ($record->amount - $originalRecord['amount']);
-            }
+    //         if ($originalRecord['status'] !== $record->status) {
+    //             if ($originalRecord['status'] === 'completed' && $record->status !== 'completed') {
+    //                 $ledger->amount -= $record->amount;
+    //             } elseif ($originalRecord['status'] !== 'completed' && $record->status === 'completed') {
+    //                 $ledger->amount += $record->amount;
+    //             } elseif ($originalRecord['status'] === 'failed' && $record->status !== 'failed') {
+    //                 $ledger->amount += $record->amount;
+    //             } elseif ($originalRecord['status'] !== 'failed' && $record->status === 'failed') {
+    //                 $ledger->amount -= $record->amount;
+    //             }
+    //         } elseif ($originalRecord['amount'] !== $record->amount && $record->status === 'completed') {
+    //             $ledger->amount += ($record->amount - $originalRecord['amount']);
+    //         } elseif ($originalRecord['amount'] !== $record->amount && $record->status === 'failed') {
+    //             $ledger->amount -= ($record->amount - $originalRecord['amount']);
+    //         }
 
-            if ($record->status === 'pending') {
-                // No changes to ledger amount for pending status
-            }
+    //         if ($record->status === 'pending') {
+    //             // No changes to ledger amount for pending status
+    //         }
 
-            $ledger->save();
-        });
+    //         $ledger->save();
+    //     });
 
-        static::restoring(function (Model $record) {
-            $ledger = Ledger::find($record->ledger_id);
+    //     static::restoring(function (Model $record) {
+    //         $ledger = Ledger::find($record->ledger_id);
 
-            if ($record->status === 'completed') {
-                $ledger->amount += $record->amount;
-            } elseif ($record->status === 'failed') {
-                $ledger->amount -= $record->amount;
-            } elseif ($record->status === 'pending') {
-                // No action needed for pending status
-            }
+    //         if ($record->status === 'completed') {
+    //             $ledger->amount += $record->amount;
+    //         } elseif ($record->status === 'failed') {
+    //             $ledger->amount -= $record->amount;
+    //         } elseif ($record->status === 'pending') {
+    //             // No action needed for pending status
+    //         }
 
-            $ledger->save();
-        });
+    //         $ledger->save();
+    //     });
 
-        static::deleting(function (Model $record) {
-            $ledger = Ledger::find($record->ledger_id);
+    //     static::deleting(function (Model $record) {
+    //         $ledger = Ledger::find($record->ledger_id);
 
-            if ($record->status === 'completed') {
-                $ledger->amount -= $record->amount;
-            } elseif ($record->status === 'failed') {
-                $ledger->amount += $record->amount;
-            } elseif ($record->status === 'pending') {
-                // No action needed for pending status
-            }
+    //         if ($record->status === 'completed') {
+    //             $ledger->amount -= $record->amount;
+    //         } elseif ($record->status === 'failed') {
+    //             $ledger->amount += $record->amount;
+    //         } elseif ($record->status === 'pending') {
+    //             // No action needed for pending status
+    //         }
 
-            $ledger->save();
-        });
-    }
+    //         $ledger->save();
+    //     });
+    // }
 }
