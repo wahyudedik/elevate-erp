@@ -48,6 +48,7 @@ class JournalEntryResource extends Resource
                     ->schema([
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
+                            ->default(now())
                             ->label('Entry Date')
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('description')
@@ -225,26 +226,30 @@ class JournalEntryResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(JournalEntryExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Journal Entry exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(JournalEntryImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Journal Entry imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    })
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(JournalEntryExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Journal Entry exported successfully' . ' ' . now()->format('d-m-Y H:i:s'))
+                                ->success()
+                                ->icon('heroicon-o-check-circle')
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(JournalEntryImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Journal Entry imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        })
+                ])->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -309,17 +314,18 @@ class JournalEntryResource extends Resource
                             });
                         })
                         ->deselectRecordsAfterCompletion(),
+                    ExportBulkAction::make()
+                        ->exporter(JournalEntryExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Account exported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(JournalEntryExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Account exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()

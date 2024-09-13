@@ -26,8 +26,6 @@ class JournalEntryExporter extends Exporter
                 ->label('Amount'),
             ExportColumn::make('account.name')
                 ->label('Account'),
-            ExportColumn::make('deleted_at')
-                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

@@ -14,6 +14,8 @@ class JournalEntryImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('id')
+                ->type('integer'),
             ImportColumn::make('entry_date')
                 ->type('date')
                 ->required(),
@@ -31,6 +33,12 @@ class JournalEntryImporter extends Importer
                 ->type('select')
                 ->relationship('account', 'id')
                 ->rules(['nullable', 'exists:accounts,id']),
+            ImportColumn::make('created_at')
+                ->type('datetime')
+                ->rules(['nullable']),
+            ImportColumn::make('updated_at')
+                ->type('datetime')
+                ->rules(['nullable']),
         ];
     }
 

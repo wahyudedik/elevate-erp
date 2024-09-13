@@ -8,15 +8,23 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Exports\LedgerExporter;
+use App\Filament\Imports\LedgerImporter;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementFinancial\Ledger;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Models\ManagementFinancial\Transaction;
 use App\Filament\Resources\LedgerResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\LedgerResource\RelationManagers;
 use App\Filament\Resources\LedgerResource\RelationManagers\AccountRelationManager;
 use App\Filament\Resources\LedgerResource\RelationManagers\TransactionsRelationManager;
-use App\Models\ManagementFinancial\Transaction;
 
 class LedgerResource extends Resource
 {
@@ -108,8 +116,8 @@ class LedgerResource extends Resource
                         default => 'heroicon-o-question-mark-circle',
                     })
                     ->colors([
-                        'danger' => 'debit',
-                        'success' => 'credit',
+                        'success' => 'debit',
+                        'danger' => 'credit',
                     ])
                     ->sortable()
                     ->searchable(),
@@ -227,6 +235,32 @@ class LedgerResource extends Resource
                         // Add export functionality here
                     }),
             ])
+            ->headerActions([
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(LedgerExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Ledger exported successfully' . ' ' . now()->toDateTimeString())
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(LedgerImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Ledger imported successfully' . ' ' . now()->toDateTimeString())
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        })
+                ])->icon('heroicon-o-cog-6-tooth'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -280,11 +314,23 @@ class LedgerResource extends Resource
                         ->action(function (Collection $records) {
                             // Add print functionality here
                         }),
+                    ExportBulkAction::make()
+                        ->exporter(LedgerExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Account exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ])->label('Bulk Actions')
                     ->icon('heroicon-m-cog-6-tooth'),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus'),
             ]);
     }
 

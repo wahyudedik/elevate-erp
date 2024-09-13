@@ -16,11 +16,13 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\ManagementFinancial\Ledger;
 use App\Filament\Exports\AccountingExporter;
 use App\Filament\Imports\AccountingImporter;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementFinancial\Transaction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AccountingResource\Pages;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -258,7 +260,41 @@ class AccountingResource extends Resource
                                 $toAccount->current_balance += $data['amount'];
                                 $toAccount->save();
 
-                                // You might want to create a transaction record here
+                                // You might want to create a transaction dan ledger record here
+                                // Create ledger record for the 'from' account
+                                $fromLedger = Ledger::create([
+                                    'account_id' => $record->id,
+                                    'transaction_date' => now(),
+                                    'transaction_type' => 'credit',
+                                    'amount' => $data['amount'],
+                                    'transaction_description' => $data['description'] ?? 'Transfer to ' . $toAccount->account_name,
+                                ]);
+
+                                // Create ledger record for the 'to' account
+                                $toLedger = Ledger::create([
+                                    'account_id' => $toAccount->id,
+                                    'transaction_date' => now(),
+                                    'transaction_type' => 'debit',
+                                    'amount' => $data['amount'],
+                                    'transaction_description' => $data['description'] ?? 'Transfer from ' . $record->account_name,
+                                ]);
+
+                                // Create transaction record
+                                Transaction::create([
+                                    'ledger_id' => $fromLedger->id,
+                                    'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
+                                    'status' => 'completed',
+                                    'amount' => $data['amount'],
+                                    'notes' => 'Transfer from ' . $record->account_name . ' to ' . $toAccount->account_name,
+                                ]);
+
+                                Transaction::create([
+                                    'ledger_id' => $toLedger->id,
+                                    'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
+                                    'status' => 'completed',
+                                    'amount' => $data['amount'],
+                                    'notes' => 'Transfer from ' . $record->account_name . ' to ' . $toAccount->account_name,
+                                ]);
                             });
 
                             Notification::make()

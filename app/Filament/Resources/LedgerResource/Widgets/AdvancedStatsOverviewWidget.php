@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\JournalEntryResource\Widgets;
+namespace App\Filament\Resources\LedgerResource\Widgets;
 
-use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementFinancial\Ledger;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
@@ -13,16 +13,16 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Entries', function () {
-                return JournalEntry::count();
+            Stat::make('Total Transactions', function () {
+                return Ledger::count();
             })->icon('heroicon-o-document-text')
-                ->description('Total journal entries')
+                ->description('Total number of ledger entries')
                 ->descriptionIcon('heroicon-o-information-circle', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
 
             Stat::make('Total Debit', function () {
-                return JournalEntry::where('entry_type', 'debit')->sum('amount');
+                return Ledger::where('transaction_type', 'debit')->sum('amount');
             })->icon('heroicon-o-arrow-trending-down')
                 ->description('Total debit amount')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
@@ -30,20 +30,20 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->iconColor('success'),
 
             Stat::make('Total Credit', function () {
-                return JournalEntry::where('entry_type', 'credit')->sum('amount');
+                return Ledger::where('transaction_type', 'credit')->sum('amount');
             })->icon('heroicon-o-arrow-trending-up')
                 ->description('Total credit amount')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
 
-            Stat::make('Latest Entry Date', function () {
-                return JournalEntry::latest('entry_date')->value('entry_date');
+            Stat::make('Latest Transaction Date', function () {
+                return Ledger::latest('transaction_date')->value('transaction_date');
             })->icon('heroicon-o-calendar')
-                ->description('Most recent journal entry date')
+                ->description('Most recent transaction')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('primary'),
+                ->iconColor('primary')
         ];
     }
 }
