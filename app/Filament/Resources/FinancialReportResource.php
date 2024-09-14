@@ -27,7 +27,7 @@ class FinancialReportResource extends Resource
 
     protected static ?string $navigationGroup = 'Management Financial';
 
-    protected static ?string $navigationParentItem = null;
+    protected static ?string $navigationParentItem = 'Financial Reporting';
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
@@ -35,7 +35,7 @@ class FinancialReportResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
+                Forms\Components\Section::make('Financial Report')
                     ->schema([
                         Forms\Components\TextInput::make('report_name')
                             ->required()
@@ -48,23 +48,26 @@ class FinancialReportResource extends Resource
                             ])
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_start')
+                            ->default(now())
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_end')
                             ->required(),
-                        Forms\Components\TextInput::make('total_assets')
-                            ->numeric()
-                            ->prefix('IDR'),
-                        Forms\Components\TextInput::make('total_liabilities')
-                            ->numeric()
-                            ->prefix('IDR'),
-                        Forms\Components\TextInput::make('net_income')
-                            ->numeric()
-                            ->prefix('IDR'),
-                        Forms\Components\TextInput::make('cash_flow')
-                            ->numeric()
-                            ->prefix('IDR'),
+                        Forms\Components\Textarea::make('notes')
+                            ->nullable(),
+                    ])
+                    ->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -72,8 +75,13 @@ class FinancialReportResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('report_name')
                     ->searchable()
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_type')
                     ->badge()
@@ -82,26 +90,26 @@ class FinancialReportResource extends Resource
                         'success' => 'income_statement',
                         'warning' => 'cash_flow',
                     ])
+                    ->icons([
+                        'balance_sheet' => 'heroicon-o-scale',
+                        'income_statement' => 'heroicon-o-currency-dollar',
+                        'cash_flow' => 'heroicon-o-arrow-path',
+                    ])
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_start')
                     ->date()
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_end')
                     ->date()
+                    ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('total_assets')
-                    ->money('IDR')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_liabilities')
-                    ->money('IDR')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('net_income')
-                    ->money('IDR')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cash_flow')
-                    ->money('IDR')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('notes')
+                    ->searchable()
+                    ->limit(50)
+                    ->tooltip(fn(string $state): string => $state)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -112,6 +120,7 @@ class FinancialReportResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
             ])
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('report_type')
                     ->options([
                         'balance_sheet' => 'Balance Sheet',
@@ -139,106 +148,34 @@ class FinancialReportResource extends Resource
                                 $data['report_period_end'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('report_period_end', '<=', $date),
                             );
-                    }),
+                    })->columns(2),
 
-                Tables\Filters\Filter::make('total_assets')
-                    ->form([
-                        Forms\Components\TextInput::make('min_total_assets')
-                            ->label('Minimum Total Assets')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max_total_assets')
-                            ->label('Maximum Total Assets')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min_total_assets'],
-                                fn(Builder $query, $value): Builder => $query->where('total_assets', '>=', $value),
-                            )
-                            ->when(
-                                $data['max_total_assets'],
-                                fn(Builder $query, $value): Builder => $query->where('total_assets', '<=', $value),
-                            );
-                    }),
-
-                Tables\Filters\Filter::make('total_liabilities')
-                    ->form([
-                        Forms\Components\TextInput::make('min_total_liabilities')
-                            ->label('Minimum Total Liabilities')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max_total_liabilities')
-                            ->label('Maximum Total Liabilities')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min_total_liabilities'],
-                                fn(Builder $query, $value): Builder => $query->where('total_liabilities', '>=', $value),
-                            )
-                            ->when(
-                                $data['max_total_liabilities'],
-                                fn(Builder $query, $value): Builder => $query->where('total_liabilities', '<=', $value),
-                            );
-                    }),
-
-                Tables\Filters\Filter::make('net_income')
-                    ->form([
-                        Forms\Components\TextInput::make('min_net_income')
-                            ->label('Minimum Net Income')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max_net_income')
-                            ->label('Maximum Net Income')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min_net_income'],
-                                fn(Builder $query, $value): Builder => $query->where('net_income', '>=', $value),
-                            )
-                            ->when(
-                                $data['max_net_income'],
-                                fn(Builder $query, $value): Builder => $query->where('net_income', '<=', $value),
-                            );
-                    }),
-
-                Tables\Filters\Filter::make('cash_flow')
-                    ->form([
-                        Forms\Components\TextInput::make('min_cash_flow')
-                            ->label('Minimum Cash Flow')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max_cash_flow')
-                            ->label('Maximum Cash Flow')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min_cash_flow'],
-                                fn(Builder $query, $value): Builder => $query->where('cash_flow', '>=', $value),
-                            )
-                            ->when(
-                                $data['max_cash_flow'],
-                                fn(Builder $query, $value): Builder => $query->where('cash_flow', '<=', $value),
-                            );
-                    }),
+                Tables\Filters\TernaryFilter::make('has_notes')
+                    ->label('Has Notes')
+                    ->placeholder('All Reports')
+                    ->trueLabel('With Notes')
+                    ->falseLabel('Without Notes')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereNotNull('notes'),
+                        false: fn(Builder $query) => $query->whereNull('notes'),
+                    ),
             ])
             ->actions([
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('download_pdf')
                     ->label('Download PDF')
-                    ->icon('heroicon-o-document-download')
+                    ->icon('heroicon-o-arrow-down-on-square-stack')
                     ->color('success')
                     ->action(function (FinancialReport $record) {
                         // Logic to generate and download PDF
                     }),
                 Tables\Actions\Action::make('send_email')
                     ->label('Send Email')
-                    ->icon('heroicon-o-mail')
+                    ->icon('heroicon-o-envelope')
                     ->color('primary')
                     ->form([
                         Forms\Components\TextInput::make('email')
@@ -268,6 +205,8 @@ class FinancialReportResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('exportSelected')
                         ->label('Export Selected')
@@ -327,11 +266,9 @@ class FinancialReportResource extends Resource
                     ->color('primary'),
             ])
             ->emptyStateActions([
-                Tables\Actions\Action::make('create')
+                Tables\Actions\CreateAction::make()
                     ->label('Create Financial Report')
-                    ->icon('heroicon-o-document-plus')
-                    ->color('primary')
-                    ->url(fn(): string => FinancialReportResource::getUrl('create')),
+                    ->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -349,5 +286,13 @@ class FinancialReportResource extends Resource
             'create' => Pages\CreateFinancialReport::route('/create'),
             'edit' => Pages\EditFinancialReport::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }
