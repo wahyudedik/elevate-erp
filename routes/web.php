@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\LedgerController;
+use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BalanceSheetController;
@@ -61,6 +62,9 @@ Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::clas
 Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
     ->name('income-statement.report');
 
+// print cash flow
+Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
+    ->name('Cash-flow.report');
 
 
 
@@ -85,7 +89,9 @@ Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementControl
 
 
 
-    
+
+
+
 // New Artisan routes for migration and seeding
 Route::get('/migrate', function () {
     Artisan::call('migrate', ['--force' => true]);

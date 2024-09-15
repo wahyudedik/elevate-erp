@@ -11,9 +11,6 @@ class IncomeStatementController extends Controller
     {
         $financialReport = $incomeStatement->financialReport;
 
-        // Retrieve additional financial data
-        $cashFlow = $financialReport->cashFlow;
-
-        return view('income-statement.report', compact( 'financialReport', 'incomeStatement', 'cashFlow'));
+        return view('income-statement.report', compact( 'financialReport', 'incomeStatement'));
     }
 }

@@ -79,11 +79,13 @@ class BalanceSheetResource extends Resource
                             ->prefix('IDR')
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
+                            ->default(0)
                             ->label('Total Assets'),
                         Forms\Components\TextInput::make('total_liabilities')
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
+                            ->default(0)
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
                             ->label('Total Liabilities'),
@@ -91,6 +93,7 @@ class BalanceSheetResource extends Resource
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
+                            ->default(0)
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
                             ->label('Total Equity'),
@@ -201,10 +204,10 @@ class BalanceSheetResource extends Resource
                             $record->save();
 
                             Notification::make()
-                            ->title('Total Equity Calculated')
-                            ->icon('heroicon-o-check-circle')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
+                                ->title('Total Equity Calculated')
+                                ->icon('heroicon-o-check-circle')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
                         })
                         ->requiresConfirmation()
                         ->modalHeading('Calculate Totals')
