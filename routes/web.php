@@ -7,7 +7,9 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\LedgerController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\BalanceSheetController;
 use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\IncomeStatementController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -16,22 +18,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+//sales
 Route::get('/sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])->name('sale.print-invoice');
 
-
+// print supplier transaction
 Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
     ->name('supplier-transactions.print');
 
-
+// salles transaction
 Route::get('/sales-transaction/{salesTransaction}/print-invoice', [SalesTransactionController::class, 'printInvoice'])
     ->name('sales-transaction.print-invoice');
 
+// print candidate application
 Route::get('/apply/{recruitment}', [CandidateController::class, 'showApplicationForm'])
     ->name('candidate.apply');
 Route::post('/apply/{recruitment}/', [CandidateController::class, 'submitApplication'])
     ->name('candidate.submit');
 
-Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])->name('journal-entries.print');
+// print journal entry
+Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
+    ->name('journal-entries.print');
 
 // Email verification routes
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
@@ -40,11 +46,46 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 })->middleware(['signed'])->name('verification.verify');
 
 // print ledger
-Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])->name('ledger.print');
+Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])
+    ->name('ledger.print');
 
 // print transaction
-Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])->name('transaction.print-receipt');
+Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])
+    ->name('transaction.print-receipt');
 
+// print balance sheet
+Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::class, 'report'])
+    ->name('balance-sheet.report');
+
+// print income statement
+Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
+    ->name('income-statement.report');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 // New Artisan routes for migration and seeding
 Route::get('/migrate', function () {
     Artisan::call('migrate', ['--force' => true]);

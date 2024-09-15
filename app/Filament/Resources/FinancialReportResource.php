@@ -88,7 +88,7 @@ class FinancialReportResource extends Resource
                     ->colors([
                         'primary' => 'balance_sheet',
                         'success' => 'income_statement',
-                        'warning' => 'cash_flow',
+                        'danger' => 'cash_flow',
                     ])
                     ->icons([
                         'balance_sheet' => 'heroicon-o-scale',
@@ -261,9 +261,6 @@ class FinancialReportResource extends Resource
                             });
                         }),
                 ])
-                    ->label('Bulk Actions')
-                    ->icon('heroicon-m-cog-6-tooth')
-                    ->color('primary'),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
