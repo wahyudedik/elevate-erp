@@ -35,23 +35,37 @@ class CashFlowChartWidget extends AdvancedChartWidget
 
     protected function getData(): array
     {
+        $dateFilter = match ($this->filter) {
+            'today' => now()->startOfDay(),
+            'week' => now()->subWeek(),
+            'month' => now()->subMonth(),
+            'year' => now()->startOfYear(),
+            default => now()->subWeek(),
+        };
+
+        $cashFlows = CashFlow::where('created_at', '>=', $dateFilter)->get();
+
         return [
             'datasets' => [
                 [
                     'label' => 'Operating Cash Flow',
-                    'data' => CashFlow::where('operating_cash_flow')->where('created_at', '>=', now()->subDays(7))->pluck('operating_cash_flow'),
+                    'data' => $cashFlows->pluck('operating_cash_flow')->toArray(),
+                    'backgroundColor' => '#4CAF50',
                 ],
                 [
                     'label' => 'Investing Cash Flow',
-                    'data' => CashFlow::where('investing_cash_flow')->where('created_at', '>=', now()->subDays(7))->pluck('investing_cash_flow'),
+                    'data' => $cashFlows->pluck('investing_cash_flow')->toArray(),
+                    'backgroundColor' => '#2196F3',
                 ],
                 [
                     'label' => 'Financing Cash Flow',
-                    'data' => CashFlow::where('financing_cash_flow')->where('created_at', '>=', now()->subDays(7))->pluck('financing_cash_flow'),
+                    'data' => $cashFlows->pluck('financing_cash_flow')->toArray(),
+                    'backgroundColor' => '#FFC107',
                 ],
                 [
                     'label' => 'Net Cash Flow',
-                    'data' => CashFlow::where('net_cash_flow')->where('created_at', '>=', now()->subDays(7))->pluck('net_cash_flow'),
+                    'data' => $cashFlows->pluck('net_cash_flow')->toArray(),
+                    'backgroundColor' => '#9C27B0',
                 ],
             ],
             'labels' => [
@@ -59,11 +73,11 @@ class CashFlowChartWidget extends AdvancedChartWidget
                 'Investing Cash Flow',
                 'Financing Cash Flow',
                 'Net Cash Flow',
-            ]
+            ],
         ];
     }
-    
-    
+
+
     protected function getType(): string
     {
         return 'pie';

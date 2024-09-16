@@ -4,6 +4,7 @@ namespace App\Filament\Resources\BalanceSheetResource\Widgets;
 
 use App\Models\ManagementFinancial\BalanceSheet;
 use EightyNine\FilamentAdvancedWidget\AdvancedChartWidget;
+use Carbon\Carbon;
 
 class BalanceSheetChartWidget extends AdvancedChartWidget
 {
@@ -13,101 +14,62 @@ class BalanceSheetChartWidget extends AdvancedChartWidget
     protected static ?string $iconColor = 'info';
     protected static ?string $iconBackgroundColor = 'info';
     protected static ?string $label = 'Balance Sheet Overview';
- 
     protected static ?string $badge = 'Financial';
     protected static ?string $badgeColor = 'success';
     protected static ?string $badgeIcon = 'heroicon-o-currency-dollar';
     protected static ?string $badgeIconPosition = 'after';
     protected static ?string $badgeSize = 'sm';
- 
- 
-    public ?string $filter = 'current';
- 
+
+    public ?string $filter = 'today';
+
     protected function getFilters(): ?array
     {
         return [
-            'current' => 'Current',
-            'last_month' => 'Last Month',
-            'last_quarter' => 'Last Quarter',
-            'last_year' => 'Last Year',
+            'today' => 'Today',
+            'week' => 'Last week',
+            'month' => 'Last month',
+            'year' => 'This year',
         ];
     }
- 
+
     protected function getData(): array
     {
+        $balanceSheets = BalanceSheet::query()
+            ->when($this->filter === 'today', fn ($query) => $query->whereDate('created_at', Carbon::today()))
+            ->when($this->filter === 'week', fn ($query) => $query->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
+            ->when($this->filter === 'month', fn ($query) => $query->whereMonth('created_at', Carbon::now()->month))
+            ->when($this->filter === 'year', fn ($query) => $query->whereYear('created_at', Carbon::now()->year))
+            ->get();
+
+        $labels = $balanceSheets->pluck('created_at')->map(fn ($date) => $date->format('M d'))->toArray();
+
         return [
             'datasets' => [
                 [
                     'label' => 'Total Assets',
-                    'data' => $this->getBalanceSheetData('total_assets'),
+                    'data' => $balanceSheets->pluck('total_assets')->toArray(),
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'borderColor' => 'rgba(75, 192, 192, 1)',
                 ],
                 [
                     'label' => 'Total Liabilities',
-                    'data' => $this->getBalanceSheetData('total_liabilities'),
+                    'data' => $balanceSheets->pluck('total_liabilities')->toArray(),
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'borderColor' => 'rgba(255, 99, 132, 1)',
                 ],
                 [
                     'label' => 'Total Equity',
-                    'data' => $this->getBalanceSheetData('total_equity'),
+                    'data' => $balanceSheets->pluck('total_equity')->toArray(),
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+                    'borderColor' => 'rgba(54, 162, 235, 1)',
                 ],
             ],
-            'labels' => $this->getLabels(),
+            'labels' => $labels,
         ];
-    }
-
-    protected function getBalanceSheetData(string $column): array
-    {
-            // Implement logic to fetch data from balance_sheets table
-            // based on the selected filter and column
-            // Return an array of values
-            $query = BalanceSheet::query();
-
-            switch ($this->filter) {
-                case 'last_month':
-                    $query->whereMonth('created_at', '=', now()->subMonth()->month);
-                    break;
-                case 'last_quarter':
-                    $query->whereBetween('created_at', [now()->subMonths(3), now()]);
-                    break;
-                case 'last_year':
-                    $query->whereYear('created_at', '=', now()->subYear()->year);
-                    break;
-                default:
-                    $query->whereMonth('created_at', '=', now()->month);
-                    break;
-            }
-
-            return $query->pluck($column)->toArray();
-    }
-
-    protected function getLabels(): array
-    {
-            // Implement logic to generate labels based on the selected filter
-            // Return an array of labels
-            $labels = [];
-            $filter = $this->filter;
-
-            switch ($filter) {
-                case 'current':
-                    $labels = ['Current'];
-                    break;
-                case 'last_month':
-                    $labels = ['Last Month'];
-                    break;
-                case 'last_quarter':
-                    $labels = ['Last Quarter'];
-                    break;
-                case 'last_year':
-                    $labels = ['Last Year'];
-                    break;
-                default:
-                    $labels = ['Unknown'];
-            }
-
-            return $labels;
     }
 
     protected function getType(): string
     {
-        return 'scatter';
+        return 'line';
     }
 }

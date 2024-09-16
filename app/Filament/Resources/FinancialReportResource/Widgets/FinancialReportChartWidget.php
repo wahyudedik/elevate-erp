@@ -46,18 +46,22 @@ class FinancialReportChartWidget extends AdvancedChartWidget
             $query->where('report_type', $activeFilter);
         }
     
-        $data = $query->get()->groupBy('report_type');
+        $data = $query->get();
+    
+        $reportTypes = ['balance_sheet', 'income_statement', 'cash_flow'];
+        $labels = ['Balance Sheet', 'Income Statement', 'Cash Flow'];
+        $counts = [];
+    
+        foreach ($reportTypes as $type) {
+            $counts[] = $data->where('report_type', $type)->count();
+        }
     
         return [
-            'labels' => ['Balance Sheet', 'Income Statement', 'Cash Flow'],
+            'labels' => $labels,
             'datasets' => [
                 [
                     'label' => 'Financial Reports',
-                    'data' => [
-                        $data->get('balance_sheet', collect())->count(),
-                        $data->get('income_statement', collect())->count(),
-                        $data->get('cash_flow', collect())->count(),
-                    ],
+                    'data' => $counts,
                     'backgroundColor' => ['#FF6384', '#36A2EB', '#FFCE56'],
                     'borderColor' => ['#FF6384', '#36A2EB', '#FFCE56'],
                     'borderWidth' => 1,

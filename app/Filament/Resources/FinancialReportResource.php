@@ -7,12 +7,25 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Mail\SendEmailFinancialReportMail;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\FinancialReportExporter;
+use App\Filament\Imports\FinancialReportImporter;
 use App\Models\ManagementFinancial\FinancialReport;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\FinancialReportResource\Pages;
 use App\Filament\Resources\FinancialReportResource\RelationManagers;
+use App\Filament\Resources\FinancialReportResource\RelationManagers\CashFlowRelationManager;
+use App\Filament\Resources\FinancialReportResource\RelationManagers\BalanceSheetRelationManager;
+use App\Filament\Resources\FinancialReportResource\RelationManagers\IncomeStatementRelationManager;
 
 class FinancialReportResource extends Resource
 {
@@ -161,62 +174,82 @@ class FinancialReportResource extends Resource
                     ),
             ])
             ->actions([
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('download_pdf')
-                    ->label('Download PDF')
-                    ->icon('heroicon-o-arrow-down-on-square-stack')
-                    ->color('success')
-                    ->action(function (FinancialReport $record) {
-                        // Logic to generate and download PDF
-                    }),
-                Tables\Actions\Action::make('send_email')
-                    ->label('Send Email')
-                    ->icon('heroicon-o-envelope')
-                    ->color('primary')
-                    ->form([
-                        Forms\Components\TextInput::make('email')
-                            ->label('Recipient Email')
-                            ->email()
-                            ->required(),
-                        Forms\Components\Textarea::make('message')
-                            ->label('Message')
-                            ->rows(3),
-                    ])
-                    ->action(function (FinancialReport $record, array $data) {
-                        // Logic to send email
-                    }),
-                Tables\Actions\Action::make('compare')
-                    ->label('Compare Reports')
-                    ->icon('heroicon-o-chart-bar')
-                    ->color('warning')
-                    ->form([
-                        Forms\Components\Select::make('compare_with')
-                            ->label('Compare with')
-                            ->options(FinancialReport::pluck('report_name', 'id'))
-                            ->required(),
-                    ])
-                    ->action(function (FinancialReport $record, array $data) {
-                        // Logic to compare reports
-                    }),
+                ActionGroup::make([
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('print_report')
+                        ->label('Print Report')
+                        ->icon('heroicon-o-printer')
+                        ->color('success')
+                        ->url(fn(FinancialReport $record): string => route('financial-report.print', $record))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('send_email')
+                        ->label('Send Email')
+                        ->icon('heroicon-o-envelope')
+                        ->color('primary')
+                        ->form([
+                            Forms\Components\TextInput::make('email')
+                                ->label('Recipient Email')
+                                ->email()
+                                ->required(),
+                            Forms\Components\Textarea::make('message')
+                                ->label('Message')
+                                ->rows(3),
+                        ])
+                        ->action(function (FinancialReport $record, array $data) {
+                            // Logic to send email
+                            $financialReport = FinancialReport::find($record->id);
+                            $financialReport->email = $data['email'];
+                            $financialReport->message = $data['message'];
+
+                            // dd($financialReport->balanceSheet, $financialReport->balanceSheet->toArray());
+
+                            Mail::to($financialReport->email)->send(new SendEmailFinancialReportMail($financialReport));
+
+                            Notification::make()
+                                ->title('Email Sent' . ' ' . $data['email'])
+                                ->body('Your email has been sent successfully.' . ' ' . $data['message'] . ' ' . $data['email'])
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])
+            ])
+            ->headerActions([
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(FinancialReportExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Finance Report exported successfully' . ' ' . date('Y-m-d'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(FinancialReportImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Finance Report imported successfully' . ' ' . date('Y-m-d'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        })
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('exportSelected')
-                        ->label('Export Selected')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->action(function (Collection $records) {
-                            // Export logic here
-                        }),
                     Tables\Actions\BulkAction::make('updateReportType')
                         ->label('Update Report Type')
                         ->icon('heroicon-o-document-text')
+                        ->color('primary')
                         ->form([
                             Forms\Components\Select::make('report_type')
                                 ->label('Report Type')
@@ -233,6 +266,7 @@ class FinancialReportResource extends Resource
                     Tables\Actions\BulkAction::make('updateReportPeriod')
                         ->label('Update Report Period')
                         ->icon('heroicon-o-calendar')
+                        ->color('success')
                         ->form([
                             Forms\Components\DatePicker::make('report_period_start')
                                 ->label('Start Date')
@@ -247,18 +281,16 @@ class FinancialReportResource extends Resource
                                 'report_period_end' => $data['report_period_end'],
                             ]);
                         }),
-                    Tables\Actions\BulkAction::make('calculateTotals')
-                        ->label('Calculate Totals')
-                        ->icon('heroicon-o-calculator')
-                        ->action(function (Collection $records) {
-                            $records->each(function ($record) {
-                                $record->update([
-                                    'total_assets' => $record->calculateTotalAssets(),
-                                    'total_liabilities' => $record->calculateTotalLiabilities(),
-                                    'net_income' => $record->calculateNetIncome(),
-                                    'cash_flow' => $record->calculateCashFlow(),
-                                ]);
-                            });
+                    ExportBulkAction::make()
+                        ->exporter(FinancialReportExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Finance Report exported successfully' . ' ' . date('Y-m-d'))
+                                ->success()
+                                ->icon('heroicon-o-check')
+                                ->sendToDatabase(Auth::user());
                         }),
                 ])
             ])
@@ -272,7 +304,9 @@ class FinancialReportResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BalanceSheetRelationManager::class,
+            IncomeStatementRelationManager::class,
+            CashFlowRelationManager::class,
         ];
     }
 

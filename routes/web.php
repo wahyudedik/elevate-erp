@@ -10,6 +10,7 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BalanceSheetController;
 use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\IncomeStatementController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
@@ -65,6 +66,11 @@ Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementControl
 // print cash flow
 Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
     ->name('Cash-flow.report');
+
+// print financial report
+Route::get('/financial-report/{financialReport}/report', [FinancialReportController::class, 'report'])
+    ->name('financial-report.print');
+
 
 
 

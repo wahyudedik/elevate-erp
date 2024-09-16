@@ -1,79 +1,34 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\FinancialReportResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Jobs\ProcessCashFlow;
-use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Exports\CashFlowExporter;
-use App\Filament\Imports\CashFlowImporter;
 use App\Models\ManagementFinancial\CashFlow;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Resources\CashFlowResource\Pages;
 use App\Models\ManagementFinancial\FinancialReport;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CashFlowResource\RelationManagers;
-use App\Filament\Resources\CashFlowResource\RelationManagers\FinancialReportRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class CashFlowResource extends Resource
+class CashFlowRelationManager extends RelationManager
 {
-    protected static ?string $model = CashFlow::class;
+    protected static string $relationship = 'cashFlow';
 
-    protected static ?string $navigationBadgeTooltip = 'Total Cash Flows';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Cash Flow Details')
                     ->schema([
-                        Forms\Components\Select::make('financial_report_id')
-                            ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'cash_flow'))
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                // Add fields for creating a new financial report if needed
-                                Forms\Components\TextInput::make('report_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\Select::make('report_type')
-                                    ->options([
-                                        'balance_sheet' => 'Balance Sheet',
-                                        'income_statement' => 'Income Statement',
-                                        'cash_flow' => 'Cash Flow',
-                                    ])
-                                    ->required(),
-                                Forms\Components\DatePicker::make('report_period_start')
-                                    ->default(now())
-                                    ->required(),
-                                Forms\Components\DatePicker::make('report_period_end')
-                                    ->required(),
-                                Forms\Components\Textarea::make('notes')
-                                    ->nullable(),
-                            ])
-                            ->nullable(),
                         Forms\Components\TextInput::make('operating_cash_flow')
                             ->required()
                             ->numeric()
@@ -123,19 +78,15 @@ class CashFlowResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('financial_report_id')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('financialReport.report_name')
-                    ->label('Financial Report')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('operating_cash_flow')
                     ->label('Operating Cash Flow')
                     ->money('IDR')
@@ -197,6 +148,10 @@ class CashFlowResource extends Resource
                             );
                     })->columns(2),
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus')
+            ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
@@ -235,30 +190,6 @@ class CashFlowResource extends Resource
                         ->modalSubmitActionLabel('Delete')
                         ->color('danger'),
                 ])
-            ])
-            ->headerActions([
-                ActionGroup::make([
-                    ExportAction::make()
-                        ->exporter(CashFlowExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Cash Flow exported successfully' . ' ' . date('Y-m-d'))
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()
-                        ->importer(CashFlowImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Cash Flow imported successfully' . ' ' . date('Y-m-d'))
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        })
-                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -318,34 +249,6 @@ class CashFlowResource extends Resource
                                 ->sendToDatabase(Auth::user());
                         }),
                 ])
-            ])
-            ->emptyStateActions([
-                CreateAction::make()
-                    ->icon('heroicon-o-plus')
-            ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            FinancialReportRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListCashFlows::route('/'),
-            'create' => Pages\CreateCashFlow::route('/create'),
-            'edit' => Pages\EditCashFlow::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
             ]);
     }
 }

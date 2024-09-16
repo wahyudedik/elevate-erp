@@ -7,7 +7,7 @@ use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
 class IncomeStatementStatWidget extends BaseWidget
-{
+{ 
     protected static ?string $pollingInterval = null;
  
     protected function getStats(): array

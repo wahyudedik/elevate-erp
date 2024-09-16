@@ -1,79 +1,33 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\FinancialReportResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Exports\IncomeStatementExporter;
-use App\Filament\Imports\IncomeStatementImporter;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\IncomeStatementResource\Pages;
-use App\Filament\Resources\IncomeStatementResource\RelationManagers;
-use App\Filament\Resources\IncomeStatementResource\RelationManagers\FinancialReportRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class IncomeStatementResource extends Resource
+class IncomeStatementRelationManager extends RelationManager
 {
-    protected static ?string $model = IncomeStatement::class;
+    protected static string $relationship = 'incomeStatement';
 
-    protected static ?string $navigationBadgeTooltip = 'Total Income Statements';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Income Statement Details')
                     ->schema([
-                        Forms\Components\Select::make('financial_report_id')
-                            ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'income_statement'))
-                            ->searchable()
-                            ->preload()
-                            ->label('Financial Report')
-                            ->placeholder('Select a Financial Report')
-                            ->nullable()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('report_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\Select::make('report_type')
-                                    ->options([
-                                        'balance_sheet' => 'Balance Sheet',
-                                        'income_statement' => 'Income Statement',
-                                        'cash_flow' => 'Cash Flow',
-                                    ])
-                                    ->required(),
-                                Forms\Components\DatePicker::make('report_period_start')
-                                    ->default(now())
-                                    ->required(),
-                                Forms\Components\DatePicker::make('report_period_end')
-                                    ->required(),
-                                Forms\Components\Textarea::make('notes')
-                                    ->nullable(),
-                            ])
-                            ->columnSpan(2),
                         Forms\Components\TextInput::make('total_revenue')
                             ->required()
                             ->numeric()
@@ -116,19 +70,15 @@ class IncomeStatementResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('financial_report_id')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('financialReport.report_name')
-                    ->label('Financial Report')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('total_revenue')
                     ->label('Total Revenue')
                     ->money('IDR')
@@ -164,7 +114,7 @@ class IncomeStatementResource extends Resource
                     ->label('Financial Report')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\Filter::make('Date Picked')
+                Tables\Filters\Filter::make('Date Created')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
                             ->label('Created From'),
@@ -182,6 +132,10 @@ class IncomeStatementResource extends Resource
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })->columns(2),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus'),
             ])
             ->actions([
                 ActionGroup::make([
@@ -213,32 +167,6 @@ class IncomeStatementResource extends Resource
                         })
                         ->tooltip('Rumus Laba Rugi: Laba Bersih = Pendapatan - Beban'),
                 ])
-            ])
-            ->headerActions([
-                ActionGroup::make([
-                    ExportAction::make()
-                        ->exporter(IncomeStatementExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Income Statment exported successfully' . ' ' . now()->format('d-m-Y H:i:s'))
-                                ->success()
-                                ->icon('heroicon-o-check-circle')
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()
-                        ->importer(IncomeStatementImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Income Statment imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
-                                ->icon('heroicon-o-check-circle')
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        })
-                ])->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -297,36 +225,6 @@ class IncomeStatementResource extends Resource
                                 ->sendToDatabase(Auth::user());
                         }),
                 ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Create Income Statement')
-                    ->color('success')
-                    ->icon('heroicon-o-plus'),
-            ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            FinancialReportRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListIncomeStatements::route('/'),
-            'create' => Pages\CreateIncomeStatement::route('/create'),
-            'edit' => Pages\EditIncomeStatement::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
             ]);
     }
 }
