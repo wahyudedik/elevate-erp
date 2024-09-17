@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SaleController;
@@ -14,7 +13,6 @@ use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\IncomeStatementController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::get('/', function () {
     return view('welcome');
