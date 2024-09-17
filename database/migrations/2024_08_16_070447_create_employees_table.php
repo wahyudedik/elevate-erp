@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('first_name');
             $table->string('last_name');
             $table->string('employee_code')->unique();  // Kode unik untuk setiap karyawan

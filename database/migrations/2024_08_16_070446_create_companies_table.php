@@ -44,7 +44,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->text('description')->nullable();
             $table->softDeletes();
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('departments', function (Blueprint $table) {

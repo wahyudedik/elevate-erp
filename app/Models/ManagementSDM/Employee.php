@@ -3,16 +3,17 @@
 namespace App\Models\ManagementSDM;
 
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
 use App\Models\ManagementCRM\TicketResponse;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\ManagementSalesAndPurchasing\SalesTransaction;
 use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable;
 
 class Employee extends Model
 {
@@ -54,6 +55,11 @@ class Employee extends Model
         'profile_picture' => 'string',
         'contract' => 'string',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 
     // Relasi dengan tabel employees untuk manager
     public function manager()

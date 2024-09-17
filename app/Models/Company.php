@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Company extends Model
 {
     use HasFactory;
+
+    protected $table = 'companies';
 
     protected $fillable = [
         'name',
@@ -22,4 +25,14 @@ class Company extends Model
         'vision',
         'qna',
     ];
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    public function employee()
+    {
+        return $this->hasMany(Employee::class, 'company_id');
+    }
 }
