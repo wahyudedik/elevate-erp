@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, Notifiable, \Illuminate\Auth\MustVerifyEmail;
+    use HasFactory, Notifiable;
 
     public function canAccessPanel(Panel $panel): bool
     {
