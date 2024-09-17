@@ -2,10 +2,11 @@
 
 namespace App\Models\ManagementFinancial;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class JournalEntry extends Model
 {
@@ -14,7 +15,8 @@ class JournalEntry extends Model
     protected $table = 'journal_entries';
 
     protected $fillable = [
-        'entry_date',
+        'company_id',
+        'entry_date', 
         'description',
         'entry_type',
         'amount',
@@ -29,6 +31,11 @@ class JournalEntry extends Model
     public function account()
     {
         return $this->belongsTo(Accounting::class, 'account_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     protected static function boot()

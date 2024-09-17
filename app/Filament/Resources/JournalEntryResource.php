@@ -26,13 +26,8 @@ use Filament\Tables\Actions\ActionGroup;
 class JournalEntryResource extends Resource
 {
     protected static ?string $model = JournalEntry::class;
-
-    protected static ?string $navigationBadgeTooltip = 'Total Jurnals';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    
+    protected static ?string $tenantRelationshipName = 'journalEntry';
 
     protected static ?string $navigationGroup = 'Management Financial';
 

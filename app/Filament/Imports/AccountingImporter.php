@@ -28,12 +28,10 @@ class AccountingImporter extends Importer
                 ->rules(['required', 'string', 'in:asset,liability,equity,revenue,expense']),
             ImportColumn::make('initial_balance')
                 ->label('Initial Balance')
-                ->rules(['required', 'numeric', 'decimal:0,2'])
-                ->castToDecimal(),
+                ->rules(['required', 'numeric', 'decimal:0,2']),
             ImportColumn::make('current_balance')
                 ->label('Current Balance')
-                ->rules(['required', 'numeric', 'decimal:0,2'])
-                ->castToDecimal(),
+                ->rules(['required', 'numeric', 'decimal:0,2']),
             ImportColumn::make('created_at')
                 ->label('Created At')
                 ->rules(['required', 'date']),

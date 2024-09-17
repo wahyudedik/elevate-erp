@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Filament\Pages\Accounts;
+use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementFinancial\JournalEntry;
 use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Company extends Model
+class Company extends Model implements HasCurrentTenantLabel
 {
     use HasFactory;
 
@@ -14,6 +18,7 @@ class Company extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'logo',
         'description',
         'address',
@@ -29,7 +34,6 @@ class Company extends Model
 
     protected $casts = [
         'qna' => 'array',
-        'logo' => 'array',
     ];
 
     public function members()
@@ -41,4 +45,20 @@ class Company extends Model
     {
         return $this->hasMany(Employee::class, 'company_id');
     }
+
+    public function accounting()
+    {
+        return $this->hasMany(Accounting::class, 'company_id');
+    }
+
+    public function journalEntry()
+    {
+        return $this->hasMany(JournalEntry::class, 'company_id');
+    }
+
+    public function getCurrentTenantLabel(): string
+    {
+        return 'Active Company';
+    }
+    
 }

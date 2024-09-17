@@ -2,10 +2,11 @@
 
 namespace App\Models\ManagementFinancial;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Accounting extends Model
 {
@@ -13,6 +14,7 @@ class Accounting extends Model
 
     protected $table = 'accounts';
     protected $fillable = [
+        'company_id',
         'account_name',  
         'account_number', 
         'account_type', //asset, liability, equity, revenue, expense
@@ -33,6 +35,11 @@ class Accounting extends Model
     public function ledger()
     {
         return $this->hasMany(Ledger::class, 'account_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
     }
     
 }

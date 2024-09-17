@@ -50,6 +50,13 @@ class UserResource extends Resource
                             ->password()
                             ->required()
                             ->maxLength(255),
+                        Forms\Components\Select::make('usertype')
+                            ->options([
+                                'staff' => 'Staff',
+                                'member' => 'Member',
+                            ])
+                            ->required()
+                            ->default('staff'),
                     ])->columns(2),
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
@@ -86,6 +93,8 @@ class UserResource extends Resource
                     ->toggleable()
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('usertype')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -2,12 +2,15 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages;
+
+use Filament\Pages\Tenancy\EditTenantProfile;
 use Filament\Panel;
 use Filament\Widgets;
 use App\Models\Company;
 use Filament\PanelProvider;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\NavigationItem;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Pages\Tenancy\RegisterTeam;
@@ -22,7 +25,6 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -86,6 +88,28 @@ class AdminPanelProvider extends PanelProvider
             ->spa()
             ->tenant(Company::class, ownershipRelationship: 'company', slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
-            ->tenantProfile(EditTeamProfile::class);
+            ->tenantProfile(EditTeamProfile::class)
+            // ->tenantDomain('{tenant:slug}.localhost')
+            ->tenantMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('Edit team profile')
+                    ->visible(fn (): bool => Auth::user()->usertype === 'member'),
+                'register' => MenuItem::make()
+                    ->label('Register new team')
+                    ->visible(fn (): bool => Auth::user()->usertype === 'member'),
+                // MenuItem::make()
+                //     ->label('Settings')
+                //     ->url(fn (): string => Settings::getUrl())
+                //     ->icon('heroicon-m-cog-8-tooth')
+                //     ->tenant(),
+                // ...
+            ])
+            ->userMenuItems([
+                // MenuItem::make()
+                //     ->label('Settings')
+                //     ->url(fn (): string => Settings::getUrl())
+                //     ->icon('heroicon-m-cog-8-tooth'),
+                // ...
+            ]);
     }
 }

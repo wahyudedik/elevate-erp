@@ -34,12 +34,7 @@ class AccountingResource extends Resource
 {
     protected static ?string $model = Accounting::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Accounting';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $tenantRelationshipName = 'accounting';
 
     protected static ?string $navigationGroup = 'Management Financial';
 
