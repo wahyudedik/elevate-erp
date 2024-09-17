@@ -132,19 +132,6 @@ class UserResource extends Resource
                     Tables\Actions\ViewAction::make()->color('success'),
                     Tables\Actions\EditAction::make()->color('info'),
                     Tables\Actions\DeleteAction::make()->color('danger'),
-                    Tables\Actions\Action::make('sendVerificationEmail')
-                        ->label('Send Verification Email')
-                        ->icon('heroicon-o-envelope')
-                        ->action(function ($record) {
-                            $record->sendEmailVerificationNotification();
-                            Notification::make()
-                                ->title('Verification email sent successfully')
-                                ->icon('heroicon-o-check-circle')
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        })
-                        ->requiresConfirmation()
-                        ->hidden(fn($record) => $record->hasVerifiedEmail()),
                 ])
             ])
             ->headerActions([

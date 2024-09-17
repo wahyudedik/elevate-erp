@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\ManagementSalesAndPurchasing\OrderProcessing;
 use App\Models\ManagementSalesAndPurchasing\SalesTransaction;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Customer extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'customers';
@@ -31,20 +33,7 @@ class Customer extends Model
     protected $casts = [
         'status' => 'string',
     ];
-
-    // Relasi dengan tabel orders
-    // public function orders()
-    // {
-    //     return $this->hasMany(Order::class);
-    // }
-
-    // // Relasi dengan tabel invoices
-    // public function invoices()
-    // {
-    //     return $this->hasMany(Invoice::class);
-    // }
-
-    // // Relasi dengan tabel interactions (CRM)
+    
     public function interactions()
     {
         return $this->hasMany(CustomerInteraction::class);
@@ -62,7 +51,7 @@ class Customer extends Model
 
     public function project(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Project::class, 'client_id');
     }
 
     public function salesTransaction(): HasMany

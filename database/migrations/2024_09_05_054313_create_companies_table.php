@@ -27,13 +27,56 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
-    }
 
+        Schema::create('companies_user_id', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('branches', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
+        Schema::create('departments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
+        Schema::create('designations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->foreignId('department_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+    }
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
         Schema::dropIfExists('companies');
+        Schema::dropIfExists('companies_user_id');
+        Schema::dropIfExists('branches');
+        Schema::dropIfExists('departments');
+        Schema::dropIfExists('designations');
     }
 };

@@ -1,104 +1,46 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\CustomerResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Exports\CustomerInteractionExporter;
-use App\Filament\Imports\CustomerInteractionImporter;
-use App\Filament\Resources\CustomerInteractionResource\Pages;
-use App\Filament\Resources\CustomerInteractionResource\RelationManagers;
-use App\Filament\Resources\CustomerInteractionResource\RelationManagers\CustomerRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class CustomerInteractionResource extends Resource
+class InteractionsRelationManager extends RelationManager
 {
-    protected static ?string $model = CustomerInteraction::class;
+    protected static string $relationship = 'interactions';
 
-    protected static ?string $navigationBadgeTooltip = 'Total Customer Interactions';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-
-    protected static ?string $navigationGroup = 'Management CRM';
-
-    protected static ?string $navigationParentItem = 'Customer Relation';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
+                Forms\Components\Section::make('Customer Interaction Details')
                     ->schema([
-                        Section::make('Data Customer')
-                            ->schema([
-                                Forms\Components\Select::make('customer_id')
-                                    ->relationship('customer', 'name', function ($query) {
-                                        return $query->where('status', 'active');
-                                    })
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->createOptionForm([
-                                        Forms\Components\TextInput::make('name')
-                                            ->required()
-                                            ->maxLength(255),
-                                        Forms\Components\TextInput::make('email')
-                                            ->email()
-                                            ->required()
-                                            ->maxLength(255),
-                                        Forms\Components\TextInput::make('phone')
-                                            ->tel()
-                                            ->maxLength(255),
-                                        Forms\Components\Textarea::make('address')
-                                            ->maxLength(65535)
-                                            ->columnSpanFull(),
-                                        Forms\Components\TextInput::make('company')
-                                            ->maxLength(255),
-                                        Forms\Components\Select::make('status')
-                                            ->options([
-                                                'active' => 'Active',
-                                                'inactive' => 'Inactive',
-                                            ])
-                                            ->required()
-                                            ->default('active'),
-                                    ])->columns(2),
-                                Forms\Components\DatePicker::make('interaction_date')
-                                    ->required()
-                                    ->default(now()),
-                                Forms\Components\Select::make('interaction_type')
-                                    ->options([
-                                        'email' => 'Email',
-                                        'call' => 'Call',
-                                        'meeting' => 'Meeting',
-                                        'chat' => 'Chat',
-                                    ])
-                                    ->required()
-                                    ->multiple(),
-                                Forms\Components\MarkdownEditor::make('details')
-                                    ->nullable()
-                                    ->columnSpanFull(),
+                        Forms\Components\DatePicker::make('interaction_date')
+                            ->required()
+                            ->default(now()),
+                        Forms\Components\Select::make('interaction_type')
+                            ->options([
+                                'email' => 'Email',
+                                'call' => 'Call',
+                                'meeting' => 'Meeting',
+                                'chat' => 'Chat',
                             ])
-                    ])->columns(2),
+                            ->required()
+                            ->multiple(),
+                        Forms\Components\MarkdownEditor::make('details')
+                            ->nullable()
+                            ->columnSpanFull(),
+                    ]),
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
@@ -114,24 +56,19 @@ class CustomerInteractionResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('customer_id')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Customer')
-                    ->sortable()
-                    ->toggleable()
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('interaction_date')
                     ->label('Date')
                     ->date()
                     ->sortable()
-                    ->icon('heroicon-o-calendar')
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('interaction_type')
@@ -214,6 +151,10 @@ class CustomerInteractionResource extends Resource
                             );
                     })->columns(2)
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus'),
+            ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ForceDeleteAction::make(),
@@ -286,70 +227,13 @@ class CustomerInteractionResource extends Resource
                         ]),
                 ])
             ])
-            ->headerActions([
-                ActionGroup::make([
-                    ExportAction::make()
-                        ->exporter(CustomerInteractionExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Customer interactions exported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()
-                        ->importer(CustomerInteractionImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Customer interactions imported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        })
-                ])->icon('heroicon-o-cog-6-tooth'),
-            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                    ExportBulkAction::make()
-                        ->exporter(CustomerInteractionExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Customer interactions exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
-                                ->icon('heroicon-o-check-circle')
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
                 ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            CustomerRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListCustomerInteractions::route('/'),
-            'create' => Pages\CreateCustomerInteraction::route('/create'),
-            'edit' => Pages\EditCustomerInteraction::route('/{record}/edit'),
-        ];
     }
 
     public static function getEloquentQuery(): Builder

@@ -21,7 +21,8 @@ Route::get('/', function () {
 });
 
 //sales
-Route::get('/sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])->name('sale.print-invoice');
+Route::get('/sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
+    ->name('sale.print-invoice');
 
 // print supplier transaction
 Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
@@ -40,12 +41,6 @@ Route::post('/apply/{recruitment}/', [CandidateController::class, 'submitApplica
 // print journal entry
 Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
     ->name('journal-entries.print');
-
-// Email verification routes
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect()->to('/admin/login');
-})->middleware(['signed'])->name('verification.verify');
 
 // print ledger
 Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,14 +15,15 @@ class CustomerInteractionFollowUp extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $customer, $emailContent;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        protected CustomerInteraction $record, $emailContent
-    )
+    public function __construct(Customer $customer, $emailContent)
     {
-        
+        $this->customer = $customer;
+        $this->emailContent = $emailContent;
     }
 
     /**
@@ -30,7 +32,7 @@ class CustomerInteractionFollowUp extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Customer Interaction Follow Up',
+            subject: 'Customer Interaction Follow Up' . ' ' . $this->customer->name,
         );
     }
 
@@ -40,9 +42,10 @@ class CustomerInteractionFollowUp extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.CustomerInteractionFollowUp',
+            markdown: 'mail.CustomerInteractionFollowUp',
             with: [
-                'orderName' => $this->record->customer->name,
+                'customer' => $this->customer,
+                'emailContent' => $this->emailContent,
             ],
         );
     }

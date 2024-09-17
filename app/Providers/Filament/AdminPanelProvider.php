@@ -36,8 +36,8 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->sidebarCollapsibleOnDesktop()
             ->brandName('Elevate ERP')
-            ->brandLogo(asset('home/assets/img/3-removebg-preview.png'),)
-            ->brandLogoHeight('2rem')
+            // ->brandLogo(asset('home/assets/img/3-removebg-preview.png'),)
+            // ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([
                 'primary' => Color::Blue,

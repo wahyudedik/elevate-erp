@@ -4,15 +4,17 @@ namespace App\Models\ManagementCRM;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Sale extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'sales';
 
-    // Atribut yang dapat diisi secara massal
+    // Atribut yang dapat diisi secara massal 
     protected $fillable = [
         'customer_id',
         'sale_date',

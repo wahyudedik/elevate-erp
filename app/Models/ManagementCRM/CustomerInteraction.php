@@ -6,10 +6,12 @@ use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class CustomerInteraction extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'customer_interactions';

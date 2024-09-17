@@ -4,10 +4,12 @@ namespace App\Models\ManagementCRM;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class CustomerSupport extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'customer_supports';

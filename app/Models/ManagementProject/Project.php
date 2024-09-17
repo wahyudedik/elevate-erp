@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\ManagementProject\ProjectTask;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'projects';
 

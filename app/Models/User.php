@@ -11,23 +11,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Auth\MustVerifyEmail;
 
     public function canAccessPanel(Panel $panel): bool
     {
-            // // Check if the user's email is verified
-            // if (!$this->hasVerifiedEmail()) {
-            //     return false;
-            // }
-
-            // // Check if the email ends with '@gmail.com'
-            // if (!str_ends_with($this->email, '@gmail.com')) {
-            //     return false;
-            // }
-
-            // If both conditions are met, allow access to the panel
-            return true;
-        }
+        return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
+    }
 
     /**
      * The attributes that are mass assignable.

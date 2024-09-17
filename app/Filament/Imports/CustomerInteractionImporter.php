@@ -14,6 +14,10 @@ class CustomerInteractionImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('id')
+                ->requiredMapping()
+                ->numeric()
+                ->rules(['required', 'unique:customer_interactions,id']),
             ImportColumn::make('customer_id')
                 ->requiredMapping()
                 ->numeric()
@@ -27,6 +31,12 @@ class CustomerInteractionImporter extends Importer
             ImportColumn::make('details')
                 ->rules(['nullable', 'string']),
 
+            ImportColumn::make('created_at')
+                ->date()
+                ->rules(['nullable', 'date']),
+            ImportColumn::make('updated_at')
+                ->date()
+                ->rules(['nullable', 'date']),
         ];
     }
 
