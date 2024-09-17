@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('project_monitorings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->text('progress_report');
             $table->enum('status', ['on_track', 'at_risk', 'delayed'])->default('on_track');

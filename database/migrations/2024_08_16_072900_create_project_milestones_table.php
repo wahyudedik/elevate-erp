@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('project_milestones', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->string('milestone_name');
             $table->text('milestone_description')->nullable();
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('project_resources', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->string('resource_name');
             $table->enum('resource_type', ['human', 'material', 'financial']);

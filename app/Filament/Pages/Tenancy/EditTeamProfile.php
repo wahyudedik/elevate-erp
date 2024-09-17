@@ -20,13 +20,19 @@ class EditTeamProfile extends EditTenantProfile
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
                 FileUpload::make('logo')
                     ->image()
                     ->directory('company-logos')
-                    ->maxSize(1024),
+                    ->maxSize(2048)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif'])
+                    ->disk('public')
+                    ->visibility('public')
+                    ->maxFiles(1)
+                    ->avatar()
+                    ->columnSpanFull(),
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
                 Textarea::make('description')
                     ->maxLength(65535),
                 TextInput::make('address')
@@ -47,6 +53,7 @@ class EditTeamProfile extends EditTenantProfile
                 Textarea::make('vision')
                     ->maxLength(65535),
                 Repeater::make('qna')
+                    ->label('Q&A')
                     ->schema([
                         TextInput::make('question')
                             ->required(),
@@ -55,7 +62,7 @@ class EditTeamProfile extends EditTenantProfile
                     ])
                     ->collapsible()
                     ->itemLabel(fn(array $state): ?string => $state['question'] ?? null)
-                    ->columns(2)
-            ]);
+                    ->columnSpanFull()
+            ])->columns(2);
     }
 }

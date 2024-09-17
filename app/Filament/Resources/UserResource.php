@@ -26,12 +26,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total User';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $tenantRelationshipName = 'members';
 
     protected static ?string $navigationGroup = 'Account';
 

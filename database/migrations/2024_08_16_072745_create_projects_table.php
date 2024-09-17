@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->date('start_date');
@@ -27,6 +28,7 @@ return new class extends Migration
 
         Schema::create('project_tasks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->string('task_name');
             $table->text('task_description')->nullable();

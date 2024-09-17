@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('financial_reports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('report_name');
             $table->enum('report_type', ['balance_sheet', 'income_statement', 'cash_flow']);
             $table->date('report_period_start');
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('balance_sheets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('total_assets', 15, 2);
             $table->decimal('total_liabilities', 15, 2);
@@ -34,6 +36,7 @@ return new class extends Migration
 
         Schema::create('income_statements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('total_revenue', 15, 2);
             $table->decimal('total_expenses', 15, 2);
@@ -44,6 +47,7 @@ return new class extends Migration
 
         Schema::create('cash_flows', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('operating_cash_flow', 15, 2);
             $table->decimal('investing_cash_flow', 15, 2);

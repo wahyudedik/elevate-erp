@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('purchase_transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');
             $table->date('transaction_date');
             $table->decimal('total_amount', 15, 2);
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('purchase_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('purchase_transaction_id')->nullable()->constrained('purchase_transactions')->onDelete('cascade');
             $table->string('product_name');
             $table->integer('quantity');

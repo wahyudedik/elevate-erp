@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('candidates', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('first_name');
             $table->string('last_name'); 
             $table->string('email')->unique();
@@ -37,6 +38,7 @@ return new class extends Migration
         // Tabel untuk wawancara
         Schema::create('candidate_interviews', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('candidate_id')->nullable()->constrained('candidates')->onDelete('cascade');
             $table->date('interview_date');  // Tanggal wawancara
             $table->string('interviewer')->nullable();  // Nama pewawancara

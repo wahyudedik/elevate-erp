@@ -82,10 +82,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                EnsureEmailIsVerified::class,
             ])
             ->spa()
-            ->tenant(Company::class, ownershipRelationship: 'company')
+            ->tenant(Company::class, ownershipRelationship: 'company', slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
             ->tenantProfile(EditTeamProfile::class);
     }

@@ -43,6 +43,7 @@ return new class extends Migration
         // Tabel untuk riwayat posisi/jabatan
         Schema::create('employee_positions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->string('position');  // Jabatan
             $table->date('start_date');  // Tanggal mulai jabatan

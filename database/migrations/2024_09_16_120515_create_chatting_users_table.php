@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('chat_rooms', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('name');
             $table->string('description')->nullable();
             $table->enum('type', ['private', 'group'])->default('private');
@@ -22,6 +23,7 @@ return new class extends Migration
 
         Schema::create('chat_room_users', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->unsignedBigInteger('chat_room_id');
             $table->unsignedBigInteger('user_id');
             $table->enum('role', ['admin', 'member'])->default('member');
@@ -36,6 +38,7 @@ return new class extends Migration
 
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->unsignedBigInteger('chat_room_id');
             $table->unsignedBigInteger('user_id');
             $table->text('message')->nullable();
@@ -51,6 +54,7 @@ return new class extends Migration
 
         Schema::create('chat_message_reads', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->unsignedBigInteger('chat_message_id');
             $table->unsignedBigInteger('user_id');
             $table->timestamp('read_at');

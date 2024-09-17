@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('customer_supports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->string('subject');
             $table->text('description');
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('ticket_responses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('ticket_id')->nullable()->constrained('customer_supports')->onDelete('cascade');
             $table->text('response');
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('recruitments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('job_title');
             $table->text('job_description');
             $table->enum('employment_type', ['full_time', 'part_time', 'contract', 'internship']);
@@ -26,6 +27,7 @@ return new class extends Migration
 
         Schema::create('applications', function (Blueprint $table) { 
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('recruitment_id')->nullable()->constrained('recruitments')->onDelete('cascade');
             $table->foreignId('candidate_id')->nullable()->constrained('candidates')->onDelete('cascade');
             $table->enum('status', ['applied', 'interviewing', 'offered', 'hired', 'rejected'])->default('applied');

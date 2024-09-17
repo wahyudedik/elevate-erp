@@ -26,6 +26,12 @@ class Company extends Model
         'qna',
     ];
 
+
+    protected $casts = [
+        'qna' => 'array',
+        'logo' => 'array',
+    ];
+
     public function members()
     {
         return $this->belongsToMany(User::class);

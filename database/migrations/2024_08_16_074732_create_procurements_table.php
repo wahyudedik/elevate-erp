@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('procurements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');
             $table->date('procurement_date');
             $table->decimal('total_cost', 15, 2);
@@ -23,6 +24,7 @@ return new class extends Migration
 
         Schema::create('procurement_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('procurement_id')->nullable()->constrained('procurements')->onDelete('cascade');
             $table->string('item_name');
             $table->integer('quantity');

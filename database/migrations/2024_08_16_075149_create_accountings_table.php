@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('account_name');
             $table->string('account_number')->unique();
             $table->enum('account_type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->date('entry_date');
             $table->text('description')->nullable(); 
             $table->enum('entry_type', ['debit', 'credit']);
