@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasTenants
 {
-    use HasFactory, Notifiable, \Illuminate\Auth\MustVerifyEmail;
+    use HasFactory, Notifiable;
 
     public function canAccessPanel(Panel $panel): bool
     {
