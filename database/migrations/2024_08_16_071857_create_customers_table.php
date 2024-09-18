@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('name');
             $table->string('email')->unique();
@@ -26,6 +27,7 @@ return new class extends Migration
 
         Schema::create('customer_interactions', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->date('interaction_date');

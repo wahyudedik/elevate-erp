@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('procurements', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');
             $table->date('procurement_date');
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::create('procurement_items', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('procurement_id')->nullable()->constrained('procurements')->onDelete('cascade');
             $table->string('item_name');

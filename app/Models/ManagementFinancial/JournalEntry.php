@@ -3,6 +3,7 @@
 namespace App\Models\ManagementFinancial;
 
 use App\Models\Company;
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,6 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class JournalEntry extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CompanyScope);
+    }
 
     protected $table = 'journal_entries';
 

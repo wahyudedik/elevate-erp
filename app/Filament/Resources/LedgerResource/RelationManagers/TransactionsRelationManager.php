@@ -9,10 +9,18 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'transactions';
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'transaction';
+
 
     public function form(Form $form): Form
     {

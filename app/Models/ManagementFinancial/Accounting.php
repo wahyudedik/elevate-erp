@@ -2,7 +2,9 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\User;
 use App\Models\Company;
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,8 +14,14 @@ class Accounting extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new CompanyScope);
+    }
+
     protected $table = 'accounts';
     protected $fillable = [
+        'user_id',
         'company_id',
         'account_name',  
         'account_number', 
@@ -41,5 +49,10 @@ class Accounting extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
+
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class, 'user_id');
+    // }
     
 }

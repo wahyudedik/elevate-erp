@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Filament\Pages\Accounts;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementFinancial\Transaction;
 use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
@@ -54,6 +56,16 @@ class Company extends Model implements HasCurrentTenantLabel
     public function journalEntry()
     {
         return $this->hasMany(JournalEntry::class, 'company_id');
+    }
+
+    public function ledger()
+    {
+        return $this->hasMany(Ledger::class, 'company_id');
+    }
+
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class, 'company_id');
     }
 
     public function getCurrentTenantLabel(): string

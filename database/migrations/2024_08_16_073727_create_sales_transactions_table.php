@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('sales_transactions', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->date('transaction_date');
@@ -25,6 +26,7 @@ return new class extends Migration
 
         Schema::create('sales_items', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('sales_transaction_id')->nullable()->constrained('sales_transactions')->onDelete('cascade');
             $table->string('product_name');

@@ -38,6 +38,7 @@ return new class extends Migration
 
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->string('name');
             $table->string('address')->nullable();
@@ -50,6 +51,7 @@ return new class extends Migration
 
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
             $table->string('name');
@@ -60,6 +62,7 @@ return new class extends Migration
 
         Schema::create('designations', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
             $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');

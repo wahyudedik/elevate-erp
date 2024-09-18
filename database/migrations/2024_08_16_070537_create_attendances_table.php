@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('name');
             $table->time('start_time');
@@ -23,6 +24,7 @@ return new class extends Migration
 
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->date('date');
@@ -33,6 +35,7 @@ return new class extends Migration
 
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->foreignId('schedule_id')->nullable()->constrained('schedules')->onDelete('cascade');

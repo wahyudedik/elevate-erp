@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('supplier_name');
             $table->string('supplier_code')->unique();  // Kode unik pemasok
@@ -36,6 +37,7 @@ return new class extends Migration
         // Tabel untuk riwayat transaksi dengan pemasok
         Schema::create('supplier_transactions', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');
             $table->string('transaction_code')->unique();  // Kode transaksi

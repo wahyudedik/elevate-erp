@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventory_trackings', function (Blueprint $table) {
             $table->id();
+            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('inventory_id')->nullable()->constrained('inventories')->onDelete('cascade');
             $table->integer('quantity_before');

@@ -30,12 +30,11 @@ class LedgerResource extends Resource
 {
     protected static ?string $model = Ledger::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Ledgers';
+    protected static bool $isScopedToTenant = true;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'ledger';
 
     protected static ?string $navigationGroup = 'Management Financial';
 

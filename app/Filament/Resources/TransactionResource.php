@@ -27,12 +27,11 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Transactions';
+    protected static bool $isScopedToTenant = true;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'transaction';
 
     protected static ?string $navigationGroup = 'Management Financial';
 
@@ -80,6 +79,11 @@ class TransactionResource extends Resource
                             ->label('Ledger'),
                         Forms\Components\TextInput::make('transaction_number')
                             ->required()
+                            ->readOnly()
+                            ->maxLength(255)
+                            ->default(function () {
+                                return 'TRX-' . strtoupper(uniqid());
+                            })
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\Select::make('status')

@@ -57,11 +57,14 @@ class AdminPanelProvider extends PanelProvider
                 'Account',
                 'Management Financial',
                 'Management SDM',
-                'Management Sales And Purchasing',
-                'Management Project',
-                'Management Stock',
                 'Management CRM',
+                'Management Project',
+                'Management Sales And Purchasing',
+                'Management Stock',
+                'Management Supplier',
                 'Settings',
+                'Reports',
+                'User',
             ])
 
             ->databaseNotifications()

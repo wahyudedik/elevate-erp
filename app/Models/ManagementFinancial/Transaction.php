@@ -2,18 +2,28 @@
 
 namespace App\Models\ManagementFinancial;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Company;
+use Illuminate\Support\Facades\DB;
+use App\Models\Scopes\CompanyScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transaction extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new CompanyScope);
+    }
+
     protected $table = 'transactions';
 
     protected $fillable = [
+        'company_id',
         'ledger_id',
         'transaction_number',
         'status',
@@ -24,6 +34,11 @@ class Transaction extends Model
     public function ledger()
     {
         return $this->belongsTo(Ledger::class, 'ledger_id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
 
