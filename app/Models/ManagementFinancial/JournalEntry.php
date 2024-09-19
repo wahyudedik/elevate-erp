@@ -18,11 +18,12 @@ class JournalEntry extends Model
         static::addGlobalScope(new CompanyScope);
     }
 
+
     protected $table = 'journal_entries';
 
     protected $fillable = [
         'company_id',
-        'entry_date', 
+        'entry_date',
         'description',
         'entry_type',
         'amount',

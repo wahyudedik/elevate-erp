@@ -2,19 +2,24 @@
 
 namespace App\Filament\Resources\AccountingResource\RelationManagers;
 
-use App\Models\ManagementFinancial\Accounting;
+use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Notifications\Notification;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
+use PhpParser\Node\Stmt\Return_;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\ManagementFinancial\Accounting;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class JournalEntriesRelationManager extends RelationManager
 {
-    protected static string $relationship = 'journalEntries'; 
+    protected static string $relationship = 'journalEntries';
 
     public function form(Form $form): Form
     {
@@ -22,6 +27,8 @@ class JournalEntriesRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Journal Entry')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
                             ->label('Entry Date')
@@ -117,7 +124,7 @@ class JournalEntriesRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -140,5 +147,16 @@ class JournalEntriesRelationManager extends RelationManager
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function beforeCreate(array $data): array
+    {
+        if (!isset($data['company_id']) && Auth::check()) {
+            $data['company_id'] = DB::table('company_user')
+                ->where('user_id', Auth::user()->id)
+                ->value('company_id');
+        }
+        dd($data);
+        return $data;
     }
 }

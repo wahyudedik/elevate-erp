@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 
-use Filament\Pages\Tenancy\EditTenantProfile;
 use Filament\Panel;
 use Filament\Widgets;
 use App\Models\Company;
@@ -12,8 +11,10 @@ use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\NavigationItem;
+use App\Http\Middleware\ApplyTenantScopes;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Pages\Tenancy\RegisterTeam;
+use Filament\Pages\Tenancy\EditTenantProfile;
 use App\Filament\Pages\Tenancy\EditTeamProfile;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -96,10 +97,10 @@ class AdminPanelProvider extends PanelProvider
             ->tenantMenuItems([
                 'profile' => MenuItem::make()
                     ->label('Edit team profile')
-                    ->visible(fn (): bool => Auth::user()->usertype === 'member'),
+                    ->visible(fn(): bool => Auth::user()->usertype === 'member'),
                 'register' => MenuItem::make()
                     ->label('Register new team')
-                    ->visible(fn (): bool => Auth::user()->usertype === 'member'),
+                    ->visible(fn(): bool => Auth::user()->usertype === 'member'),
                 // MenuItem::make()
                 //     ->label('Settings')
                 //     ->url(fn (): string => Settings::getUrl())
@@ -113,6 +114,9 @@ class AdminPanelProvider extends PanelProvider
                 //     ->url(fn (): string => Settings::getUrl())
                 //     ->icon('heroicon-m-cog-8-tooth'),
                 // ...
-            ]);
+            ])
+            ->tenantMiddleware([
+                ApplyTenantScopes::class,
+            ], isPersistent: true);
     }
 }

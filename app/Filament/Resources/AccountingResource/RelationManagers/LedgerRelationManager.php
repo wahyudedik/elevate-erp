@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\AccountingResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope; 
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class LedgerRelationManager extends RelationManager
 {
@@ -20,6 +21,8 @@ class LedgerRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Ledger')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\DatePicker::make('transaction_date')
                             ->required()
                             ->format('Y-m-d')
