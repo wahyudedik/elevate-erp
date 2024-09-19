@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -28,6 +29,8 @@ class IncomeStatementRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Income Statement Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\TextInput::make('total_revenue')
                             ->required()
                             ->numeric()

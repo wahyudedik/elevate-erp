@@ -9,7 +9,7 @@ use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
-    
+
 
     protected function getStats(): array
     {
@@ -26,20 +26,37 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Total Amount', Transaction::sum('amount'))
+            Stat::make('Total Amount', function () {
+                return $this->formatNumber(Transaction::sum('amount'));
+            })
                 ->icon('heroicon-o-banknotes')
                 ->description('Total transaction amount')
                 ->descriptionIcon('heroicon-o-chart-bar', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-                // ->formatStateUsing(fn (string $state): string => number_format($state, 2)),
-            Stat::make('Average Transaction Amount', Transaction::avg('amount'))
+            Stat::make('Average Transaction Amount', function () {
+                return $this->formatNumber(Transaction::avg('amount'));
+            })
                 ->icon('heroicon-o-calculator')
                 ->description('Average amount per transaction')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('warning'),
-                // ->formatStateUsing(fn (string $state): string => '$' . number_format((float)$state, 2)),
+
         ];
+    }
+
+    protected function formatNumber($number)
+    {
+        $suffixes = ['', 'K', 'M', 'B', 'T'];
+        $suffixIndex = 0;
+
+        while ($number >= 1000 && $suffixIndex < count($suffixes) - 1) {
+            $number /= 1000;
+            $suffixIndex++;
+        }
+
+        $formattedNumber = number_format($number, $suffixIndex > 0 ? 1 : 0, '.', ',');
+        return $formattedNumber . $suffixes[$suffixIndex];
     }
 }

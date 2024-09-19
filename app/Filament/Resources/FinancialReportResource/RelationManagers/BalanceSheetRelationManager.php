@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -29,6 +30,8 @@ class BalanceSheetRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Balance Sheet Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\TextInput::make('total_assets')
                             ->required()
                             ->numeric()
@@ -143,7 +146,7 @@ class BalanceSheetRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus'),
             ])
             ->actions([
                 ActionGroup::make([

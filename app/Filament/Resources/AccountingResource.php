@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use OpenSpout\Writer\CSV\Writer;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,14 @@ use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRel
 class AccountingResource extends Resource
 {
     protected static ?string $model = Accounting::class;
+
+    protected static ?string $navigationBadgeTooltip = 'Total Accounts';
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
 
     protected static ?string $tenantRelationshipName = 'accounting';
 
@@ -255,8 +264,11 @@ class AccountingResource extends Resource
                                 $toAccount->current_balance += $data['amount'];
                                 $toAccount->save();
 
+                                $tenant = Filament::getTenant()->id;
+
                                 // Create ledger record for the 'from' account
                                 $fromLedger = Ledger::create([
+                                    'company_id' => $tenant,
                                     'account_id' => $record->id,
                                     'transaction_date' => now(),
                                     'transaction_type' => 'credit',
@@ -266,6 +278,7 @@ class AccountingResource extends Resource
 
                                 // Create ledger record for the 'to' account
                                 $toLedger = Ledger::create([
+                                    'company_id' => $tenant,
                                     'account_id' => $toAccount->id,
                                     'transaction_date' => now(),
                                     'transaction_type' => 'debit',
@@ -275,6 +288,7 @@ class AccountingResource extends Resource
 
                                 // Create transaction record
                                 Transaction::create([
+                                    'company_id' => $tenant,
                                     'ledger_id' => $fromLedger->id,
                                     'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
                                     'status' => 'completed',
@@ -283,6 +297,7 @@ class AccountingResource extends Resource
                                 ]);
 
                                 Transaction::create([
+                                    'company_id' => $tenant,
                                     'ledger_id' => $toLedger->id,
                                     'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
                                     'status' => 'completed',
@@ -293,8 +308,9 @@ class AccountingResource extends Resource
 
                             Notification::make()
                                 ->title('Transfer successful')
+                                ->body(('Your transfer has been completed successfully.' . ' ' . now()->toDateTimeString()))
                                 ->success()
-                                ->send();
+                                ->sendToDatabase(Auth::user());
                         }),
                 ])
             ])
@@ -440,6 +456,6 @@ class AccountingResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]); 
+            ]);
     }
 }

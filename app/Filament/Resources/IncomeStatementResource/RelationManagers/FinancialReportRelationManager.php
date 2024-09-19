@@ -82,12 +82,14 @@ class FinancialReportRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_start')
+                    ->icon('heroicon-o-calendar')
                     ->date()
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_end')
                     ->date()
                     ->toggleable()
+                    ->icon('heroicon-o-calendar')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')
                     ->searchable()
@@ -111,7 +113,7 @@ class FinancialReportRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

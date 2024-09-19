@@ -56,7 +56,7 @@ return new class extends Migration
             $table->decimal('operating_cash_flow', 15, 2);
             $table->decimal('investing_cash_flow', 15, 2);
             $table->decimal('financing_cash_flow', 15, 2);
-            $table->decimal('net_cash_flow', 15, 2);
+            $table->decimal('net_cash_flow', 15, 2); 
             $table->softDeletes();
             $table->timestamps();
         });

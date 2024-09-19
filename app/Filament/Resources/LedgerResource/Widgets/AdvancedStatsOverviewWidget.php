@@ -14,7 +14,7 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     {
         return [
             Stat::make('Total Transactions', function () {
-                return Ledger::count();
+                return $this->formatNumber(Ledger::count());
             })->icon('heroicon-o-document-text')
                 ->description('Total number of ledger entries')
                 ->descriptionIcon('heroicon-o-information-circle', 'before')
@@ -22,7 +22,7 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->iconColor('primary'),
 
             Stat::make('Total Debit', function () {
-                return Ledger::where('transaction_type', 'debit')->sum('amount');
+                return $this->formatNumber(Ledger::where('transaction_type', 'debit')->sum('amount'));
             })->icon('heroicon-o-arrow-trending-down')
                 ->description('Total debit amount')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
@@ -30,7 +30,7 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->iconColor('success'),
 
             Stat::make('Total Credit', function () {
-                return Ledger::where('transaction_type', 'credit')->sum('amount');
+                return $this->formatNumber(Ledger::where('transaction_type', 'credit')->sum('amount'));
             })->icon('heroicon-o-arrow-trending-up')
                 ->description('Total credit amount')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
@@ -43,7 +43,21 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->description('Most recent transaction')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('primary')
+                ->iconColor('primary'),
         ];
+    }
+
+    protected function formatNumber($number)
+    {
+        $suffixes = ['', 'K', 'M', 'B', 'T'];
+        $suffixIndex = 0;
+
+        while ($number >= 1000 && $suffixIndex < count($suffixes) - 1) {
+            $number /= 1000;
+            $suffixIndex++;
+        }
+
+        $formattedNumber = number_format($number, $suffixIndex > 0 ? 1 : 0, '.', ',');
+        return $formattedNumber . $suffixes[$suffixIndex];
     }
 }

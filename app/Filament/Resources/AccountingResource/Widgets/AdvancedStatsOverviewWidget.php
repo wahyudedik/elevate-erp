@@ -17,7 +17,7 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 // ->progress(Accounting::count())
                 // ->progressBarColor('primary')
                 ->chartColor('primary')
-                ->iconPosition('start')
+                ->iconPosition('end')
                 ->description('Total number of accounts')
                 ->descriptionIcon('heroicon-o-chart-bar', 'before')
                 ->descriptionColor('primary')

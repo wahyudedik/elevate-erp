@@ -75,9 +75,4 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
             'password' => 'hashed',
         ];
     }
-
-    // public function accounting()
-    // {
-    //     return $this->hasMany(Accounting::class, 'user_id');
-    // }
 }

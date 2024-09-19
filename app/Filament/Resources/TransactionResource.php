@@ -27,6 +27,14 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
 
+    protected static ?string $navigationBadgeTooltip = 'Total Transactions';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+
     protected static bool $isScopedToTenant = true;
 
     protected static ?string $tenantOwnershipRelationshipName = 'company';

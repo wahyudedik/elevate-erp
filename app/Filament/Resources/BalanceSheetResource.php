@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
@@ -36,6 +37,12 @@ class BalanceSheetResource extends Resource
         return static::getModel()::count();
     }
 
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'balanceSheet';
+
     protected static ?string $navigationGroup = 'Management Financial';
 
     protected static ?string $navigationParentItem = 'Financial Reporting';
@@ -54,6 +61,8 @@ class BalanceSheetResource extends Resource
                             ->preload()
                             ->nullable()
                             ->createOptionForm([
+                                Forms\Components\Hidden::make('company_id')
+                                    ->default(Filament::getTenant()->id),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
                                     ->maxLength(255),

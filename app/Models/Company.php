@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Filament\Pages\Accounts;
 use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementFinancial\BalanceSheet;
+use App\Models\ManagementFinancial\CashFlow;
+use App\Models\ManagementFinancial\FinancialReport;
+use App\Models\ManagementFinancial\IncomeStatement;
 use App\Models\ManagementFinancial\JournalEntry;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementFinancial\Transaction;
@@ -66,6 +70,26 @@ class Company extends Model implements HasCurrentTenantLabel
     public function transaction()
     {
         return $this->hasMany(Transaction::class, 'company_id');
+    }
+
+    public function balanceSheet()
+    {
+        return $this->hasMany(BalanceSheet::class, 'company_id');
+    }
+
+    public function cashFlow()
+    {
+        return $this->hasMany(CashFlow::class, 'company_id');
+    }
+
+    public function financialReport()
+    {
+        return $this->hasMany(FinancialReport::class, 'company_id');
+    }
+
+    public function incomeStatement()
+    {
+        return $this->hasMany(IncomeStatement::class, 'company_id');
     }
 
     public function getCurrentTenantLabel(): string

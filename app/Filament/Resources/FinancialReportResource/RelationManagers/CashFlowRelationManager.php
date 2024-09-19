@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Jobs\ProcessCashFlow;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -29,6 +30,8 @@ class CashFlowRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Cash Flow Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\TextInput::make('operating_cash_flow')
                             ->required()
                             ->numeric()
@@ -161,11 +164,11 @@ class CashFlowRelationManager extends RelationManager
                     Tables\Actions\Action::make('calculateTotals')
                         ->label('Calculate Totals')
                         ->icon('heroicon-o-calculator')
-                        ->action(function (CashFlow $record) {
-                            $record->net_cash_flow = $record->operating_cash_flow + $record->investing_cash_flow + $record->financing_cash_flow;
-                            $record->save();
-
-                            ProcessCashFlow::dispatch($record);
+                        ->action(function (Collection $records) {
+                            $records->each(function (CashFlow $record) {
+                                $record->net_cash_flow = $record->operating_cash_flow + $record->investing_cash_flow + $record->financing_cash_flow;
+                                $record->save();
+                            });
 
                             Notification::make()
                                 ->title('Total Equity Calculated')

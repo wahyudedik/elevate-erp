@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Jobs\ProcessCashFlow;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
@@ -37,6 +38,12 @@ class CashFlowResource extends Resource
         return static::getModel()::count();
     }
 
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'cashFlow';
+
     protected static ?string $navigationGroup = 'Management Financial';
 
     protected static ?string $navigationParentItem = 'Financial Reporting';
@@ -55,6 +62,8 @@ class CashFlowResource extends Resource
                             ->preload()
                             ->createOptionForm([
                                 // Add fields for creating a new financial report if needed
+                                Forms\Components\Hidden::make('company_id')
+                                    ->default(Filament::getTenant()->id),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
                                     ->maxLength(255),
@@ -206,11 +215,11 @@ class CashFlowResource extends Resource
                     Tables\Actions\Action::make('calculateTotals')
                         ->label('Calculate Totals')
                         ->icon('heroicon-o-calculator')
-                        ->action(function (CashFlow $record) {
-                            $record->net_cash_flow = $record->operating_cash_flow + $record->investing_cash_flow + $record->financing_cash_flow;
-                            $record->save();
-
-                            ProcessCashFlow::dispatch($record);
+                        ->action(function (Collection $records) {
+                            $records->each(function (CashFlow $record) {
+                                $record->net_cash_flow = $record->operating_cash_flow + $record->investing_cash_flow + $record->financing_cash_flow;
+                                $record->save();
+                            });
 
                             Notification::make()
                                 ->title('Total Equity Calculated')

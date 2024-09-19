@@ -96,10 +96,10 @@ class AdminPanelProvider extends PanelProvider
             // ->tenantDomain('{tenant:slug}.localhost')
             ->tenantMenuItems([
                 'profile' => MenuItem::make()
-                    ->label('Edit team profile')
+                    ->label('Edit Company profile')
                     ->visible(fn(): bool => Auth::user()->usertype === 'member'),
                 'register' => MenuItem::make()
-                    ->label('Register new team')
+                    ->label('Register new Company')
                     ->visible(fn(): bool => Auth::user()->usertype === 'member'),
                 // MenuItem::make()
                 //     ->label('Settings')

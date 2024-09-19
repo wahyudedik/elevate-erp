@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementFinancial\JournalEntry;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Actions\ActionGroup;
 
 class JournalEntriesRelationManager extends RelationManager
 {
@@ -46,6 +49,7 @@ class JournalEntriesRelationManager extends RelationManager
                             ->label('Entry Type'),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
+                            ->default(0)
                             ->required()
                             ->label('Amount')
                             ->prefix('IDR')
@@ -80,6 +84,7 @@ class JournalEntriesRelationManager extends RelationManager
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('entry_date')
                     ->date()
+                    ->icon('heroicon-o-calendar')
                     ->sortable()
                     ->searchable()
                     ->toggleable(),
@@ -121,22 +126,128 @@ class JournalEntriesRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('entry_type')
+                    ->options([
+                        'debit' => 'Debit',
+                        'credit' => 'Credit',
+                    ])
+                    ->label('Entry Type')
+                    ->indicator('Entry Type'),
+
+                Tables\Filters\Filter::make('amount')
+                    ->form([
+                        Forms\Components\TextInput::make('amount_from')
+                            ->label('From')
+                            ->numeric()
+                            ->prefix('IDR'),
+                        Forms\Components\TextInput::make('amount_to')
+                            ->label('To')
+                            ->numeric()
+                            ->prefix('IDR'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['amount_from'],
+                                fn(Builder $query, $amount): Builder => $query->where('amount', '>=', $amount),
+                            )
+                            ->when(
+                                $data['amount_to'],
+                                fn(Builder $query, $amount): Builder => $query->where('amount', '<=', $amount),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['amount_from'] ?? null) {
+                            $indicators['amount_from'] = 'Amount from: IDR ' . number_format($data['amount_from'], 2);
+                        }
+                        if ($data['amount_to'] ?? null) {
+                            $indicators['amount_to'] = 'Amount to: IDR ' . number_format($data['amount_to'], 2);
+                        }
+                        return $indicators;
+                    })->columns(2),
+
+                Tables\Filters\SelectFilter::make('account_id')
+                    ->relationship('account', 'account_name')
+                    ->label('Account')
+                    ->indicator('Account'),
+
+                Tables\Filters\TernaryFilter::make('description')
+                    ->label('Has Description')
+                    ->nullable()
+                    ->placeholder('All entries')
+                    ->trueLabel('With description')
+                    ->falseLabel('Without description')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereNotNull('description'),
+                        false: fn(Builder $query) => $query->whereNull('description'),
+                    )
+                    ->indicator('Description Status'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('print')
+                        ->label('Print')
+                        ->icon('heroicon-o-printer')
+                        ->color('success')
+                        ->url(fn(JournalEntry $record): string => route('journal-entries.print', $record))
+                        ->openUrlInNewTab(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('updateEntryType')
+                        ->label('Update Entry Type')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('primary')
+                        ->form([
+                            Forms\Components\Select::make('entry_type')
+                                ->label('Entry Type')
+                                ->options([
+                                    'debit' => 'Debit',
+                                    'credit' => 'Credit',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'entry_type' => $data['entry_type'],
+                                ]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('updateAmount')
+                        ->label('Update Amount')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('success')
+                        ->form([
+                            Forms\Components\TextInput::make('amount')
+                                ->label('Amount')
+                                ->numeric()
+                                ->prefix('IDR')
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'amount' => (float) $data['amount'],
+                                ]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

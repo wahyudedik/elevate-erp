@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Models\User;
 use App\Models\Company;
+use App\Models\CompanyUser;
 use Illuminate\Http\Request;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,10 +20,10 @@ class ApplyTenantScopes
      */
     public function handle(Request $request, Closure $next): Response
     {
-        User::addGlobalScope(
+        CompanyUser::addGlobalScope(
             fn (Builder $query) => $query->whereBelongsTo(Filament::getTenant()),
         );
-        // dd(Filament::getTenant());
+        // dd($request);
         return $next($request);
     }
 }

@@ -7,7 +7,11 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
+use Illuminate\Support\Carbon;
+use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\ManagementFinancial\Ledger;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -73,6 +77,7 @@ class LedgerRelationManager extends RelationManager
                     ->label('Date')
                     ->date('d/m/Y')
                     ->sortable()
+                    ->icon('heroicon-o-calendar')
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('transaction_type')
@@ -118,23 +123,142 @@ class LedgerRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('account')
+                    ->relationship('account', 'account_name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Account'),
+                Tables\Filters\Filter::make('transaction_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('From Date'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Until Date'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('transaction_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('transaction_date', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from'] ?? null) {
+                            $indicators['from'] = 'From ' . Carbon::parse($data['from'])->toFormattedDateString();
+                        }
+                        if ($data['until'] ?? null) {
+                            $indicators['until'] = 'Until ' . Carbon::parse($data['until'])->toFormattedDateString();
+                        }
+                        return $indicators;
+                    })->columns(2),
+                Tables\Filters\SelectFilter::make('transaction_type')
+                    ->options([
+                        'debit' => 'Debit',
+                        'credit' => 'Credit',
+                    ])
+                    ->label('Transaction Type'),
+                Tables\Filters\Filter::make('amount')
+                    ->form([
+                        Forms\Components\TextInput::make('min')
+                            ->label('Minimum Amount')
+                            ->numeric(),
+                        Forms\Components\TextInput::make('max')
+                            ->label('Maximum Amount')
+                            ->numeric(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['min'],
+                                fn(Builder $query, $min): Builder => $query->where('amount', '>=', $min),
+                            )
+                            ->when(
+                                $data['max'],
+                                fn(Builder $query, $max): Builder => $query->where('amount', '<=', $max),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['min'] ?? null) {
+                            $indicators['min'] = 'Min: $' . number_format($data['min'], 2);
+                        }
+                        if ($data['max'] ?? null) {
+                            $indicators['max'] = 'Max: $' . number_format($data['max'], 2);
+                        }
+                        return $indicators;
+                    })->columns(2),
+                Tables\Filters\TernaryFilter::make('transaction_description')
+                    ->label('Has Description')
+                    ->nullable(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('print')
+                        ->label('Print')
+                        ->icon('heroicon-o-printer')
+                        ->color('success')
+                        ->url(fn(Ledger $record): string => route('ledger.print', $record))
+                        ->openUrlInNewTab(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('updateTransactionType')
+                        ->label('Update Transaction Type')
+                        ->icon('heroicon-o-arrow-path')
+                        ->requiresConfirmation()
+                        ->form([
+                            Forms\Components\Select::make('transaction_type')
+                                ->label('Transaction Type')
+                                ->options([
+                                    'debit' => 'Debit',
+                                    'credit' => 'Credit',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'transaction_type' => $data['transaction_type'],
+                                ]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('updateTransactionDate')
+                        ->label('Update Transaction Date')
+                        ->icon('heroicon-o-calendar')
+                        ->requiresConfirmation()
+                        ->form([
+                            Forms\Components\DatePicker::make('transaction_date')
+                                ->label('Transaction Date')
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'transaction_date' => $data['transaction_date'],
+                                ]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                ])->label('Bulk Actions'),
             ]);
     }
 
