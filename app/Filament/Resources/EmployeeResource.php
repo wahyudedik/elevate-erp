@@ -11,11 +11,13 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Employee;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Exports\EmployeeExporter;
 use App\Filament\Imports\EmployeeImporter;
+use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Exports\Models\Export;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementSDM\EmployeePosition;
@@ -23,9 +25,10 @@ use Filament\Notifications\DatabaseNotification;
 use App\Filament\Resources\EmployeeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
-use App\Filament\Resources\EmployeeResource\RelationManagers\EmployeePositionRelationManager;
 use App\Filament\Resources\EmployeeResource\RelationManagers\UserRelationManager;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\EmployeeResource\RelationManagers\PayrollRelationManager;
+use App\Filament\Resources\EmployeeResource\RelationManagers\AttendanceRelationManager;
+use App\Filament\Resources\EmployeeResource\RelationManagers\EmployeePositionRelationManager;
 
 class EmployeeResource extends Resource
 {
@@ -37,6 +40,12 @@ class EmployeeResource extends Resource
     {
         return static::getModel()::count();
     }
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'employee';
 
     protected static ?string $navigationGroup = 'Management SDM';
 
@@ -461,7 +470,7 @@ class EmployeeResource extends Resource
                             Forms\Components\TextInput::make('salary_increment')
                                 ->label('Salary Increment')
                                 ->numeric()
-                                ->prefix('$')
+                                ->prefix('IDR')
                                 ->required(),
                         ])
                         ->action(function (Employee $record, array $data) {
@@ -496,43 +505,45 @@ class EmployeeResource extends Resource
                 ]),
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(EmployeeExporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Employees exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(EmployeeImporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Employees imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(EmployeeExporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Employees exported successfully' . ' ' . date('Y-m-d H:i:s'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(EmployeeImporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Employees imported successfully' . ' ' . date('Y-m-d H:i:s'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()
+                        ->exporter(EmployeeExporter::class)
+                        ->color('success')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Employees exported successfully')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(EmployeeExporter::class)
-                    ->color('success')
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Employees exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
@@ -545,7 +556,9 @@ class EmployeeResource extends Resource
     {
         return [
             EmployeePositionRelationManager::class,
-            UserRelationManager::class,
+            // UserRelationManager::class,
+            AttendanceRelationManager::class,
+            PayrollRelationManager::class,
         ];
     }
 

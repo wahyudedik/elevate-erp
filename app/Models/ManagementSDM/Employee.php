@@ -4,6 +4,8 @@ namespace App\Models\ManagementSDM;
 
 use App\Models\User;
 use App\Models\Company;
+use Filament\Facades\Filament;
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
@@ -19,10 +21,16 @@ class Employee extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new CompanyScope);
+    }
+
     protected $table = 'employees';
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
+        'company_id',
         'first_name',
         'last_name',
         'employee_code',
@@ -79,6 +87,7 @@ class Employee extends Model
 
         static::created(function ($employee) {
             EmployeePosition::create([
+                'company_id' => Filament::getTenant()->id,
                 'employee_id' => $employee->id,
                 'position' => $employee->position,
                 'start_date' => $employee->date_of_joining,
@@ -88,9 +97,7 @@ class Employee extends Model
             //     'name' => $employee->first_name . ' ' . $employee->last_name,
             //     'email' => $employee->email,
             //     'password' => bcrypt('123456789'),
-            //     'employee_id' => $employee->id,
             //     'usertype' => 'staff',
-            //     'status' => 'active',
             //     'email_verified_at' => now(),
             // ]);
         });
@@ -103,6 +110,7 @@ class Employee extends Model
                 ->update(['end_date' => now()]);
 
                 EmployeePosition::create([
+                    'company_id' => Filament::getTenant()->id,
                     'employee_id' => $employee->id,
                     'position' => $employee->position,
                     'start_date' => now(),

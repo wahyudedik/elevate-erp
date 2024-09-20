@@ -34,6 +34,12 @@ class EmployeePositionResource extends Resource
         return static::getModel()::count();
     }
 
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'employeePosition';
+
     protected static ?string $navigationGroup = 'Management SDM';
 
     protected static ?string $navigationParentItem = 'Employee Management';

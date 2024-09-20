@@ -2,12 +2,14 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Resources\EmployeePositionResource\Widgets\EmployeePositionChartWidget;
-use App\Filament\Resources\EmployeeResource\Widgets\EmployeeChartWidget;
-use App\Filament\Resources\EmployeeResource\Widgets\EmployeeWidget as WidgetsEmployeeWidget;
-use App\Filament\Widgets\EmployeeWidget;
 use Filament\Pages\Page;
 use App\Models\ManagementSDM\Employee;
+use App\Filament\Widgets\EmployeeWidget;
+use App\Filament\Resources\EmployeeResource\Widgets\EmployeeChartWidget;
+use App\Filament\Resources\EmployeeResource\Widgets\EmployeeStatsOverviewWidget;
+use App\Filament\Resources\EmployeePositionResource\Widgets\EmployeePositionChartWidget;
+use App\Filament\Resources\EmployeeResource\Widgets\EmployeeWidget as WidgetsEmployeeWidget;
+use App\Filament\Resources\EmployeePositionResource\Widgets\EmployeePositionStatsOverviewWidget;
 
 class EmployeeManagement extends Page
 {
@@ -22,16 +24,16 @@ class EmployeeManagement extends Page
     protected function getHeaderWidgets(): array
     {
         return [
+            EmployeeStatsOverviewWidget::class,
+            EmployeePositionStatsOverviewWidget::class,
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
             EmployeeChartWidget::class,
             EmployeePositionChartWidget::class
         ];
     }
-
-    // protected function getFooterWidgets(): array
-    // {
-    //     return [
-    //         \App\Filament\Widgets\LatestEmployees::class,
-    //     ];
-    // }
-
 }

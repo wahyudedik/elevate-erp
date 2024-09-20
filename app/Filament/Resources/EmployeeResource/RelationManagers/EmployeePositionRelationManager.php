@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,13 +21,8 @@ class EmployeePositionRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')
-                    ->relationship('employee', 'first_name')
-                    ->searchable()
-                    ->preload()
-                    ->label('Employee')
-                    ->disabled()
-                    ->dehydrated(false),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(state: Filament::getTenant()->id),
 
                 Forms\Components\Select::make('position')
                     ->options([
@@ -88,13 +84,17 @@ class EmployeePositionRelationManager extends RelationManager
                     ->sortable(),
                 Tables\Columns\TextColumn::make('position')
                     ->label('Position')
+                    ->icon('heroicon-o-briefcase')
+                    ->badge()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
+                    ->icon('heroicon-o-calendar')
                     ->label('Start Date')
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
+                    ->icon('heroicon-o-calendar')
                     ->label('End Date')
                     ->date('d M Y')
                     ->sortable(),
@@ -114,6 +114,7 @@ class EmployeePositionRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus')
                     ->before(function (CreateAction $action) {
                         $employee = $action->getRecord()?->employee;
                         $latestPosition = $employee?->employeePositions()->latest()->first();

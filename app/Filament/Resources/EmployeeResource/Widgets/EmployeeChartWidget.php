@@ -25,38 +25,22 @@ class EmployeeChartWidget extends ChartWidget
     protected function getData(): array
     {
         $activeFilter = $this->filter;
-
         $query = Employee::query();
 
         if ($activeFilter) {
             $query->where(function ($q) use ($activeFilter) {
-                switch ($activeFilter) {
-                    case 'today':
-                        $q->whereDate('created_at', today());
-                        break;
-                    case 'week':
-                        $q->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-                        break;
-                    case 'month':
-                        $q->whereMonth('created_at', now()->month);
-                        break;
-                    case 'year':
-                        $q->whereYear('created_at', now()->year);
-                        break;
-                }
+                $this->applyFilter($q, $activeFilter);
             });
         }
+
+        $statuses = ['active', 'inactive', 'terminated', 'resigned'];
+        $statusCounts = $this->getStatusCounts($query, $statuses);
 
         return [
             'datasets' => [
                 [
                     'label' => 'Employee Status',
-                    'data' => [
-                        $query->where('status', 'active')->count(),
-                        $query->where('status', 'inactive')->count(),
-                        $query->where('status', 'terminated')->count(),
-                        $query->where('status', 'resigned')->count(),
-                    ],
+                    'data' => $statusCounts,
                     'backgroundColor' => [
                         '#10B981', // green for active
                         '#F59E0B', // yellow for inactive
@@ -69,6 +53,30 @@ class EmployeeChartWidget extends ChartWidget
         ];
     }
 
+    protected function applyFilter($query, $filter): void
+    {
+        switch ($filter) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'week':
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month);
+                break;
+            case 'year':
+                $query->whereYear('created_at', now()->year);
+                break;
+        }
+    }
+
+    protected function getStatusCounts($query, array $statuses): array
+    {
+        return array_map(function ($status) use ($query) {
+            return $query->where('status', $status)->count();
+        }, $statuses);
+    }
 
     protected function getOptions(): array
     {

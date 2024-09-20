@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Tenancy;
 
+use App\Filament\Resources\EmployeeResource\RelationManagers\UserRelationManager;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
@@ -73,4 +74,12 @@ class EditTeamProfile extends EditTenantProfile
                     ])->columns(2),
             ]);
     }
+
+    public static function getRelations(): array
+        {
+            return [
+                
+            ];
+        }
+    
 }

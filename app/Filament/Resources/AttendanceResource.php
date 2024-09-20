@@ -47,7 +47,7 @@ class AttendanceResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
+                Forms\Components\Section::make('Attendance Details')
                     ->schema([
                         Forms\Components\Select::make('employee_id')
                             ->relationship('employee', 'first_name')

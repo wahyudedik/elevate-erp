@@ -3,16 +3,18 @@
 namespace App\Models;
 
 use App\Filament\Pages\Accounts;
-use App\Models\ManagementFinancial\Accounting;
-use App\Models\ManagementFinancial\BalanceSheet;
-use App\Models\ManagementFinancial\CashFlow;
-use App\Models\ManagementFinancial\FinancialReport;
-use App\Models\ManagementFinancial\IncomeStatement;
-use App\Models\ManagementFinancial\JournalEntry;
-use App\Models\ManagementFinancial\Ledger;
-use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementFinancial\CashFlow;
+use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementSDM\EmployeePosition;
+use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementFinancial\BalanceSheet;
+use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementFinancial\FinancialReport;
+use App\Models\ManagementFinancial\IncomeStatement;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -90,6 +92,17 @@ class Company extends Model implements HasCurrentTenantLabel
     public function incomeStatement()
     {
         return $this->hasMany(IncomeStatement::class, 'company_id');
+    }
+
+    public function employeePosition()
+    {
+        return $this->hasMany(EmployeePosition::class, 'company_id');
+    }
+
+    //relasi dengan tabel payroll
+    public function payroll()
+    {
+        return $this->hasMany(Payroll::class, 'company_id');
     }
 
     public function getCurrentTenantLabel(): string

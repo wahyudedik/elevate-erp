@@ -18,56 +18,28 @@ class EmployeePositionChartWidget extends ChartWidget
             'year' => 'This year',
         ];
     }
-    
+
     protected function getData(): array
     {
         $activeFilter = $this->filter;
-    
-        $query = Employee::query();
-    
-        if ($activeFilter) {
-            $query->where(function ($q) use ($activeFilter) {
-                switch ($activeFilter) {
-                    case 'today':
-                        $q->whereDate('created_at', today());
-                        break;
-                    case 'week':
-                        $q->whereBetween('created_at', [now()->subWeek(), now()]);
-                        break;
-                    case 'month':
-                        $q->whereBetween('created_at', [now()->subMonth(), now()]);
-                        break;
-                    case 'year':
-                        $q->whereYear('created_at', now()->year);
-                        break;
-                }
-            });
-        }
-    
+        $query = $this->getFilteredQuery($activeFilter);
+
         $positions = $query->select('position')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('position')
             ->get();
-    
+
         return [
             'datasets' => [
                 [
                     'label' => 'Employees',
                     'data' => $positions->pluck('count')->toArray(),
-                    'backgroundColor' => [
-                        '#FF6384',
-                        '#36A2EB',
-                        '#FFCE56',
-                        '#4BC0C0',
-                        '#9966FF',
-                        '#FF9F40',
-                    ],
+                    'backgroundColor' => $this->getChartColors(),
                 ],
             ],
             'labels' => $positions->pluck('position')->toArray(),
         ];
     }
-    
 
     protected function getOptions(): array
     {
@@ -103,5 +75,43 @@ class EmployeePositionChartWidget extends ChartWidget
     protected function getType(): string
     {
         return 'polarArea';
+    }
+
+    private function getFilteredQuery($activeFilter): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = Employee::query();
+
+        if ($activeFilter) {
+            $query->where(function ($q) use ($activeFilter) {
+                switch ($activeFilter) {
+                    case 'today':
+                        $q->whereDate('created_at', today());
+                        break;
+                    case 'week':
+                        $q->whereBetween('created_at', [now()->subWeek(), now()]);
+                        break;
+                    case 'month':
+                        $q->whereBetween('created_at', [now()->subMonth(), now()]);
+                        break;
+                    case 'year':
+                        $q->whereYear('created_at', now()->year);
+                        break;
+                }
+            });
+        }
+
+        return $query;
+    }
+
+    private function getChartColors(): array
+    {
+        return [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF',
+            '#FF9F40',
+        ];
     }
 }
