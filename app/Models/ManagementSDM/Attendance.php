@@ -2,6 +2,8 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\User;
+use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -24,10 +26,17 @@ class Attendance extends Model
     protected $fillable = [
         'company_id',
         'employee_id',
+        'schedule_id',
         'date',
+        'schedules_check_in',
+        'schedules_check_out',
+        'schedules_latitude',
+        'schedules_longitude',
         'check_in',
         'check_out',
-        'status',  // present, absent, leave, etc.
+        'latitude',
+        'longitude',
+        'status',
         'note',
     ];
 
@@ -41,6 +50,18 @@ class Attendance extends Model
     // Relasi dengan tabel employees 
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo(Schedule::class, 'schedule_id');
+    }
+
+    
 }

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Filament\Exports\UserExporter;
 use App\Filament\Imports\UserImporter;
 use Filament\Notifications\Notification;
@@ -48,8 +49,10 @@ class UserResource extends Resource
                         Forms\Components\DateTimePicker::make('email_verified_at'),
                         Forms\Components\TextInput::make('password')
                             ->password()
-                            ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                            ->dehydrated(fn($state) => filled($state))
+                            ->required(fn(string $context): bool => $context === 'create'),
                         Forms\Components\Select::make('usertype')
                             ->options([
                                 'staff' => 'Staff',

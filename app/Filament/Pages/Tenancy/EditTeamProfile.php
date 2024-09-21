@@ -35,7 +35,7 @@ class EditTeamProfile extends EditTenantProfile
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255)
-                            ->live()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
                         TextInput::make('slug')
                             ->required()
@@ -60,6 +60,18 @@ class EditTeamProfile extends EditTenantProfile
                             ->maxLength(65535),
                         Textarea::make('vision')
                             ->maxLength(65535),
+
+                        TextInput::make('latitude')
+                            ->numeric()
+                            ->step(0.000001)
+                            ->nullable(),
+                        TextInput::make('longitude')
+                            ->numeric()
+                            ->step(0.000001)
+                            ->nullable(),
+                        TextInput::make('radius')
+                            ->numeric()
+                            ->nullable(),
                         Repeater::make('qna')
                             ->label('Q&A')
                             ->schema([
@@ -76,10 +88,7 @@ class EditTeamProfile extends EditTenantProfile
     }
 
     public static function getRelations(): array
-        {
-            return [
-                
-            ];
-        }
-    
+    {
+        return [];
+    }
 }

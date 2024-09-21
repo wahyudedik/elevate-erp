@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Filament\Pages\Accounts;
+use App\Models\ManagementSDM\Shift;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementSDM\Employee;
+use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementFinancial\CashFlow;
@@ -17,6 +19,7 @@ use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ManagementSDM\Attendance;
 
 class Company extends Model implements HasCurrentTenantLabel
 {
@@ -37,12 +40,30 @@ class Company extends Model implements HasCurrentTenantLabel
         'mission',
         'vision',
         'qna',
+        'latitude',
+        'longitude',
+        'radius'
     ];
 
 
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class, 'company_id');
+    }
+
+    public function schedule()
+    {
+        return $this->hasMany(Schedule::class, 'company_id');
+    }
+
+    public function shift()
+    {
+        return $this->hasMany(Shift::class, 'company_id');
+    }
 
     public function members()
     {

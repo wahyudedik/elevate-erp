@@ -37,6 +37,12 @@ class AttendanceResource extends Resource
         return static::getModel()::count();
     }
 
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'attendance';
+
     protected static ?string $navigationGroup = 'Management SDM';
 
     protected static ?string $navigationParentItem = 'Attendance';
@@ -54,11 +60,34 @@ class AttendanceResource extends Resource
                             ->required()
                             ->searchable()
                             ->preload(),
+                        Forms\Components\Select::make('schedule_id')
+                            ->relationship('schedule', 'date')
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\DatePicker::make('date')
                             ->date()
                             ->required(),
-                        Forms\Components\TimePicker::make('check_in'),
-                        Forms\Components\TimePicker::make('check_out'),
+                        Forms\Components\TimePicker::make('schedules_check_in')
+                            ->nullable(),
+                        Forms\Components\TimePicker::make('schedules_check_out')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('schedules_latitude')
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TextInput::make('schedules_longitude')
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TimePicker::make('check_in')
+                            ->nullable(),
+                        Forms\Components\TimePicker::make('check_out')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('latitude')
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TextInput::make('longitude')
+                            ->numeric()
+                            ->required(),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'present' => 'Present',
@@ -70,6 +99,7 @@ class AttendanceResource extends Resource
                             ->default('present'),
                         Forms\Components\Textarea::make('note')
                             ->maxLength(255)
+                            ->nullable()
                             ->columnSpanFull(),
                     ])->columns(2),
 
@@ -106,14 +136,22 @@ class AttendanceResource extends Resource
                     ->date('Y-m-d')
                     ->toggleable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('schedules_check_in')
+                    ->time('H:i')
+                    ->toggleable()
+                    ->label('Scheduled Check In'),
+                Tables\Columns\TextColumn::make('schedules_check_out')
+                    ->time('H:i')
+                    ->toggleable()
+                    ->label('Scheduled Check Out'),
                 Tables\Columns\TextColumn::make('check_in')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Check In'),
+                    ->label('Actual Check In'),
                 Tables\Columns\TextColumn::make('check_out')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Check Out'),
+                    ->label('Actual Check Out'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->toggleable()
@@ -133,6 +171,11 @@ class AttendanceResource extends Resource
                         }
                         return $state;
                     }),
+                Tables\Columns\TextColumn::make('schedule.date')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->label('Schedule'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

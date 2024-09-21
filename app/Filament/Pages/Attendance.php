@@ -2,9 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Pages\Page;
 use App\Filament\Resources\AttendanceResource\Widgets\AttendanceChartWidget;
 use App\Filament\Resources\AttendanceResource\Widgets\AttendanceLineChartWidget;
-use Filament\Pages\Page;
+use App\Filament\Resources\AttendanceResource\Widgets\AttendanceStatsOverviewWidget;
 
 class Attendance extends Page
 {
@@ -17,15 +18,15 @@ class Attendance extends Page
     protected function getHeaderWidgets(): array
     {
         return [
+            AttendanceStatsOverviewWidget::class,
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
             AttendanceChartWidget::class,
             AttendanceLineChartWidget::class,
         ];
     }
-
-    // protected function getFooterWidgets(): array
-    // {
-    //     return [
-    //         \App\Filament\Widgets\LatestEmployees::class,
-    //     ];
-    // }
 }

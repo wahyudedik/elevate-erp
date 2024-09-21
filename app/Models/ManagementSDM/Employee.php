@@ -64,6 +64,11 @@ class Employee extends Model
         'contract' => 'string',
     ];
 
+    public function schedule()
+    {
+        return $this->hasMany(Schedule::class, 'employee_id');
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');
@@ -104,10 +109,10 @@ class Employee extends Model
 
         static::updated(function ($employee) {
             if ($employee->isDirty('position') || $employee->isDirty('department')) {
-                
+
                 EmployeePosition::where('employee_id', $employee->id)
-                ->whereNull('end_date')
-                ->update(['end_date' => now()]);
+                    ->whereNull('end_date')
+                    ->update(['end_date' => now()]);
 
                 EmployeePosition::create([
                     'company_id' => Filament::getTenant()->id,

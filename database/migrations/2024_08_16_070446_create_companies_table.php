@@ -25,6 +25,9 @@ return new class extends Migration
             $table->text('mission')->nullable();
             $table->text('vision')->nullable();
             $table->json('qna')->nullable();
+            $table->double('latitude')->nullable();
+            $table->double('longitude')->nullable();
+            $table->integer('radius')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

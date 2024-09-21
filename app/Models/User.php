@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Models\Contracts\FilamentUser;
 use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementSDM\Attendance;
+use App\Models\ManagementSDM\Schedule;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
