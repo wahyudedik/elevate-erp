@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Filament\Panel;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use App\Models\ManagementSDM\Schedule;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ManagementSDM\Attendance;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Models\Contracts\FilamentUser;
 use App\Models\ManagementFinancial\Accounting;
-use App\Models\ManagementSDM\Attendance;
-use App\Models\ManagementSDM\Schedule;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasTenants
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     public function canAccessPanel(Panel $panel): bool
     {

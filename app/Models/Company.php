@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Filament\Pages\Accounts;
+use Spatie\Permission\Models\Role;
 use App\Models\ManagementSDM\Shift;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ManagementSDM\Attendance;
+use Spatie\Permission\Models\Permission;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementFinancial\Accounting;
@@ -19,7 +22,6 @@ use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\ManagementSDM\Attendance;
 
 class Company extends Model implements HasCurrentTenantLabel
 {
@@ -130,5 +132,9 @@ class Company extends Model implements HasCurrentTenantLabel
     {
         return 'Active Company';
     }
-    
+
+    public function role()
+    {
+        return $this->hasMany(Role::class, 'company_id');
+    }
 }

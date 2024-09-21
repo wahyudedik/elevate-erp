@@ -117,6 +117,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
-            ], isPersistent: true);
+            ], isPersistent: true)
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+            ]);
     }
 }
