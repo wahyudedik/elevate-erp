@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Panel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
@@ -78,5 +79,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    //relasi employee
+    public function employee()
+    {
+        return $this->hasOne(Employee::class, 'user_id');
     }
 }

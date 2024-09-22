@@ -28,6 +28,7 @@ return new class extends Migration
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->foreignId('shift_id')->nullable()->constrained('shifts')->onDelete('cascade');
             $table->date('date');
+            $table->boolean('is_wfa')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

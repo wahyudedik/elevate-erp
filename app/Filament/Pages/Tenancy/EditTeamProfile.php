@@ -10,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Pages\Tenancy\EditTenantProfile;
+use Humaidem\FilamentMapPicker\Fields\OSMMap;
 
 class EditTeamProfile extends EditTenantProfile
 {
@@ -43,7 +44,7 @@ class EditTeamProfile extends EditTenantProfile
                             ->readOnly(),
                         Textarea::make('description')
                             ->maxLength(65535),
-                        TextInput::make('address')
+                        Textarea::make('address')
                             ->maxLength(255),
                         TextInput::make('phone')
                             ->tel()
@@ -60,7 +61,6 @@ class EditTeamProfile extends EditTenantProfile
                             ->maxLength(65535),
                         Textarea::make('vision')
                             ->maxLength(65535),
-
                         TextInput::make('latitude')
                             ->numeric()
                             ->step(0.000001)
@@ -72,6 +72,16 @@ class EditTeamProfile extends EditTenantProfile
                         TextInput::make('radius')
                             ->numeric()
                             ->nullable(),
+                        OSMMap::make('location')
+                            ->label('Location')
+                            ->showMarker()
+                            ->draggable()
+                            ->extraControl([
+                                'zoomDelta'           => 1,
+                                'zoomSnap'            => 0.25,
+                                'wheelPxPerZoomLevel' => 60
+                            ])
+                            ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
                         Repeater::make('qna')
                             ->label('Q&A')
                             ->schema([
@@ -82,13 +92,15 @@ class EditTeamProfile extends EditTenantProfile
                             ])
                             ->collapsible()
                             ->itemLabel(fn(array $state): ?string => $state['question'] ?? null)
-                            ->columnSpanFull()
+                            ->columnSpanFull(),
                     ])->columns(2),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            //
+        ];
     }
 }

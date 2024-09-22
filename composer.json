@@ -19,6 +19,7 @@
         "eduard9969/blade-polaris-icons": "^2.7",
         "eightynine/filament-advanced-widgets": "^3.0",
         "filament/filament": "^3.2",
+        "humaidem/filament-map-picker": "^0.1.5",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "mallardduck/blade-boxicons": "^2.4",

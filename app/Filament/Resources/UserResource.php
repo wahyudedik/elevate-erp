@@ -50,7 +50,7 @@ class UserResource extends Resource
                         // Using Select Component
                         Forms\Components\Select::make('roles')
                             ->relationship('roles', 'name')
-                            ->multiple()
+                            // ->multiple()
                             ->preload()
                             ->searchable(),
                         Forms\Components\TextInput::make('password')
@@ -104,6 +104,7 @@ class UserResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('usertype')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('roles.name'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

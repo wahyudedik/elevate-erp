@@ -153,6 +153,23 @@ class EmployeeResource extends Resource
                             ])
                             ->default('active')
                             ->required(),
+                        Forms\Components\Select::make('user_id')
+                            ->relationship('user', 'name')
+                            ->label('User')
+                            ->preload()
+                            // ->createOptionForm([
+                            //     Forms\Components\TextInput::make('name')
+                            //         ->required()
+                            //         ->maxLength(255),
+                            //     Forms\Components\TextInput::make('email')
+                            //         ->email()
+                            //         ->required()
+                            //         ->maxLength(255),
+                            //     Forms\Components\TextInput::make('password')
+                            //         ->password()
+                            //         ->required()
+                            //         ->maxLength(255),
+                            // ]),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Address Information')

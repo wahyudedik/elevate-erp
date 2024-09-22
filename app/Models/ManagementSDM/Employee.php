@@ -30,6 +30,7 @@ class Employee extends Model
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
+        'user_id',
         'company_id',
         'first_name',
         'last_name',
@@ -64,6 +65,12 @@ class Employee extends Model
         'contract' => 'string',
     ];
 
+    //relasi user
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function schedule()
     {
         return $this->hasMany(Schedule::class, 'employee_id');
@@ -97,14 +104,6 @@ class Employee extends Model
                 'position' => $employee->position,
                 'start_date' => $employee->date_of_joining,
             ]);
-
-            // User::create([
-            //     'name' => $employee->first_name . ' ' . $employee->last_name,
-            //     'email' => $employee->email,
-            //     'password' => bcrypt('123456789'),
-            //     'usertype' => 'staff',
-            //     'email_verified_at' => now(),
-            // ]);
         });
 
         static::updated(function ($employee) {

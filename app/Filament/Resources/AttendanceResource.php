@@ -21,6 +21,7 @@ use App\Filament\Resources\AttendanceResource\Pages;
 use App\Filament\Resources\AttendanceResource\RelationManagers;
 use App\Filament\Resources\AttendanceResource\RelationManagers\EmployeeRelationManager;
 use App\Filament\Resources\AttendanceResource\RelationManagers\AttendanceRelationManager;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Support\Facades\Auth;
 
@@ -286,6 +287,7 @@ class AttendanceResource extends Resource
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('check_in')
                         ->icon('letsicon-in')
@@ -338,43 +340,45 @@ class AttendanceResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(AttendanceExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Attendances exported successfully.')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(AttendanceImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Attendances imported successfully.')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
+                ActionGroup::make([
+                    ExportAction::make()
+                        ->exporter(AttendanceExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Attendances exported successfully.' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()
+                        ->importer(AttendanceImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('warning')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Attendances imported successfully.' .  ' ' . now()->format('Y-m-d H:i:s'))
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                        ->exporter(AttendanceExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Attendances exported successfully.')
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        })
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(AttendanceExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Attendances exported successfully.')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    })
             ])
             ->emptyStateActions([
                 CreateAction::make()

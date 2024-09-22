@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ScheduleResource\Pages;
 
-use App\Filament\Resources\ScheduleResource;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ScheduleResource;
 
 class ListSchedules extends ListRecords
 {
@@ -13,7 +14,12 @@ class ListSchedules extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Action::make('present-check')
+                ->icon('heroicon-o-check-circle')
+                ->url(route('present-check'))
+                ->color('success'),
+            Actions\CreateAction::make()
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

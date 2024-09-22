@@ -56,8 +56,13 @@ class ScheduleResource extends Resource
                             ->preload(),
                         Forms\Components\DatePicker::make('date')
                             ->required()
+                            ->default(now())
                             ->native(false)
                             ->displayFormat('d/m/Y'),
+                        Forms\Components\Toggle::make('is_wfa')
+                            ->label('Is WFA')
+                            ->default(false),
+
                     ])
                     ->columns(2)
                     ->collapsible(),
@@ -80,27 +85,21 @@ class ScheduleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('company.name')
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('shift.name')
                     ->searchable()
+                    ->description(fn(Schedule $record): string => $record->shift->start_time->format('H:i') . ' - ' . $record->shift->end_time->format('H:i'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('date')
                     ->date('d/m/Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('is_wfa')
+                    ->label('WFA')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

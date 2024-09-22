@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\PresentCheck;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SaleController;
@@ -13,6 +14,11 @@ use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\IncomeStatementController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
+
+// route present check
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/present-check', PresentCheck::class)->name('present-check');
+});
 
 Route::get('/', function () {
     return view('welcome');
