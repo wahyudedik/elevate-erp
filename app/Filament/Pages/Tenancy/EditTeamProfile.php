@@ -62,11 +62,9 @@ class EditTeamProfile extends EditTenantProfile
                         Textarea::make('vision')
                             ->maxLength(65535),
                         TextInput::make('latitude')
-                            ->numeric()
                             ->step(0.000001)
                             ->nullable(),
                         TextInput::make('longitude')
-                            ->numeric()
                             ->step(0.000001)
                             ->nullable(),
                         TextInput::make('radius')
