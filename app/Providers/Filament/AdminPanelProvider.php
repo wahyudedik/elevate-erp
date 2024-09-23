@@ -55,7 +55,8 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->navigationGroups([
-                'Account',
+                'Master Data',
+                'Management Users',
                 'Management Financial',
                 'Management SDM',
                 'Management CRM',
@@ -63,9 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 'Management Sales And Purchasing',
                 'Management Stock',
                 'Management Supplier',
-                'Settings',
                 'Reports',
-                'User',
             ])
 
             ->databaseNotifications()

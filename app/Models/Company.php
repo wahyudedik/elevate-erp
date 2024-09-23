@@ -42,15 +42,22 @@ class Company extends Model implements HasCurrentTenantLabel
         'mission',
         'vision',
         'qna',
-        'latitude',
-        'longitude',
-        'radius'
     ];
 
 
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function branches()
+    {
+        return $this->hasMany(Branch::class, 'company_id');
+    }
+
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class, 'company_id');
+    }
 
     public function attendance()
     {

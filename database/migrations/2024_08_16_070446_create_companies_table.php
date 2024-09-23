@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */
+     */ 
     public function up(): void
     {
         Schema::create('companies', function (Blueprint $table) {
@@ -25,9 +25,6 @@ return new class extends Migration
             $table->text('mission')->nullable();
             $table->text('vision')->nullable();
             $table->json('qna')->nullable();
-            $table->double('latitude')->nullable();
-            $table->double('longitude')->nullable();
-            $table->integer('radius')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -48,28 +45,31 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->text('description')->nullable();
+            $table->double('latitude')->nullable();
+            $table->double('longitude')->nullable();
+            $table->integer('radius')->nullable();
+            $table->string('status')->default('active');
             $table->softDeletes();
-            $table->timestamps(); 
+            $table->timestamps();
         });
 
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
 
-        Schema::create('designations', function (Blueprint $table) {
+        Schema::create('positions', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
-            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
-            $table->string('name'); 
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
+            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('cascade');
+            $table->string('name');
             $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
@@ -84,6 +84,6 @@ return new class extends Migration
         Schema::dropIfExists('companies_user_id');
         Schema::dropIfExists('branches');
         Schema::dropIfExists('departments');
-        Schema::dropIfExists('designations');
+        Schema::dropIfExists('positions');
     }
 };

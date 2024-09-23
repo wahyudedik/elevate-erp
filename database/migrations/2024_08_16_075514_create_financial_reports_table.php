@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('report_name');
             $table->enum('report_type', ['balance_sheet', 'income_statement', 'cash_flow']);
             $table->date('report_period_start');
@@ -28,6 +29,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('total_assets', 15, 2);
             $table->decimal('total_liabilities', 15, 2);
@@ -40,6 +42,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('total_revenue', 15, 2);
             $table->decimal('total_expenses', 15, 2);
@@ -52,6 +55,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('financial_report_id')->nullable()->constrained()->onDelete('cascade');
             $table->decimal('operating_cash_flow', 15, 2);
             $table->decimal('investing_cash_flow', 15, 2);

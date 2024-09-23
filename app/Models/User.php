@@ -45,6 +45,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         return $this->company()->whereKey($tenant)->exists();
     }
 
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class, 'user_id');
+    }
+
     /**
      * The attributes that are mass assignable.
      *

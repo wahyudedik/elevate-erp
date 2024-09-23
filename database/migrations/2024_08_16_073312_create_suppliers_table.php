@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('supplier_name');
             $table->string('supplier_code')->unique();  // Kode unik pemasok
             $table->string('contact_name')->nullable();  // Nama kontak di perusahaan pemasok
@@ -39,6 +40,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');
             $table->string('transaction_code')->unique();  // Kode transaksi
             $table->enum('transaction_type', ['purchase_order', 'payment', 'refund']);  // Jenis transaksi
