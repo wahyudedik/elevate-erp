@@ -4,32 +4,28 @@ namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
-class Department extends Model
+class Position extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory,  SoftDeletes, Notifiable;
 
     protected static function booted()
     {
         static::addGlobalScope(new CompanyScope);
     }
 
-    protected $table = 'departments';
+    protected $table = 'positions';
 
     protected $fillable = [
         'name',
         'description',
         'company_id',
         'branch_id',
+        'department_id',
     ];
-
-    public function positions()
-    {
-        return $this->hasMany(Position::class, 'department_id');
-    }
 
     public function company()
     {
@@ -39,5 +35,10 @@ class Department extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
     }
 }

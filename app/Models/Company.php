@@ -49,6 +49,16 @@ class Company extends Model implements HasCurrentTenantLabel
         'qna' => 'array',
     ];
 
+    public function positions()
+    {
+        return $this->hasMany(Position::class, 'company_id');
+    }
+
+    public function departments()
+    {
+        return $this->hasMany(Department::class, 'company_id');
+    }
+
     public function branches()
     {
         return $this->hasMany(Branch::class, 'company_id');

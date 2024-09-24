@@ -44,7 +44,7 @@ class BranchResource extends Resource
 
     // protected static ?string $navigationParentItem = '';
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
     public static function form(Form $form): Form
     {
@@ -190,6 +190,11 @@ class BranchResource extends Resource
                     ->label('Status')
                     ->sortable()
                     ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'secondary',
+                    })
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
@@ -273,7 +278,7 @@ class BranchResource extends Resource
                         }),
                     ImportAction::make()->importer(BranchImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Import Branch completed' . ' ' . now())
