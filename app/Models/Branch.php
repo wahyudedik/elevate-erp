@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\ManagementSDM\Shift;
 use App\Models\Scopes\CompanyScope;
+use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementFinancial\Ledger;
@@ -38,6 +40,16 @@ class Branch extends Model
         'radius',
         'status',
     ];
+
+    public function schedule()
+    {
+        return $this->hasMany(Schedule::class, 'user_id');
+    }
+
+    public function shift()
+    {
+        return $this->hasMany(Shift::class, 'branch_id');
+    }
 
     public function incomeStatement()
     {
@@ -93,5 +105,4 @@ class Branch extends Model
     {
         return $this->hasMany(Department::class, 'branch_id');
     }
-
 }

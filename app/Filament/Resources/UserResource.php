@@ -39,6 +39,15 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\Section::make('User Information')
                     ->schema([
+                        Forms\Components\FileUpload::make('image')
+                            ->image()
+                            ->avatar()
+                            ->disk('public')
+                            ->directory('user-images')
+                            ->visibility('public')
+                            ->maxSize(5024)
+                            ->columnSpanFull()
+                            ->label('Profile Image'),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),

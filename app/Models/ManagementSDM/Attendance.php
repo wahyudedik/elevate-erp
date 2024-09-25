@@ -8,7 +8,7 @@ use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory; 
 
 class Attendance extends Model
 {
@@ -25,6 +25,8 @@ class Attendance extends Model
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
         'company_id',
+        'user_id',
+        'branch_id',
         'employee_id',
         'schedule_id',
         'date',
@@ -34,8 +36,10 @@ class Attendance extends Model
         'schedules_longitude',
         'check_in',
         'check_out',
-        'latitude',
-        'longitude',
+        'latitude_check_in',
+        'longitude_check_in',
+        'latitude_check_out',
+        'longitude_check_out',
         'status',
         'note',
     ];

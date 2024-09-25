@@ -3,12 +3,13 @@
 namespace App\Models\ManagementSDM;
 
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory; 
 
 class Schedule extends Model
 {
@@ -23,6 +24,8 @@ class Schedule extends Model
 
     protected $fillable = [
         'company_id',
+        'user_id',
+        'branch_id',
         'employee_id',
         'shift_id',
         'date',
@@ -31,6 +34,16 @@ class Schedule extends Model
     protected $casts = [
         'date' => 'date',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function attendance()
     {

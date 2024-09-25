@@ -17,28 +17,59 @@ use App\Http\Controllers\SupplierTransactionController;
 
 // route present check
 Route::group(['middleware' => 'auth'], function () {
+    // present check
     Route::get('/present-check', PresentCheck::class)->name('present-check');
+
+    //sales
+    Route::get('/sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
+        ->name('sale.print-invoice');
+
+    // print supplier transaction
+    Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
+        ->name('supplier-transactions.print');
+
+    // salles transaction
+    Route::get('/sales-transaction/{salesTransaction}/print-invoice', [SalesTransactionController::class, 'printInvoice'])
+        ->name('sales-transaction.print-invoice');
+
+    // print journal entry
+    Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
+        ->name('journal-entries.print');
+
+    // print ledger
+    Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])
+        ->name('ledger.print');
+
+    // print transaction
+    Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])
+        ->name('transaction.print-receipt');
+
+    // print balance sheet
+    Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::class, 'report'])
+        ->name('balance-sheet.report');
+
+    // print income statement
+    Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
+        ->name('income-statement.report');
+
+    // print cash flow
+    Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
+        ->name('Cash-flow.report');
+
+    // print financial report
+    Route::get('/financial-report/{financialReport}/report', [FinancialReportController::class, 'report'])
+        ->name('financial-report.print');
 });
 
+// route redirect admin
 Route::get('/login', function () {
     return redirect('admin/login');
 })->name('login');
 
+// route guest
 Route::get('/', function () {
     return view('welcome');
 });
-
-//sales
-Route::get('/sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
-    ->name('sale.print-invoice');
-
-// print supplier transaction
-Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
-    ->name('supplier-transactions.print');
-
-// salles transaction
-Route::get('/sales-transaction/{salesTransaction}/print-invoice', [SalesTransactionController::class, 'printInvoice'])
-    ->name('sales-transaction.print-invoice');
 
 // print candidate application
 Route::get('/apply/{recruitment}', [CandidateController::class, 'showApplicationForm'])
@@ -46,33 +77,7 @@ Route::get('/apply/{recruitment}', [CandidateController::class, 'showApplication
 Route::post('/apply/{recruitment}/', [CandidateController::class, 'submitApplication'])
     ->name('candidate.submit');
 
-// print journal entry
-Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
-    ->name('journal-entries.print');
 
-// print ledger
-Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])
-    ->name('ledger.print');
-
-// print transaction
-Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])
-    ->name('transaction.print-receipt');
-
-// print balance sheet
-Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::class, 'report'])
-    ->name('balance-sheet.report');
-
-// print income statement
-Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
-    ->name('income-statement.report');
-
-// print cash flow
-Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
-    ->name('Cash-flow.report');
-
-// print financial report
-Route::get('/financial-report/{financialReport}/report', [FinancialReportController::class, 'report'])
-    ->name('financial-report.print');
 
 
 

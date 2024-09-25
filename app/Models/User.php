@@ -56,6 +56,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
      * @var array<int, string>
      */
     protected $fillable = [
+        'image',
         'name',
         'email',
         'password',
@@ -90,5 +91,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     public function employee()
     {
         return $this->hasOne(Employee::class, 'user_id');
+    }
+
+    //relasi attendance
+    public function schedule()
+    {
+        return $this->hasMany(Schedule::class, 'user_id');
     }
 }

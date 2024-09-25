@@ -41,7 +41,7 @@ class AccountingResource extends Resource
     {
         return static::getModel()::count();
     }
-
+    protected static bool $isScopedToTenant = true;
 
     protected static ?string $tenantRelationshipName = 'accounting';
 

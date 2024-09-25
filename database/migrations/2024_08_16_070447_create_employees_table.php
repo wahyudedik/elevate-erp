@@ -24,8 +24,8 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('national_id_number')->unique()->nullable();  // Nomor KTP/Paspor
-            $table->string('position')->nullable();  // Jabatan
-            $table->string('department')->nullable();  // Departemen 
+            $table->foreignId('position_id')->nullable()->constrained('positions')->cascadeOnDelete();  // Jabatan
+            $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete();  // Departemen 
             $table->date('date_of_joining');  // Tanggal bergabung
             $table->decimal('salary', 15, 2)->nullable();  // Gaji pokok
             $table->enum('employment_status', ['permanent', 'contract', 'internship'])->default('permanent');  // Status kerja
