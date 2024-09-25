@@ -17,6 +17,8 @@ class LedgerImporter extends Importer
             ImportColumn::make('id')
                 ->numeric()
                 ->rules(['integer', 'exists:ledgers,id']),
+            ImportColumn::make('branch')
+                ->rules(['nullable', 'string']),
             ImportColumn::make('account_id')
                 ->numeric()
                 ->rules(['exists:accounts,id']),

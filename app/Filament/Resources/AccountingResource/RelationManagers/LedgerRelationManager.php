@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementFinancial\Ledger;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection; 
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -27,6 +27,12 @@ class LedgerRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull()
+                            ->required(),
                         Forms\Components\DatePicker::make('transaction_date')
                             ->required()
                             ->format('Y-m-d')
@@ -73,6 +79,12 @@ class LedgerRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->searchable()
+                    ->icon('heroicon-s-building-storefront')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('transaction_date')
                     ->label('Date')
                     ->date('d/m/Y')
@@ -123,6 +135,10 @@ class LedgerRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->indicator('Branch'),
                 Tables\Filters\SelectFilter::make('account')
                     ->relationship('account', 'account_name')
                     ->searchable()

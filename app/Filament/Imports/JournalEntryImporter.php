@@ -16,6 +16,9 @@ class JournalEntryImporter extends Importer
         return [
             ImportColumn::make('id')
                 ->type('integer'),
+            ImportColumn::make('branch')
+                ->type('string')
+                ->rules(['nullable']),
             ImportColumn::make('entry_date')
                 ->type('date')
                 ->required(),

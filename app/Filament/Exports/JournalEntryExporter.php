@@ -16,6 +16,8 @@ class JournalEntryExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('entry_date')
                 ->label('Entry Date'),
             ExportColumn::make('description')

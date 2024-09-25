@@ -14,6 +14,12 @@ class IncomeStatementImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->numeric()
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->rules(['required', 'exists:branches,id']),
             ImportColumn::make('financial_report_id')
                 ->numeric()
                 ->rules(['nullable', 'exists:financial_reports,id']),

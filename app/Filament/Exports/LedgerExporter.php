@@ -15,6 +15,7 @@ class LedgerExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('branch'),
             ExportColumn::make('account_id'),
             ExportColumn::make('transaction_date'),
             ExportColumn::make('transaction_type'),

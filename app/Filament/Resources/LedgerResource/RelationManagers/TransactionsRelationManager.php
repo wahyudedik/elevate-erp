@@ -35,6 +35,11 @@ class TransactionsRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('transaction_number')
                             ->required()
                             ->readOnly()
@@ -85,6 +90,12 @@ class TransactionsRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->searchable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('ledger.transaction_date')
                     ->label('Ledger')
                     ->sortable()
@@ -139,6 +150,11 @@ class TransactionsRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',

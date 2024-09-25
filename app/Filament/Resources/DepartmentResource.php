@@ -117,7 +117,7 @@ class DepartmentResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\Filter::make('Department Created')
+                Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from'),
                         Forms\Components\DatePicker::make('created_until'),

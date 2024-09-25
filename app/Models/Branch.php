@@ -5,7 +5,15 @@ namespace App\Models;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementFinancial\CashFlow;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementFinancial\BalanceSheet;
+use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementFinancial\FinancialReport;
+use App\Models\ManagementFinancial\IncomeStatement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Branch extends Model
@@ -16,7 +24,6 @@ class Branch extends Model
     {
         static::addGlobalScope(new CompanyScope);
     }
-
     protected $table = 'branches';
 
     protected $fillable = [
@@ -31,6 +38,46 @@ class Branch extends Model
         'radius',
         'status',
     ];
+
+    public function incomeStatement()
+    {
+        return $this->hasMany(IncomeStatement::class, 'branch_id');
+    }
+
+    public function cashFlow()
+    {
+        return $this->hasMany(CashFlow::class, 'branch_id');
+    }
+
+    public function financialReports()
+    {
+        return $this->hasMany(FinancialReport::class, 'branch_id');
+    }
+
+    public function balanceSheets()
+    {
+        return $this->hasMany(BalanceSheet::class, 'branch_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'branch_id');
+    }
+
+    public function ledgers()
+    {
+        return $this->hasMany(Ledger::class, 'branch_id');
+    }
+
+    public function journalEntries()
+    {
+        return $this->hasMany(JournalEntry::class, 'branch_id');
+    }
+
+    public function accounts()
+    {
+        return $this->hasMany(Accounting::class, 'branch_id');
+    }
 
     public function positions()
     {

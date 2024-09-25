@@ -16,6 +16,10 @@ class IncomeStatementExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company_id')
+                ->label('Company ID'),
+            ExportColumn::make('branch_id')
+                ->label('Branch ID'),
             ExportColumn::make('financial_report_id')
                 ->label('Financial Report ID'),
             ExportColumn::make('total_revenue')

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\JournalEntry;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Resources\RelationManagers\RelationManager; 
 use Filament\Tables\Actions\ActionGroup;
 
 class JournalEntriesRelationManager extends RelationManager
@@ -32,6 +32,13 @@ class JournalEntriesRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->label('Branch')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
                             ->label('Entry Date')
@@ -82,6 +89,12 @@ class JournalEntriesRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->icon('heroicon-s-building-storefront')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('entry_date')
                     ->date()
                     ->icon('heroicon-o-calendar')
@@ -126,6 +139,10 @@ class JournalEntriesRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->indicator('Branch'),
                 Tables\Filters\SelectFilter::make('entry_type')
                     ->options([
                         'debit' => 'Debit',

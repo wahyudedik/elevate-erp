@@ -54,6 +54,14 @@ class IncomeStatementResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Income Statement Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->label('Branch')
+                            ->placeholder('Select a Branch')
+                            ->nullable()
+                            ->columnSpan(2),
                         Forms\Components\Select::make('financial_report_id')
                             ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'income_statement'))
                             ->searchable()
@@ -64,6 +72,13 @@ class IncomeStatementResource extends Resource
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
+                                Forms\Components\Select::make('branch_id')
+                                    ->relationship('branch', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->label('Branch')
+                                    ->placeholder('Select a Branch')
+                                    ->required(),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
                                     ->maxLength(255),
@@ -133,6 +148,12 @@ class IncomeStatementResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->sortable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('financialReport.report_name')
                     ->label('Financial Report')
                     ->searchable()
@@ -168,6 +189,11 @@ class IncomeStatementResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('financial_report')
                     ->relationship('financialReport', 'report_name')
                     ->label('Financial Report')
@@ -239,7 +265,7 @@ class IncomeStatementResource extends Resource
                     ImportAction::make()
                         ->importer(IncomeStatementImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Income Statment imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))

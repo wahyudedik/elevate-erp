@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('report_period_end');
             $table->text('notes')->nullable();
             $table->softDeletes();
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('balance_sheets', function (Blueprint $table) {

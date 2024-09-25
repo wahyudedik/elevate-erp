@@ -17,6 +17,12 @@ class CashFlowImporter extends Importer
             ImportColumn::make('id')
                 ->numeric()
                 ->rules(['nullable', 'integer']),
+            ImportColumn::make('company_id')
+                ->numeric()
+                ->rules(['required', 'exists:companies,id']),
+            importColumn::make('branch_id')
+                ->numeric()
+                ->rules(['required', 'exists:branches,id']),
             ImportColumn::make('financial_report_id')
                 ->numeric()
                 ->rules(['nullable', 'exists:financial_reports,id']),

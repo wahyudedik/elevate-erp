@@ -55,6 +55,11 @@ class BalanceSheetResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Balance Sheet Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         Forms\Components\Select::make('financial_report_id')
                             ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'balance_sheet'))
                             ->searchable()
@@ -63,6 +68,11 @@ class BalanceSheetResource extends Resource
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
+                                Forms\Components\Select::make('branch_id')
+                                    ->relationship('branch', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
                                     ->maxLength(255),
@@ -131,6 +141,12 @@ class BalanceSheetResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->toggleable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('financialReport.report_name')
                     ->label('Financial Report')
                     ->searchable()
@@ -165,6 +181,11 @@ class BalanceSheetResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('financial_report')
                     ->relationship('financialReport', 'report_name')
                     ->searchable()
@@ -197,7 +218,7 @@ class BalanceSheetResource extends Resource
                             $indicators['created_until'] = 'Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
                         return $indicators;
-                    })->columnSpan(2),
+                    })->columns(2),
             ])
             ->actions([
                 ActionGroup::make([
@@ -251,7 +272,7 @@ class BalanceSheetResource extends Resource
                     ImportAction::make()
                         ->importer(BalanceSheetImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Balance Sheet imported successfully' . ' ' . date('Y-m-d'))

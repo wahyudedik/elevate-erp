@@ -17,6 +17,12 @@ class FinancialReportImporter extends Importer
             ImportColumn::make('id')
                 ->label('ID')
                 ->rules(['nullable', 'integer']),
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->rules(['required', 'integer']),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['required', 'integer']),
             ImportColumn::make('report_name')
                 ->label('Report Name')
                 ->rules(['required', 'string']),

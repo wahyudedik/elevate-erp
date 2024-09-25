@@ -15,6 +15,8 @@ class TransactionExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('ledger_id'),
             ExportColumn::make('transaction_number'),
             ExportColumn::make('status'),

@@ -15,6 +15,9 @@ class BalanceSheetImporter extends Importer
     {
         return [
             ImportColumn::make('id'),
+            ImportColumn::make('company_id'),
+            ImportColumn::make('branch')
+                ->rules(['nullable', 'string', 'max:255']),
             ImportColumn::make('financial_report_id')
                 ->numeric()
                 ->rules(['nullable', 'exists:financial_reports,id']),

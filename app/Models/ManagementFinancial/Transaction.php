@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 use App\Models\Scopes\CompanyScope;
@@ -24,12 +25,18 @@ class Transaction extends Model
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'ledger_id',
         'transaction_number',
         'status',
         'amount',
         'notes',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function ledger()
     {

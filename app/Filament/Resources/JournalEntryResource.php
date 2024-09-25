@@ -34,7 +34,7 @@ class JournalEntryResource extends Resource
         return static::getModel()::count();
     }
 
-    
+
     protected static ?string $tenantRelationshipName = 'journalEntry';
 
     protected static ?string $navigationGroup = 'Management Financial';
@@ -49,6 +49,13 @@ class JournalEntryResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Journal Entry')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->label('Branch')
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
                             ->default(now())
@@ -103,6 +110,12 @@ class JournalEntryResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->icon('heroicon-s-building-storefront')
+                    ->toggleable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('entry_date')
                     ->label('Entry Date')
                     ->date('Y-m-d')
@@ -154,6 +167,11 @@ class JournalEntryResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->multiple()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('entry_type')
                     ->options([
                         'debit' => 'Debit',
@@ -244,7 +262,7 @@ class JournalEntryResource extends Resource
                     ImportAction::make()
                         ->importer(JournalEntryImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Journal Entry imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
