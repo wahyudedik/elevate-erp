@@ -51,10 +51,10 @@ return new class extends Migration
             $table->double('schedules_longitude');
             $table->time('check_in')->nullable();
             $table->time('check_out')->nullable();
-            $table->double('latitude_check_in');
-            $table->double('longitude_check_in');
-            $table->double('latitude_check_out');
-            $table->double('longitude_check_out');
+            $table->double('latitude_check_in')->nullable();
+            $table->double('longitude_check_in')->nullable();
+            $table->double('latitude_check_out')->nullable();
+            $table->double('longitude_check_out')->nullable();
             $table->enum('status', ['present', 'absent', 'late', 'on_leave'])->default('present');
             $table->string('note')->nullable();
             $table->softDeletes();

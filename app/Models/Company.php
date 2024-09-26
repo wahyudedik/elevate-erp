@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Filament\Pages\Accounts;
 use Spatie\Permission\Models\Role;
+use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementSDM\Employee;
@@ -48,6 +49,11 @@ class Company extends Model implements HasCurrentTenantLabel
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function leave()
+    {
+        return $this->hasMany(Leave::class, 'company_id');
+    }
 
     public function positions()
     {

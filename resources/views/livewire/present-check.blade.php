@@ -7,21 +7,22 @@
                     <div class="bg-gray-100 p-4 rounded-lg">
                         <p><strong>Nama Pegawai : </strong> {{ Auth::user()->name }}</p>
                         <p><strong>Kantor : </strong>{{ $schedule->branch->name }}</p>
-                        <p><strong>Shift : </strong>{{ $schedule->shift->name }} ({{ $schedule->shift->start_time }} -
-                            {{ $schedule->shift->end_time }}) WIB</p>
+                        <p><strong>Shift : </strong>{{ $schedule->shift->name }}
+                            ({{ $schedule->shift->start_time->format('H:i') }} -
+                            {{ $schedule->shift->end_time->format('H:i') }}) WIB</p>
                         @if ($schedule->is_wfa)
                             <p class="text-green-500"><strong>Status : </strong>WFA</p>
                         @else
                             <p><strong>Status : </strong>WFO</p>
-                        @endif 
+                        @endif
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div class="bg-gray-100 p-4 rounded-lg">
-                            <h4 class="text-l font-bold mb-2">Waktu Datang</h4>
+                            <h4 class="text-l font-bold mb-2">Check In</h4>
                             <p><strong>{{ $attendance ? $attendance->check_in : '-' }}</p>
                         </div>
                         <div class="bg-gray-100 p-4 rounded-lg">
-                            <h4 class="text-l font-bold mb-2">Waktu Pulang</h4>
+                            <h4 class="text-l font-bold mb-2">Check Out</h4>
                             <p><strong>{{ $attendance ? $attendance->check_out : '-' }}</p>
                         </div>
                     </div>
@@ -43,6 +44,16 @@
                                 Presensi</button>
                         @endif
                     </form>
+                    {{-- <form class="row g-3 mt-3" wire:submit="store" enctype="multipart/form-data">
+                        <button type="button" onclick="tagLocation()"
+                            class="px-4 py-2 bg-blue-500 text-white rounded">Tag Location</button>
+                        @if ($insideRadius && !$attendance?->check_out)
+                            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded">Submit
+                                Presensi</button>
+                        @elseif ($attendance?->check_out)
+                            <p class="text-red-500">Anda sudah melakukan check out hari ini.</p>
+                        @endif
+                    </form> --}}
                 </div>
 
             </div>

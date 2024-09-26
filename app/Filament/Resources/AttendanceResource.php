@@ -123,6 +123,13 @@ class AttendanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // ->modifyQueryUsing(function (Builder $query) {
+            //     $is_super_admin = Auth::user()->hasRole('super_admin');
+
+            //     if (!$is_super_admin) {
+            //         $query->where('user_id', Auth::user()->id);
+            //     }
+            // })
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
@@ -137,6 +144,17 @@ class AttendanceResource extends Resource
                     ->date('Y-m-d')
                     ->toggleable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('is_late')
+                    ->label('Description')
+                    ->badge()
+                    ->getStateUsing(function ($record) {
+                        return $record->isLate() ? 'Terlambat' : 'Tepat Waktu';
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        'Tepat Waktu' => 'success',
+                        'Terlambat' => 'danger',
+                    })
+                    ->description(fn(Attendance $record): string => 'Durasi : ' . $record->workDuration()),
                 Tables\Columns\TextColumn::make('schedules_check_in')
                     ->time('H:i')
                     ->toggleable()
@@ -185,7 +203,7 @@ class AttendanceResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('employee')

@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ScheduleResource\Pages;
@@ -123,6 +124,7 @@ class ScheduleResource extends Resource
                     ->boolean(),
                 Tables\Columns\IconColumn::make('is_banned')
                     ->label('Banned')
+                    // ->hidden(fn () => !Auth::user()->hasRole('super_admin'))
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

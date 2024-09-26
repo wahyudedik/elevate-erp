@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\Scopes\CompanyScope;
 use App\Models\ManagementSDM\Schedule;
@@ -40,6 +41,11 @@ class Branch extends Model
         'radius',
         'status',
     ];
+
+    public function leave()
+    {
+        return $this->hasMany(Leave::class, 'branch_id');
+    }
 
     public function schedule()
     {

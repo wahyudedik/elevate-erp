@@ -9,7 +9,7 @@ use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory; 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Schedule extends Model
 {
@@ -29,10 +29,15 @@ class Schedule extends Model
         'employee_id',
         'shift_id',
         'date',
+        'is_wfa',
+        'is_banned',
+
     ];
 
     protected $casts = [
         'date' => 'date',
+        'is_wfa' => 'boolean',
+        'is_banned' => 'boolean',
     ];
 
     public function user()

@@ -4,6 +4,7 @@ namespace App\Models\ManagementSDM;
 
 use App\Models\User;
 use App\Models\Company;
+use Illuminate\Support\Carbon;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -67,5 +68,25 @@ class Attendance extends Model
         return $this->belongsTo(Schedule::class, 'schedule_id');
     }
 
-    
+    public function isLate()
+    {
+        $scheduleStartTime = Carbon::parse($this->schedule_start_time);
+        $startTime = Carbon::parse($this->start_time);
+
+        return $startTime->greaterThan($scheduleStartTime);
+    }
+
+    public function workDuration()
+    {
+        $startTime = Carbon::parse($this->start_time);
+        $endTime = Carbon::parse($this->end_time);
+
+        $duration = $startTime->diff($endTime);
+
+        $hours = $duration->h;
+        $minutes = $duration->i;
+
+        return "{$hours} jam {$minutes} menit";
+
+    }
 }

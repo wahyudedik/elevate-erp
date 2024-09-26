@@ -43,7 +43,7 @@ class PresentCheck extends Component
         $today = Carbon::today()->format('Y-m-d');
         $approvedLeave = Leave::where('user_id', Auth::user()->id)
                             ->where('status', 'approved')
-                            ->whereDate('start_date', '<=', $today)
+                            ->whereDate('start_date', '<=', $today) 
                             ->whereDate('end_date', '>=', $today)
                             ->exists();
 
@@ -51,6 +51,16 @@ class PresentCheck extends Component
             session()->flash('error', 'Anda tidak dapat melakukan presensi karena sedang cuti');
             return;
         }
+
+
+        $attendance = Attendance::where('user_id', Auth::user()->id)
+                        ->whereDate('created_at', date('Y-m-d'))->first();
+
+        if ($attendance && $attendance->check_out) {
+            session()->flash('error', 'Anda sudah melakukan check-out hari ini dan tidak dapat melakukan presensi lagi');
+            return;
+        }
+        
  
         if ($schedule) {
             $attedance = Attendance::where('user_id', Auth::user()->id)
@@ -69,10 +79,10 @@ class PresentCheck extends Component
                     'schedules_check_out' => $schedule->shift->end_time,
                     'latitude_check_in' => $this->latitude,
                     'longitude_check_in' => $this->longitude,
-                    'latitude_check_out' => $this->latitude,
-                    'longitude_check_out' => $this->longitude,
+                    // 'latitude_check_out' => $this->latitude,
+                    // 'longitude_check_out' => $this->longitude,
                     'check_in' => Carbon::now()->toTimeString(),
-                    'check_out' => Carbon::now()->toTimeString(),
+                    // 'check_out' => Carbon::now()->toTimeString(),
                     'status' => 'present',
                     'note' => 'Presensi Masuk' . ' ' . Carbon::now()->toTimeString(),
                 ]);
@@ -89,13 +99,7 @@ class PresentCheck extends Component
             return redirect()->route('present-check', [
                 'schedule' => $schedule,
                 'insideRadius' => false
-            ]);
-
-            // return redirect()->route('presensi', [
-            //     'schedule' => $schedule,
-            //     'insideRadius' => false
-            // ]);
-            
+            ]);            
         }
     }
 }

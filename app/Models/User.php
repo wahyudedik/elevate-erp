@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Panel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use Spatie\Permission\Traits\HasRoles;
@@ -26,6 +27,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
 
     public function canAccessPanel(Panel $panel): bool
     {
+        //add validasi berdasarkan usertype
+
+        // if ($panel->getId() === 'admin') {
+        //     return $this->usertype === 'member' && 'staff';
+        // }
+
+        // if ($panel->getId() === 'dev') {
+        //     return $this->usertype === 'dev';
+        // }
+
+        // return false;
+
+
         // return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
         return true;
     }
@@ -97,5 +111,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     public function schedule()
     {
         return $this->hasMany(Schedule::class, 'user_id');
+    }
+
+    public function leave()
+    {
+        return $this->hasMany(Leave::class, 'user_id');
     }
 }
