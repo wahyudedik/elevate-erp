@@ -15,6 +15,8 @@ class BalanceSheetExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch'),
             ExportColumn::make('financial_report_id'),
             ExportColumn::make('total_assets'),
             ExportColumn::make('total_liabilities'),

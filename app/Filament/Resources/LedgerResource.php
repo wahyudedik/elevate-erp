@@ -55,6 +55,12 @@ class LedgerResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Ledger Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Branch'),
                         Forms\Components\Select::make('account_id')
                             ->relationship('account', 'account_name')
                             ->required()
@@ -105,6 +111,12 @@ class LedgerResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->toggleable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('account.account_name')
                     ->label('Account')
                     ->sortable()
@@ -158,6 +170,11 @@ class LedgerResource extends Resource
             ->defaultSort('transaction_date', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('account')
                     ->relationship('account', 'account_name')
                     ->searchable()
@@ -262,7 +279,7 @@ class LedgerResource extends Resource
                     ImportAction::make()
                         ->importer(LedgerImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Ledger imported successfully' . ' ' . now()->toDateTimeString())

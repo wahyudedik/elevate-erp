@@ -3,6 +3,7 @@
 namespace App\Models\ManagementSDM;
 
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -23,14 +24,31 @@ class Schedule extends Model
 
     protected $fillable = [
         'company_id',
+        'user_id',
+        'branch_id',
         'employee_id',
         'shift_id',
         'date',
+        'is_wfa',
+        'is_banned',
+
     ];
 
     protected $casts = [
         'date' => 'date',
+        'is_wfa' => 'boolean',
+        'is_banned' => 'boolean',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function attendance()
     {

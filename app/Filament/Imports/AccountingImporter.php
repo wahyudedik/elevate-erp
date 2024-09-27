@@ -17,6 +17,9 @@ class AccountingImporter extends Importer
             ImportColumn::make('id')
                 ->label('ID')
                 ->rules(['required', 'integer', 'exists:accounts,id']),
+            ImportColumn::make('branch')
+                ->label('Branch')
+                ->rules(['required', 'string', 'exists:branches,name']),
             ImportColumn::make('account_name')
                 ->label('Account Name')
                 ->rules(['required', 'string']),

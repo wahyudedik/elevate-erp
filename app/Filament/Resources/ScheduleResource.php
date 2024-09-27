@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ScheduleResource\Pages;
@@ -44,6 +45,16 @@ class ScheduleResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Schedule Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->required()
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('user_id')
+                            ->required()
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('employee_id')
                             ->relationship('employee', 'first_name')
                             ->nullable()
@@ -62,7 +73,9 @@ class ScheduleResource extends Resource
                         Forms\Components\Toggle::make('is_wfa')
                             ->label('Is WFA')
                             ->default(false),
-
+                        Forms\Components\Toggle::make('is_banned')
+                            ->label('Is Banned')
+                            ->default(false),
                     ])
                     ->columns(2)
                     ->collapsible(),
@@ -89,6 +102,15 @@ class ScheduleResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('User')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('shift.name')
                     ->searchable()
                     ->description(fn(Schedule $record): string => $record->shift->start_time->format('H:i') . ' - ' . $record->shift->end_time->format('H:i'))
@@ -99,6 +121,10 @@ class ScheduleResource extends Resource
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_wfa')
                     ->label('WFA')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('is_banned')
+                    ->label('Banned')
+                    // ->hidden(fn () => !Auth::user()->hasRole('super_admin'))
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -111,6 +137,16 @@ class ScheduleResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('user_id')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('User'),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

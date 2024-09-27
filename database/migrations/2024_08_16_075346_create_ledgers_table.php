@@ -9,12 +9,12 @@ return new class extends Migration
     /** 
      * Run the migrations. 
      */
-    public function up(): void
+    public function up(): void 
     {
         Schema::create('ledgers', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('cascade');
             $table->date('transaction_date');
             $table->enum('transaction_type', ['debit', 'credit']);
@@ -26,8 +26,8 @@ return new class extends Migration
 
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('ledger_id')->nullable()->constrained('ledgers')->onDelete('cascade');
             $table->string('transaction_number')->unique();
             $table->enum('status', ['pending', 'completed', 'failed']);

@@ -32,6 +32,11 @@ class BalanceSheetRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->required()
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('total_assets')
                             ->required()
                             ->numeric()
@@ -82,6 +87,11 @@ class BalanceSheetRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('total_assets')
                     ->label('Total Assets')
                     ->money('IDR')
@@ -110,6 +120,11 @@ class BalanceSheetRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('financial_report')
                     ->relationship('financialReport', 'report_name')
                     ->searchable()

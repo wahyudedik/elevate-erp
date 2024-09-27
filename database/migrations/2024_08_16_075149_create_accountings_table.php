@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('account_name'); 
             $table->string('account_number')->unique();
             $table->enum('account_type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
@@ -28,13 +29,14 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->date('entry_date');
             $table->text('description')->nullable(); 
             $table->enum('entry_type', ['debit', 'credit']);
             $table->decimal('amount', 15, 2);
             $table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('cascade');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         });
     }
 

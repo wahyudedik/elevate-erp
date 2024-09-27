@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -21,12 +22,18 @@ class BalanceSheet extends Model
     protected $table = 'balance_sheets';
 
     protected $fillable = [
+        'branch_id',
         'company_id',
         'financial_report_id',
         'total_assets',
         'total_liabilities',
         'total_equity',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function financialReport()
     {

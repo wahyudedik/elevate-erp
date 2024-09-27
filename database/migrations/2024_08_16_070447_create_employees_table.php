@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('first_name');
             $table->string('last_name');
             $table->string('employee_code')->unique();  // Kode unik untuk setiap karyawan
@@ -23,8 +24,8 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('national_id_number')->unique()->nullable();  // Nomor KTP/Paspor
-            $table->string('position')->nullable();  // Jabatan
-            $table->string('department')->nullable();  // Departemen 
+            $table->foreignId('position_id')->nullable()->constrained('positions')->cascadeOnDelete();  // Jabatan
+            $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete();  // Departemen 
             $table->date('date_of_joining');  // Tanggal bergabung
             $table->decimal('salary', 15, 2)->nullable();  // Gaji pokok
             $table->enum('employment_status', ['permanent', 'contract', 'internship'])->default('permanent');  // Status kerja
@@ -46,6 +47,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->string('position');  // Jabatan
             $table->date('start_date');  // Tanggal mulai jabatan

@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -18,16 +19,22 @@ class FinancialReport extends Model
         static::addGlobalScope(new CompanyScope);
     }
 
-    protected $table = 'financial_reports';
+    protected $table = 'financial_reports'; 
 
     protected $fillable = [ 
         'company_id',
+        'branch_id',
         'report_name',
         'report_type', //'balance_sheet', 'income_statement', 'cash_flow'
         'report_period_start',
         'report_period_end',
         'notes',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function balanceSheet()
     {

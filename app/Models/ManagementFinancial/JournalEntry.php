@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ class JournalEntry extends Model
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'entry_date',
         'description',
         'entry_type',
@@ -34,6 +36,11 @@ class JournalEntry extends Model
         'entry_date' => 'date',
         'amount' => 'decimal:2',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function account()
     {

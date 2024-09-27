@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Tenancy;
 
 use App\Filament\Resources\EmployeeResource\RelationManagers\UserRelationManager;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
@@ -42,10 +43,12 @@ class EditTeamProfile extends EditTenantProfile
                             ->required()
                             ->maxLength(255)
                             ->readOnly(),
-                        Textarea::make('description')
+                        RichEditor::make('description')
+                            ->columnSpanFull()
                             ->maxLength(65535),
-                        Textarea::make('address')
-                            ->maxLength(255),
+                        RichEditor::make('address')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
                         TextInput::make('phone')
                             ->tel()
                             ->maxLength(255),
@@ -61,25 +64,6 @@ class EditTeamProfile extends EditTenantProfile
                             ->maxLength(65535),
                         Textarea::make('vision')
                             ->maxLength(65535),
-                        TextInput::make('latitude')
-                            ->step(0.000001)
-                            ->nullable(),
-                        TextInput::make('longitude')
-                            ->step(0.000001)
-                            ->nullable(),
-                        TextInput::make('radius')
-                            ->numeric()
-                            ->nullable(),
-                        OSMMap::make('location')
-                            ->label('Location')
-                            ->showMarker()
-                            ->draggable()
-                            ->extraControl([
-                                'zoomDelta'           => 1,
-                                'zoomSnap'            => 0.25,
-                                'wheelPxPerZoomLevel' => 60
-                            ])
-                            ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
                         Repeater::make('qna')
                             ->label('Q&A')
                             ->schema([

@@ -16,6 +16,10 @@ class FinancialReportExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company_id')
+                ->label('Company ID'),
+            ExportColumn::make('branch_id')
+                ->label('Branch ID'),
             ExportColumn::make('report_name')
                 ->label('Report Name'),
             ExportColumn::make('report_type')

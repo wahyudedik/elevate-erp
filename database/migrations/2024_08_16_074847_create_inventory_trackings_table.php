@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('inventory_id')->nullable()->constrained('inventories')->onDelete('cascade');
             $table->integer('quantity_before');
             $table->integer('quantity_after');

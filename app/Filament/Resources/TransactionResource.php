@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
@@ -53,11 +54,25 @@ class TransactionResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Transaction Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Branch'),
                         Forms\Components\Select::make('ledger_id')
                             ->relationship('ledger', 'transaction_date')
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
+                                Forms\Components\Hidden::make('company_id')
+                                    ->default(Filament::getTenant()->id),
+                                Forms\Components\Select::make('branch_id')
+                                    ->relationship('branch', 'name')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->label('Branch'),
                                 Forms\Components\Select::make('account_id')
                                     ->relationship('account', 'account_name')
                                     ->required()
@@ -134,6 +149,11 @@ class TransactionResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->sortable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('ledger.transaction_date')
                     ->label('Ledger')
                     ->sortable()
@@ -178,6 +198,11 @@ class TransactionResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->multiple()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -276,7 +301,7 @@ class TransactionResource extends Resource
                     ImportAction::make()
                         ->importer(TransactionImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Transactions imported successfully' . ' ' . now()->toDateTimeString())

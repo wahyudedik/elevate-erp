@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->text('progress_report');
             $table->enum('status', ['on_track', 'at_risk', 'delayed'])->default('on_track');

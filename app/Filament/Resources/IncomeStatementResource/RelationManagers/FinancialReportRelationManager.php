@@ -20,6 +20,9 @@ class FinancialReportRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Financial Report')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required(),
                         Forms\Components\TextInput::make('report_name')
                             ->required()
                             ->maxLength(255),
@@ -63,6 +66,12 @@ class FinancialReportRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->sortable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('report_name')
                     ->searchable()
                     ->toggleable()
@@ -106,7 +115,37 @@ class FinancialReportRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true)
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('report_type')
+                    ->options([
+                        'balance_sheet' => 'Balance Sheet',
+                        'income_statement' => 'Income Statement',
+                        'cash_flow' => 'Cash Flow',
+                    ])
+                    ->label('Report Type')
+                    ->multiple(),
+                Tables\Filters\Filter::make('report_period')
+                    ->form([
+                        Forms\Components\DatePicker::make('report_period_start')
+                            ->label('Start Date'),
+                        Forms\Components\DatePicker::make('report_period_end')
+                            ->label('End Date'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['report_period_start'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('report_period_start', '>=', $date),
+                            )
+                            ->when(
+                                $data['report_period_end'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('report_period_end', '<=', $date),
+                            );
+                    })->columns(2),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->multiple(),
+
             ])
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),

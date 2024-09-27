@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ class Shift extends Model
 
     protected $fillable = [
         'company_id',
+        'branch_id',
         'name',
         'start_time',
         'end_time',
@@ -40,5 +42,10 @@ class Shift extends Model
     public function schedule()
     {
         return $this->hasMany(Schedule::class, 'shift_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

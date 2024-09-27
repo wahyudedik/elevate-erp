@@ -15,6 +15,8 @@ class CashFlowExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('financial_report_id'),
             ExportColumn::make('operating_cash_flow'),
             ExportColumn::make('investing_cash_flow'),

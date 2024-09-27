@@ -15,6 +15,7 @@ class AccountingExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('branch'),
             ExportColumn::make('account_name'),
             ExportColumn::make('account_number'),
             ExportColumn::make('account_type'),

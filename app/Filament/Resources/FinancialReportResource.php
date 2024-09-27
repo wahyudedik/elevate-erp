@@ -38,6 +38,12 @@ class FinancialReportResource extends Resource
         return static::getModel()::count();
     }
 
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'financialReport';
+
     protected static ?string $navigationGroup = 'Management Financial';
 
     protected static ?string $navigationParentItem = 'Financial Reporting';
@@ -50,6 +56,12 @@ class FinancialReportResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Financial Report')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull(),
                         Forms\Components\TextInput::make('report_name')
                             ->required()
                             ->maxLength(255),
@@ -65,7 +77,8 @@ class FinancialReportResource extends Resource
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_end')
                             ->required(),
-                        Forms\Components\Textarea::make('notes')
+                        Forms\Components\RichEditor::make('notes')
+                            ->columnSpanFull()
                             ->nullable(),
                     ])
                     ->columns(2),
@@ -92,6 +105,11 @@ class FinancialReportResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('report_name')
                     ->searchable()
                     ->toggleable()
@@ -134,6 +152,11 @@ class FinancialReportResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('report_type')
                     ->options([
                         'balance_sheet' => 'Balance Sheet',
@@ -232,7 +255,7 @@ class FinancialReportResource extends Resource
                     ImportAction::make()
                         ->importer(FinancialReportImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Finance Report imported successfully' . ' ' . date('Y-m-d'))

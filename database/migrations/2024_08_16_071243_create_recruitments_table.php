@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('job_title');
             $table->text('job_description');
             $table->enum('employment_type', ['full_time', 'part_time', 'contract', 'internship']);
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('recruitment_id')->nullable()->constrained('recruitments')->onDelete('cascade');
             $table->foreignId('candidate_id')->nullable()->constrained('candidates')->onDelete('cascade');
             $table->enum('status', ['applied', 'interviewing', 'offered', 'hired', 'rejected'])->default('applied');

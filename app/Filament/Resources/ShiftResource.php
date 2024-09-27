@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ShiftResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ShiftResource\RelationManagers;
+use App\Filament\Resources\ShiftResource\RelationManagers\ScheduleRelationManager;
+use Filament\Tables\Actions\ActionGroup;
 
 class ShiftResource extends Resource
 {
@@ -44,6 +46,12 @@ class ShiftResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Shift Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->nullable()
+                            ->preload()
+                            ->label('Branch')
+                            ->searchable(),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
@@ -56,13 +64,6 @@ class ShiftResource extends Resource
                             ->label('End Time'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Advanced Options')
-                    ->schema([
-                        Forms\Components\Textarea::make('description')
-                            ->maxLength(65535)
-                            ->label('Shift Description'),
-                    ])
-                    ->collapsible(),
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
@@ -87,6 +88,11 @@ class ShiftResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Shift Name')
                     ->sortable()
@@ -117,6 +123,11 @@ class ShiftResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\Filter::make('start_time')
                     ->form([
                         Forms\Components\TimePicker::make('start_from')
@@ -155,11 +166,13 @@ class ShiftResource extends Resource
                     })->columns(2),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -178,7 +191,7 @@ class ShiftResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ScheduleRelationManager::class,
         ];
     }
 

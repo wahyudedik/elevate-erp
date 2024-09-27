@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Filament\Pages\Accounts;
 use Spatie\Permission\Models\Role;
+use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementSDM\Employee;
@@ -42,15 +43,37 @@ class Company extends Model implements HasCurrentTenantLabel
         'mission',
         'vision',
         'qna',
-        'latitude',
-        'longitude',
-        'radius'
     ];
 
 
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function leave()
+    {
+        return $this->hasMany(Leave::class, 'company_id');
+    }
+
+    public function positions()
+    {
+        return $this->hasMany(Position::class, 'company_id');
+    }
+
+    public function departments()
+    {
+        return $this->hasMany(Department::class, 'company_id');
+    }
+
+    public function branches()
+    {
+        return $this->hasMany(Branch::class, 'company_id');
+    }
+
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class, 'company_id');
+    }
 
     public function attendance()
     {

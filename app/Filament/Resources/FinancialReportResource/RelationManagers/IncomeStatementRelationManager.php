@@ -31,6 +31,11 @@ class IncomeStatementRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->required()
+                            ->relationship('branch', 'name')
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('total_revenue')
                             ->required()
                             ->numeric()
@@ -82,6 +87,12 @@ class IncomeStatementRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('total_revenue')
                     ->label('Total Revenue')
                     ->money('IDR')
@@ -112,6 +123,11 @@ class IncomeStatementRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('financial_report')
                     ->relationship('financialReport', 'report_name')
                     ->label('Financial Report')

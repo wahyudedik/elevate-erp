@@ -36,12 +36,12 @@ class AccountingResource extends Resource
     protected static ?string $model = Accounting::class;
 
     protected static ?string $navigationBadgeTooltip = 'Total Accounts';
-    
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
     }
-
+    protected static bool $isScopedToTenant = true;
 
     protected static ?string $tenantRelationshipName = 'accounting';
 
@@ -57,6 +57,11 @@ class AccountingResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Account Information')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('account_name')
                             ->required()
                             ->maxLength(255),
@@ -119,6 +124,11 @@ class AccountingResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->searchable()
+                    ->toggleable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('account_name')
                     ->searchable()
                     ->toggleable()
@@ -160,6 +170,11 @@ class AccountingResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch')
+                    ->relationship('branch', 'name')
+                    ->label('Branch')
+                    ->multiple()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('account_type')
                     ->options([
                         'asset' => 'Asset',
@@ -330,7 +345,7 @@ class AccountingResource extends Resource
                     ImportAction::make()
                         ->importer(AccountingImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Account imported successfully' . ' ' . now()->toDateTimeString())

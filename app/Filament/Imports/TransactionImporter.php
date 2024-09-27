@@ -17,6 +17,12 @@ class TransactionImporter extends Importer
             ImportColumn::make('id')
                 ->numeric()
                 ->rules(['required', 'integer', 'exists:transactions,id']),
+            ImportColumn::make('company_id')
+                ->numeric()
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:branches,id']),
             ImportColumn::make('ledger_id')
                 ->numeric()
                 ->rules(['nullable', 'exists:ledgers,id']),
@@ -29,6 +35,9 @@ class TransactionImporter extends Importer
                 ->rules(['required', 'numeric', 'decimal:0,2']),
             ImportColumn::make('notes')
                 ->rules(['nullable', 'string']),
+            ImportColumn::make('deleted_at')
+                ->date()
+                ->rules(['nullable', 'date']),
             ImportColumn::make('created_at')
                 ->date()
                 ->rules(['nullable', 'date']),

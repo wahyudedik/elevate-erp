@@ -3,6 +3,7 @@
 namespace App\Models\ManagementFinancial;
 
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -20,9 +21,10 @@ class Accounting extends Model
     }
 
     protected $table = 'accounts';
+
     protected $fillable = [
-        'user_id',
         'company_id',
+        'branch_id',
         'account_name',  
         'account_number', 
         'account_type', //asset, liability, equity, revenue, expense
@@ -34,6 +36,11 @@ class Accounting extends Model
         'initial_balance' => 'decimal:2',
         'current_balance' => 'decimal:2',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function journalEntries()
     {

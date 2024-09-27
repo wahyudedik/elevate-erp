@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Panel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use Spatie\Permission\Traits\HasRoles;
@@ -26,6 +27,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
 
     public function canAccessPanel(Panel $panel): bool
     {
+        //add validasi berdasarkan usertype
+
+        // if ($panel->getId() === 'admin') {
+        //     return $this->usertype === 'member' && 'staff';
+        // }
+
+        // if ($panel->getId() === 'dev') {
+        //     return $this->usertype === 'dev';
+        // }
+
+        // return false;
+
+
         // return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
         return true;
     }
@@ -45,12 +59,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         return $this->company()->whereKey($tenant)->exists();
     }
 
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class, 'user_id');
+    }
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
+        'image',
         'name',
         'email',
         'password',
@@ -85,5 +105,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     public function employee()
     {
         return $this->hasOne(Employee::class, 'user_id');
+    }
+
+    //relasi attendance
+    public function schedule()
+    {
+        return $this->hasMany(Schedule::class, 'user_id');
+    }
+
+    public function leave()
+    {
+        return $this->hasMany(Leave::class, 'user_id');
     }
 }
