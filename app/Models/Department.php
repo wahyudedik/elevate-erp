@@ -20,10 +20,18 @@ class Department extends Model
     protected $table = 'departments';
 
     protected $fillable = [
-        'name',
-        'description',
         'company_id',
         'branch_id',
+        'name',
+        'description',
+    ];
+
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'name' => 'string',
+        'description' => 'string',
     ];
 
     public function positions()

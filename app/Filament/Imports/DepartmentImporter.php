@@ -25,6 +25,15 @@ class DepartmentImporter extends Importer
                 ->requiredMapping()
                 ->rules(['required', 'max:255']),
             ImportColumn::make('description'),
+            ImportColumn::make('created_at')
+                ->date()
+                ->rules(['date']),
+            ImportColumn::make('updated_at')
+                ->date()
+                ->rules(['date']),
+            ImportColumn::make('deleted_at')
+                ->date()
+                ->rules(['date']),
         ];
     }
 

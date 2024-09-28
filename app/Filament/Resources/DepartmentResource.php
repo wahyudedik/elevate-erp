@@ -49,7 +49,7 @@ class DepartmentResource extends Resource
                 Forms\Components\Section::make('Department Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -87,6 +87,7 @@ class DepartmentResource extends Resource
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->searchable()
+                    ->icon('heroicon-o-building-storefront')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('name')
@@ -110,7 +111,7 @@ class DepartmentResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->since(),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')

@@ -144,6 +144,7 @@ class BranchResource extends Resource
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Branch Name')
+                    ->icon('heroicon-o-building-storefront')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('address')
@@ -195,6 +196,12 @@ class BranchResource extends Resource
                         'inactive' => 'danger',
                         default => 'secondary',
                     })
+                    ->icon(fn(string $state): string => match ($state) {
+                        'active' => 'heroicon-o-check-circle',
+                        'inactive' => 'heroicon-o-x-circle',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
+                    ->formatStateUsing(fn(string $state): string => $state === 'active' ? 'Active' : 'Inactive')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
@@ -207,7 +214,7 @@ class BranchResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('status')
@@ -243,26 +250,6 @@ class BranchResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('activate')
-                        ->label('Activate')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(function (Branch $record) {
-                            $record->status = 'info';
-                            $record->save();
-                        })
-                        ->requiresConfirmation()
-                        ->hidden(fn(Branch $record): bool => $record->status === 'active'),
-                    Tables\Actions\Action::make('deactivate')
-                        ->label('Deactivate')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('secondary')
-                        ->action(function (Branch $record) {
-                            $record->status = 'inactive';
-                            $record->save();
-                        })
-                        ->requiresConfirmation()
-                        ->hidden(fn(Branch $record): bool => $record->status === 'inactive'),
                 ])
             ])
             ->headerActions([
@@ -292,30 +279,6 @@ class BranchResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\BulkAction::make('activate')
-                        ->label('Activate Selected')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('info')
-                        ->action(function (Collection $records) {
-                            $records->each(function ($record) {
-                                $record->status = 'active';
-                                $record->save();
-                            });
-                        })
-                        ->requiresConfirmation()
-                        ->deselectRecordsAfterCompletion(),
-                    Tables\Actions\BulkAction::make('deactivate')
-                        ->label('Deactivate Selected')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('secondary')
-                        ->action(function (Collection $records) {
-                            $records->each(function ($record) {
-                                $record->status = 'inactive';
-                                $record->save();
-                            });
-                        })
-                        ->requiresConfirmation()
-                        ->deselectRecordsAfterCompletion(),
                     ExportBulkAction::make()->exporter(BranchExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')

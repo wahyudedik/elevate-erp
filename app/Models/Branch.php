@@ -42,6 +42,20 @@ class Branch extends Model
         'status',
     ];
 
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'name' => 'string',
+        'address' => 'string',
+        'phone' => 'string',
+        'email' => 'string',
+        'description' => 'string',
+        'latitude' => 'double',
+        'longitude' => 'double',
+        'radius' => 'integer',
+        'status' => 'string',
+    ];
+
     public function leave()
     {
         return $this->hasMany(Leave::class, 'branch_id');

@@ -60,10 +60,10 @@ class EditTeamProfile extends EditTenantProfile
                             ->maxLength(255),
                         TextInput::make('slogan')
                             ->maxLength(255),
-                        Textarea::make('mission')
-                            ->maxLength(65535),
-                        Textarea::make('vision')
-                            ->maxLength(65535),
+                        RichEditor::make('mission')
+                            ->columnSpanFull(),
+                        RichEditor::make('vision')
+                            ->columnSpanFull(),
                         Repeater::make('qna')
                             ->label('Q&A')
                             ->schema([

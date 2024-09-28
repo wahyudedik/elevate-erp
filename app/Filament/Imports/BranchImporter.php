@@ -39,8 +39,7 @@ class BranchImporter extends Importer
                 ->numeric()
                 ->rules(['nullable', 'integer']),
             ImportColumn::make('status')
-                ->rules(['nullable', 'string'])
-                ->default('active'),
+                ->rules(['nullable', 'string']),
         ];
     }
 
