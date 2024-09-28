@@ -29,7 +29,7 @@ class UserResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'members';
 
-    protected static ?string $navigationGroup = 'Account';
+    protected static ?string $navigationGroup = 'Management Users';
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
