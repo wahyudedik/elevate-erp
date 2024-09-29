@@ -25,6 +25,8 @@ class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationBadgeTooltip = 'Total Department';
 
     public static function getNavigationBadge(): ?string
@@ -39,6 +41,8 @@ class DepartmentResource extends Resource
     protected static ?string $tenantRelationshipName = 'departments';
 
     protected static ?string $navigationGroup = 'Master Data';
+
+    protected static ?string $navigationParentItem = null;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 

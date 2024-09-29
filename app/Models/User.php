@@ -20,28 +20,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasTenants
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens;
 
     public function canAccessPanel(Panel $panel): bool
     {
         //add validasi berdasarkan usertype
+        if ($panel->getId() === 'admin') {
+            return in_array($this->usertype, ['member', 'staff', 'dev']);
+        }
 
-        // if ($panel->getId() === 'admin') {
-        //     return $this->usertype === 'member' && 'staff';
-        // }
+        if ($panel->getId() === 'dev') {
+            return $this->usertype === 'dev';
+        }
 
-        // if ($panel->getId() === 'dev') {
-        //     return $this->usertype === 'dev';
-        // }
-
-        // return false;
-
+        return false;
 
         // return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
-        return true;
+        // return true;
     }
 
     public function company(): BelongsToMany

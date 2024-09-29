@@ -109,9 +109,19 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
                 // MenuItem::make()
-                //     ->label('Settings')
+                //     ->label('Webchat')
                 //     ->url(fn (): string => Settings::getUrl())
-                //     ->icon('heroicon-m-cog-8-tooth'),
+                //     ->icon('heroicon-m-chat-bubble-left-right'),
+                // ...
+                // MenuItem::make()
+                //     ->label('Webcam')
+                //     ->url(fn (): string => Settings::getUrl())
+                //     ->icon('heroicon-m-video-camera'),
+                // ...
+                // MenuItem::make()
+                //     ->label('Wallet')
+                //     ->url(fn (): string => Settings::getUrl())
+                //     ->icon('heroicon-m-wallet'),
                 // ...
             ])
             ->tenantMiddleware([
