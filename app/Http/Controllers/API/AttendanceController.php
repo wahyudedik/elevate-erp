@@ -221,8 +221,8 @@ class AttendanceController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Success get image',
-            // 'data' => $user->image_url
-            'data' => $user->image
+            'data' => $user->image_url
+            // 'data' => $user->image
         ]);
     }
 

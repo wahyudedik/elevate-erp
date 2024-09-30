@@ -100,6 +100,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         ];
     }
 
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? url('storage/'. $this->image) : null;
+    }
+
     //relasi employee
     public function employee()
     {
