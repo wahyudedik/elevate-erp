@@ -16,13 +16,12 @@
 
 .fi-sidebar-item-button {
     transition: all 0.3s ease;
-}
-
-.fi-sidebar-item-button:hover,
-.fi-sidebar-item-button:focus {
-    background-color: #ffffff;
-    color: #000000;
-    transform: translateX(5px);
+    
+    &:hover, &:focus {
+        background-color: #ffffff;
+        color: #000000;
+        transform: translateX(5px);
+    }
 }
 
 .fi-sidebar-item-label {
@@ -45,7 +44,7 @@
 .fi-sidebar-group {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #023150;
+    border-top: 1px solid #000000;
 }
 
 .fi-sidebar-item-icon {
@@ -75,28 +74,6 @@
 
 .fi-sidebar-item:last-child {
     border-bottom: none;
-}
-
-.fi-sidebar-item-grouped-border .absolute,
-.fi-sidebar-item-grouped-border .relative {
-    background-color: #023150;
-    color: #000000;
-}
-
-.fi-sidebar-sub-group-items {
-    color: #000000;
-    padding-left: 1rem;
-}
-
-.fi-sidebar-group-label {
-    color: #000000;
-    font-weight: bold;
-}
-
-.fi-icon-btn-icon,
-.fi-dropdown-list-item-label {
-    color: #023150;
-    transition: all 0.3s ease;
 }
 
 /* Topbar */
@@ -160,7 +137,12 @@
     color: #6b7280;
 }
 
-.fi-main,
+/* main content */
+.fi-main {
+    background-color: #f1f1f1;
+    color: #000000;
+}
+
 .fi-body {
     background-color: #f1f1f1;
     color: #000000;

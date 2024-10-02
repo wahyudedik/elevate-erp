@@ -46,12 +46,12 @@ class AdminPanelProvider extends PanelProvider
             // ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([
-                'primary' => Color::Blue,
-                'danger' => Color::Red,
-                'gray' => Color::Zinc,
-                'info' => Color::Amber,
-                'success' => Color::Green,
-                'warning' => Color::Sky,
+                'danger' => '#FF0000',
+                'gray' => '#808080',
+                'info' => '#0000FF',
+                'primary' => '#0880bc',
+                'success' => '#008000',
+                'warning' => '#FFA500',
             ])
 
             ->navigationGroups([
@@ -129,6 +129,7 @@ class AdminPanelProvider extends PanelProvider
             ], isPersistent: true)
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 }

@@ -28,7 +28,12 @@ class DevPanelProvider extends PanelProvider
             ->path('dev')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'danger' => '#FF0000',
+                'gray' => '#808080',
+                'info' => '#0000FF',
+                'primary' => '#0880bc',
+                'success' => '#008000',
+                'warning' => '#FFA500',
             ])
             ->discoverResources(in: app_path('Filament/Dev/Resources'), for: 'App\\Filament\\Dev\\Resources')
             ->discoverPages(in: app_path('Filament/Dev/Pages'), for: 'App\\Filament\\Dev\\Pages')
@@ -59,6 +64,7 @@ class DevPanelProvider extends PanelProvider
                     ->label('Pulse')
                     ->icon('heroicon-o-chart-bar')
                     ->url('/pulse'),
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/dev/theme.css');
     }
 }
