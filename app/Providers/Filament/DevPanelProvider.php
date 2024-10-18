@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use BladeUI\Icons\Components\Icon;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -18,6 +19,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Routing\Route;
 
 class DevPanelProvider extends PanelProvider
 {
@@ -27,24 +29,24 @@ class DevPanelProvider extends PanelProvider
             ->id('dev')
             ->path('dev')
             ->login()
+            ->sidebarFullyCollapsibleOnDesktop()
+            ->brandName('Elevate ERP')
+            ->brandLogo(asset('home/assets/img/1-removebg.png'),)
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('home/assets/img/2.png'))
             ->colors([
-                'danger' => '#FF0000',
-                'gray' => '#808080',
-                'info' => '#0000FF',
-                'primary' => '#0880bc',
-                'success' => '#008000',
-                'warning' => '#FFA500',
+                'danger' => Color::Red,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'primary' => 'rgb(52, 80, 124)',
+                'success' => Color::Green,
+                'warning' => Color::Yellow,
             ])
             ->discoverResources(in: app_path('Filament/Dev/Resources'), for: 'App\\Filament\\Dev\\Resources')
             ->discoverPages(in: app_path('Filament/Dev/Pages'), for: 'App\\Filament\\Dev\\Pages')
-            ->pages([
-                Pages\Dashboard::class,
-            ])
+            ->pages([])
             ->discoverWidgets(in: app_path('Filament/Dev/Widgets'), for: 'App\\Filament\\Dev\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -55,16 +57,19 @@ class DevPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
             ->userMenuItems([
-                MenuItem::make()
-                    ->label('Pulse')
-                    ->icon('heroicon-o-chart-bar')
-                    ->url('/pulse'),
+                // MenuItem::make()
+                //     ->label('Pulse')
+                //     ->icon('heroicon-o-chart-bar')
+                //     ->url('/pulse'),
             ])
-            ->viteTheme('resources/css/filament/dev/theme.css');
+            ->plugins([
+                \Hasnayeen\Themes\ThemesPlugin::make()
+            ]);
     }
 }

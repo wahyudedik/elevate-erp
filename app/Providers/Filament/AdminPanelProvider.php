@@ -37,21 +37,21 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
-            ->emailVerification()
-            ->passwordReset()
+            // ->registration()
+            // ->emailVerification()
+            // ->passwordReset()
             ->sidebarCollapsibleOnDesktop()
             ->brandName('Elevate ERP')
-            // ->brandLogo(asset('home/assets/img/3-removebg-preview.png'),)
+            ->brandLogo(asset('home/assets/img/3-removebg-preview.png'),)
             // ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([
-                'danger' => '#FF0000',
-                'gray' => '#808080',
-                'info' => '#0000FF',
-                'primary' => '#0880bc',
-                'success' => '#008000',
-                'warning' => '#FFA500',
+                'danger' => Color::Red,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'primary' => '#34507c',
+                'success' => Color::Green,
+                'warning' => Color::Yellow,
             ])
 
             ->navigationGroups([
@@ -84,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -126,10 +127,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ], isPersistent: true)
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
-            ])
-            ->viteTheme('resources/css/filament/admin/theme.css');
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                \Hasnayeen\Themes\ThemesPlugin::make()
+            ]);
     }
 }
