@@ -17,6 +17,11 @@ class CompanyUser extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'company_id' => 'integer',
+        'user_id' => 'integer',
+    ];
+
     public function company()
     {
         return $this->belongsToMany(Company::class, 'company_id');

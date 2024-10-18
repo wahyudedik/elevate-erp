@@ -33,27 +33,27 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->profile()
             ->id('admin')
             ->path('admin')
             ->login()
             // ->registration()
-            // ->emailVerification()
-            // ->passwordReset()
-            ->sidebarCollapsibleOnDesktop()
+            ->emailVerification()
+            ->passwordReset()
+            ->profile()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->brandName('Elevate ERP')
-            ->brandLogo(asset('home/assets/img/3-removebg-preview.png'),)
-            // ->brandLogoHeight('2rem')
+            ->brandLogo(asset('home/assets/img/1-removebg.png'),)
+            ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
-                'primary' => '#34507c',
+                // 'primary' => '#34507c',
+                'primary' => 'rgb(52, 80, 124)',
                 'success' => Color::Green,
                 'warning' => Color::Yellow,
             ])
-
             ->navigationGroups([
                 'Master Data',
                 'Management Users',
@@ -66,9 +66,7 @@ class AdminPanelProvider extends PanelProvider
                 'Management Supplier',
                 'Reports',
             ])
-
             ->databaseNotifications()
-
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([])
@@ -84,7 +82,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -93,14 +90,13 @@ class AdminPanelProvider extends PanelProvider
             ->tenant(Company::class, ownershipRelationship: 'company', slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
             ->tenantProfile(EditTeamProfile::class)
-            // ->tenantDomain('{tenant:slug}.localhost')
             ->tenantMenuItems([
                 'profile' => MenuItem::make()
                     ->label('Edit Company profile')
-                    ->visible(fn(): bool => Auth::user()->usertype === 'member'),
+                    ->visible(fn(): bool => Auth::user()->usertype === 'member' || Auth::user()->usertype === 'dev'),
                 'register' => MenuItem::make()
                     ->label('Register new Company')
-                    ->visible(fn(): bool => Auth::user()->usertype === 'member'),
+                    ->visible(fn(): bool => Auth::user()->usertype === 'member' || Auth::user()->usertype === 'dev'),
                 // MenuItem::make()
                 //     ->label('Settings')
                 //     ->url(fn (): string => Settings::getUrl())
@@ -127,11 +123,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
-                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
             ], isPersistent: true)
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 \Hasnayeen\Themes\ThemesPlugin::make()
+                // ->canViewThemesPage(fn () => Auth::user()->usertype === 'dev'),
             ]);
     }
 }
