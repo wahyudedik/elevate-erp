@@ -6,17 +6,19 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup; 
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Clusters\CustomerRelations;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -30,18 +32,19 @@ class CustomerInteractionResource extends Resource
 {
     protected static ?string $model = CustomerInteraction::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Customer Interactions';
+    protected static ?string $cluster = CustomerRelations::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 18;
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'customerInteractions';
 
     protected static ?string $navigationGroup = 'Management CRM';
 
-    protected static ?string $navigationParentItem = 'Customer Relation';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'carbon-customer-service';
 
     public static function form(Form $form): Form
     {
@@ -51,6 +54,11 @@ class CustomerInteractionResource extends Resource
                     ->schema([
                         Section::make('Data Customer')
                             ->schema([
+                                Forms\Components\Select::make('branch_id')
+                                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                                    ->nullable()
+                                    ->searchable()
+                                    ->preload(),
                                 Forms\Components\Select::make('customer_id')
                                     ->relationship('customer', 'name', function ($query) {
                                         return $query->where('status', 'active');
@@ -59,6 +67,13 @@ class CustomerInteractionResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->createOptionForm([
+                                        Forms\Components\Hidden::make('company_id')
+                                            ->default(Filament::getTenant()->id),
+                                        Forms\Components\Select::make('branch_id')
+                                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                                            ->nullable()
+                                            ->searchable()
+                                            ->preload(),
                                         Forms\Components\TextInput::make('name')
                                             ->required()
                                             ->maxLength(255),
@@ -122,6 +137,12 @@ class CustomerInteractionResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('customer.name')
                     ->label('Customer')
                     ->sortable()
@@ -176,8 +197,13 @@ class CustomerInteractionResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('customer')
                     ->relationship('customer', 'name')
@@ -272,9 +298,6 @@ class CustomerInteractionResource extends Resource
                     Tables\Actions\Action::make('jadwalkanMeet')
                         ->icon('heroicon-o-calendar')
                         ->color('primary')
-                        ->action(function (CustomerInteraction $record) {
-                            // Add logic to schedule a meeting
-                        })
                         ->form([
                             Forms\Components\DateTimePicker::make('meeting_time')
                                 ->label('Meeting Time')
@@ -283,10 +306,27 @@ class CustomerInteractionResource extends Resource
                                 ->label('Meeting Link')
                                 ->url()
                                 ->required(),
-                        ]),
+                        ])
+                        ->action(function (array $data, CustomerInteraction $record) {
+                            // Add logic to schedule a meeting
+                            $customer = $record->customer;
+                            $meetingTime = $data['meeting_time'];
+                            $meetingLink = $data['meeting_link'];
+                            $emailContent = "Meeting scheduled for: " . $meetingTime . "\nMeeting Link: " . $meetingLink . "\n\n" . ($record->details ?? 'No details provided.');
+
+                            Mail::to($customer->email)->send(new \App\Mail\CustomerInteractionFollowUpMeet($customer, $emailContent));
+
+                            Notification::make()
+                                ->title('Email Sent')
+                                ->body("An email has been sent to {$customer->name} schedule meet")
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(CustomerInteractionExporter::class)
@@ -358,5 +398,17 @@ class CustomerInteractionResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'customer_id',
+            'interaction_type',   // call, email, meeting, note, etc.
+            'interaction_date',
+            'details',
+        ];
     }
 }

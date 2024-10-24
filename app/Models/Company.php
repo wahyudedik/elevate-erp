@@ -20,6 +20,7 @@ use App\Models\ManagementSDM\EmployeePosition;
 use App\Models\ManagementFinancial\Transaction;
 use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementCRM\CustomerInteraction;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
@@ -50,6 +51,11 @@ class Company extends Model implements HasCurrentTenantLabel
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function customerInteractions()
+    {
+        return $this->hasMany(CustomerInteraction::class, 'company_id');
+    }
 
     public function customer()
     {

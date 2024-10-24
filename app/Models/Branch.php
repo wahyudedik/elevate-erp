@@ -16,6 +16,7 @@ use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\Transaction;
 use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementCRM\CustomerInteraction;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -57,6 +58,11 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function customerInteractions()
+    {
+        return $this->hasMany(CustomerInteraction::class, 'branch_id');
+    }
 
     public function customer()
     {

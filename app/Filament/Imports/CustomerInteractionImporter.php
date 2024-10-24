@@ -18,19 +18,27 @@ class CustomerInteractionImporter extends Importer
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'unique:customer_interactions,id']),
-            ImportColumn::make('customer_id')
+            ImportColumn::make('company_id')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'exists:customers,id']),
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:branches,id']),
+            ImportColumn::make('customer_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:customers,id']),
             ImportColumn::make('interaction_date')
                 ->requiredMapping()
                 ->date(),
             ImportColumn::make('interaction_type')
                 ->requiredMapping()
-                ->enum(['email', 'call', 'meeting', 'chat']),
+                ->json(),
             ImportColumn::make('details')
                 ->rules(['nullable', 'string']),
-
+            ImportColumn::make('deleted_at')
+                ->date()
+                ->rules(['nullable', 'date']),
             ImportColumn::make('created_at')
                 ->date()
                 ->rules(['nullable', 'date']),
