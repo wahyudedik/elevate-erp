@@ -6,7 +6,7 @@ use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletes; 
 use Illuminate\Notifications\Notifiable;
 
 class CustomerInteraction extends Model

@@ -15,10 +15,10 @@ class Accounting extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'accounts';
 
@@ -33,6 +33,11 @@ class Accounting extends Model
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'account_name' => 'string',  
+        'account_number' => 'integer', 
+        'account_type' => 'string', //asset, liability, equity, revenue, expense
         'initial_balance' => 'decimal:2',
         'current_balance' => 'decimal:2',
     ];
@@ -56,10 +61,5 @@ class Accounting extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
-
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class, 'user_id');
-    // }
     
 }

@@ -23,18 +23,17 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Filament\Resources\TransactionResource\RelationManagers\LedgerRelationManager;
+use App\Filament\Clusters\Ledger as ledgers;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\LinkAction;
 
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Transactions';
+    protected static ?int $navigationSort = 10;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-
+    protected static ?string $cluster = ledgers::class;
 
     protected static bool $isScopedToTenant = true;
 
@@ -42,11 +41,9 @@ class TransactionResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'transaction';
 
-    protected static ?string $navigationGroup = 'Management Financial';
+    protected static ?string $navigationGroup = 'Book Keeping';
 
-    protected static ?string $navigationParentItem = 'Book Keeping';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     public static function form(Form $form): Form
     {
@@ -55,7 +52,7 @@ class TransactionResource extends Resource
                 Forms\Components\Section::make('Transaction Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'Active'))
                             ->required()
                             ->searchable()
                             ->preload()
@@ -68,7 +65,7 @@ class TransactionResource extends Resource
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
                                 Forms\Components\Select::make('branch_id')
-                                    ->relationship('branch', 'name')
+                                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'Active'))
                                     ->required()
                                     ->searchable()
                                     ->preload()
@@ -286,6 +283,8 @@ class TransactionResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(TransactionExporter::class)
@@ -397,5 +396,18 @@ class TransactionResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'ledger_id',
+            'transaction_number',
+            'status',
+            'amount',
+            'notes',
+        ];
     }
 }

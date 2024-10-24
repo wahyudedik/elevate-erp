@@ -15,12 +15,17 @@ class CustomerExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id')
+                ->label('Company'),
+            ExportColumn::make('branch_id')
+                ->label('Branch'),
             ExportColumn::make('name'),
             ExportColumn::make('email'),
             ExportColumn::make('phone'),
             ExportColumn::make('address'),
             ExportColumn::make('company'),
             ExportColumn::make('status'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];

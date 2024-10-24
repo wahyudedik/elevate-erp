@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\IncomeStatementResource\Pages;
 
-use App\Filament\Resources\IncomeStatementResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\IncomeStatementResource;
+use App\Filament\Resources\IncomeStatementResource\Widgets\IncomeStatementStatWidget;
 
 class ListIncomeStatements extends ListRecords
 {
@@ -13,8 +14,15 @@ class ListIncomeStatements extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return[
+            IncomeStatementStatWidget::class,
         ];
     }
 }

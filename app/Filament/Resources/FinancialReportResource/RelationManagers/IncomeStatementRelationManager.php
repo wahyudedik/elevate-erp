@@ -33,7 +33,7 @@ class IncomeStatementRelationManager extends RelationManager
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->required()
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'Active'))
                             ->searchable()
                             ->preload(),
                         Forms\Components\TextInput::make('total_revenue')

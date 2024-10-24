@@ -1,38 +1,36 @@
 <?php
 
-namespace App\Filament\Resources\CustomerResource\Widgets;
+namespace App\Filament\Resources\PositionResource\Widgets;
 
-use App\Models\ManagementCRM\Customer;
+use App\Models\Company;
+use App\Models\Position;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
-class CustomerStatsOverviewWidget extends BaseWidget
+class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Customers', $this->formatNumber(Customer::count()))
-                ->icon('heroicon-o-users')
+            Stat::make('Total Positions', $this->formatNumber(Position::count()))->icon('heroicon-o-briefcase')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Total registered customers')
+                ->description('Total positions in the system')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Active Customers', $this->formatNumber(Customer::where('status', 'active')->count()))
-                ->icon('heroicon-o-user-circle')
-                ->description('Customers with active status')
+            Stat::make('Positions by Company', $this->formatNumber(Company::has('positions')->count()))->icon('heroicon-o-building-office')
+                ->description('Companies with positions')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('primary'),
-            Stat::make('Inactive Customers', $this->formatNumber(Customer::where('status', 'inactive')->count()))
-                ->icon('heroicon-o-user-minus')
-                ->description("Customers with inactive status")
-                ->descriptionIcon('heroicon-o-chevron-down', 'before')
-                ->descriptionColor('danger')
-                ->iconColor('danger')
+                ->iconColor('warning'),
+            Stat::make('Positions with Departments', $this->formatNumber(Position::whereNotNull('department_id')->count()))->icon('heroicon-o-building-office-2')
+                ->description("Positions linked to departments")
+                ->descriptionIcon('heroicon-o-chevron-up', 'before')
+                ->descriptionColor('success')
+                ->iconColor('primary')
         ];
     }
 

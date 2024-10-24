@@ -14,10 +14,10 @@ class IncomeStatement extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'income_statements';
 
@@ -28,6 +28,15 @@ class IncomeStatement extends Model
         'total_revenue',
         'total_expenses',
         'net_income',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'financial_report_id' => 'integer',
+        'total_revenue' => 'decimal:2',
+        'total_expenses' => 'decimal:2',
+        'net_income' => 'decimal:2',
     ];
 
     public function branch()

@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Filament\Notifications\Notification;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class InteractionsRelationManager extends RelationManager
 {
@@ -25,6 +27,15 @@ class InteractionsRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Section::make('Customer Interaction Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
+
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+
                         Forms\Components\DatePicker::make('interaction_date')
                             ->required()
                             ->default(now()),
@@ -233,6 +244,10 @@ class InteractionsRelationManager extends RelationManager
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ])
+            ->emptyStateActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
             ]);
     }
 

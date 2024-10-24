@@ -14,10 +14,10 @@ class FinancialReport extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'financial_reports'; 
 
@@ -29,6 +29,16 @@ class FinancialReport extends Model
         'report_period_start',
         'report_period_end',
         'notes',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'report_name' => 'string',
+        'report_type' => 'string', //'balance_sheet', 'income_statement', 'cash_flow'
+        'report_period_start' =>  'date',
+        'report_period_end' =>  'date',
+        'notes' => 'string',
     ];
 
     public function branch()

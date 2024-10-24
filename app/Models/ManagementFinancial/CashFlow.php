@@ -14,10 +14,10 @@ class CashFlow extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'cash_flows';
 
@@ -29,6 +29,16 @@ class CashFlow extends Model
         'investing_cash_flow',
         'financing_cash_flow',
         'net_cash_flow',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'financial_report_id' => 'integer',
+        'operating_cash_flow' => 'decimal:2',
+        'investing_cash_flow' => 'decimal:2',
+        'financing_cash_flow' => 'decimal:2',
+        'net_cash_flow' => 'decimal:2',
     ];
 
     public function branch()

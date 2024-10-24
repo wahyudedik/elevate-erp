@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\ManagementSDM\Payroll;
+use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Model;
@@ -49,6 +50,11 @@ class Company extends Model implements HasCurrentTenantLabel
     protected $casts = [
         'qna' => 'array',
     ];
+
+    public function customer()
+    {
+        return $this->hasMany(Customer::class, 'company_id');
+    }
 
     public function leave()
     {

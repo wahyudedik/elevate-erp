@@ -21,25 +21,22 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\JournalEntryResource\Pages;
 use App\Filament\Resources\JournalEntryResource\RelationManagers;
 use App\Filament\Resources\JournalEntryResource\RelationManagers\AccountRelationManager;
+use Doctrine\DBAL\Query;
 use Filament\Tables\Actions\ActionGroup;
 
 class JournalEntryResource extends Resource
 {
     protected static ?string $model = JournalEntry::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Journal Entries';
+    protected static ?int $navigationSort = 8;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static bool $isScopedToTenant = true;
 
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
     protected static ?string $tenantRelationshipName = 'journalEntry';
 
     protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Accounts';
 
     protected static ?string $navigationIcon = 'bi-journal-bookmark-fill';
 
@@ -50,7 +47,7 @@ class JournalEntryResource extends Resource
                 Forms\Components\Section::make('Journal Entry')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->label('Branch')
                             ->searchable()
@@ -377,5 +374,16 @@ class JournalEntryResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'entry_date',
+            'description',
+            'entry_type',
+            'amount',
+            'account_id',
+        ];
     }
 }

@@ -3,7 +3,10 @@
 namespace App\Filament\Resources\BranchResource\Pages;
 
 use App\Filament\Resources\BranchResource;
+use App\Filament\Resources\BranchResource\Widgets\AdvancedStatsOverviewWidget;
+use App\Filament\Resources\CustomerResource\Widgets\CustomerStatsOverviewWidget;
 use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListBranches extends ListRecords
@@ -13,8 +16,14 @@ class ListBranches extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // CreateAction::make()
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

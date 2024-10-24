@@ -16,6 +16,7 @@ use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Clusters\FinancialReporting;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Exports\BalanceSheetExporter;
 use App\Filament\Imports\BalanceSheetImporter;
@@ -25,17 +26,15 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BalanceSheetResource\Pages;
 use App\Filament\Resources\BalanceSheetResource\RelationManagers;
 use App\Filament\Resources\BalanceSheetResource\RelationManagers\FinancialReportRelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class BalanceSheetResource extends Resource
 {
     protected static ?string $model = BalanceSheet::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Balance Sheets';
+    protected static ?string $cluster = FinancialReporting::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 13;
 
     protected static bool $isScopedToTenant = true;
 
@@ -43,9 +42,7 @@ class BalanceSheetResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'balanceSheet';
 
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Financial Reporting';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -56,7 +53,7 @@ class BalanceSheetResource extends Resource
                 Forms\Components\Section::make('Balance Sheet Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -69,7 +66,7 @@ class BalanceSheetResource extends Resource
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
                                 Forms\Components\Select::make('branch_id')
-                                    ->relationship('branch', 'name')
+                                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                                     ->searchable()
                                     ->preload()
                                     ->required(),
@@ -258,6 +255,8 @@ class BalanceSheetResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(BalanceSheetExporter::class)
@@ -362,5 +361,17 @@ class BalanceSheetResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'branch_id',
+            'company_id',
+            'financial_report_id',
+            'total_assets',
+            'total_liabilities',
+            'total_equity',
+        ];
     }
 }

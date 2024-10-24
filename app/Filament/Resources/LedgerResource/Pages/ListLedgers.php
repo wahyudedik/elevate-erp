@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\LedgerResource\Pages;
 
-use App\Filament\Resources\LedgerResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\LedgerResource;
+use App\Filament\Resources\LedgerResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListLedgers extends ListRecords
 {
@@ -13,8 +14,14 @@ class ListLedgers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            //
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

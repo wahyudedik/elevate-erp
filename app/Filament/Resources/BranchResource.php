@@ -20,6 +20,7 @@ use Humaidem\FilamentMapPicker\Fields\OSMMap;
 use App\Filament\Resources\BranchResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BranchResource\RelationManagers;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,12 +28,7 @@ class BranchResource extends Resource
 {
     protected static ?string $model = Branch::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Branch';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 4;
 
     protected static bool $isScopedToTenant = true;
 
@@ -41,8 +37,6 @@ class BranchResource extends Resource
     protected static ?string $tenantRelationshipName = 'branches';
 
     protected static ?string $navigationGroup = 'Master Data';
-
-    // protected static ?string $navigationParentItem = '';
 
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
@@ -253,6 +247,8 @@ class BranchResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(BranchExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
@@ -318,5 +314,15 @@ class BranchResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'name',
+            'address',
+            'phone',
+            'email',
+        ];
     }
 }

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\ManagementFinancial\Transaction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Resources\RelationManagers\RelationManager; 
 
 class TransactionsRelationManager extends RelationManager
 {
@@ -36,7 +36,7 @@ class TransactionsRelationManager extends RelationManager
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload(),

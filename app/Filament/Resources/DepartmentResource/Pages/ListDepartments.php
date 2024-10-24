@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\DepartmentResource\Pages;
 
-use App\Filament\Resources\DepartmentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\DepartmentResource;
+use App\Filament\Resources\DepartmentResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListDepartments extends ListRecords
 {
@@ -12,9 +13,13 @@ class ListDepartments extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        return [];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

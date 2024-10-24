@@ -30,24 +30,21 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Filament\Resources\AccountingResource\RelationManagers;
 use App\Filament\Resources\AccountingResource\RelationManagers\LedgerRelationManager;
 use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class AccountingResource extends Resource
 {
     protected static ?string $model = Accounting::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Accounts';
+    protected static ?int $navigationSort = 7;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
     protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
     protected static ?string $tenantRelationshipName = 'accounting';
 
     protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Accounts';
 
     protected static ?string $navigationIcon = 'mdi-finance';
 
@@ -58,7 +55,7 @@ class AccountingResource extends Resource
                 Forms\Components\Section::make('Account Information')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
                             ->preload(),
@@ -330,6 +327,8 @@ class AccountingResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(AccountingExporter::class)
@@ -472,5 +471,16 @@ class AccountingResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'account_name',
+            'account_number',
+            'account_type', //asset, liability, equity, revenue, expense
+            'initial_balance',
+            'current_balance',
+        ];
     }
 }

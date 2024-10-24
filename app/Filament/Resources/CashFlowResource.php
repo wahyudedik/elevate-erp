@@ -20,6 +20,7 @@ use App\Filament\Exports\CashFlowExporter;
 use App\Filament\Imports\CashFlowImporter;
 use App\Models\ManagementFinancial\CashFlow;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Clusters\FinancialReporting;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\CashFlowResource\Pages;
 use App\Models\ManagementFinancial\FinancialReport;
@@ -31,12 +32,9 @@ class CashFlowResource extends Resource
 {
     protected static ?string $model = CashFlow::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Cash Flows';
+    protected static ?string $cluster = FinancialReporting::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 14;
 
     protected static bool $isScopedToTenant = true;
 
@@ -44,9 +42,7 @@ class CashFlowResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'cashFlow';
 
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Financial Reporting';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -57,7 +53,7 @@ class CashFlowResource extends Resource
                 Forms\Components\Section::make('Cash Flow Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -70,7 +66,7 @@ class CashFlowResource extends Resource
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
                                 Forms\Components\Select::make('branch_id')
-                                    ->relationship('branch', 'name')
+                                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                                     ->searchable()
                                     ->preload()
                                     ->required(),
@@ -268,6 +264,8 @@ class CashFlowResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(CashFlowExporter::class)
@@ -378,5 +376,18 @@ class CashFlowResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'financial_report_id',
+            'operating_cash_flow',
+            'investing_cash_flow',
+            'financing_cash_flow',
+            'net_cash_flow',
+        ];
     }
 }

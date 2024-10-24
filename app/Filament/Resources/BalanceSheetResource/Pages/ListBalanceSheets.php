@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\BalanceSheetResource\Pages;
 
-use App\Filament\Resources\BalanceSheetResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\BalanceSheetResource;
+use App\Filament\Resources\BalanceSheetResource\Widgets\BalanceSheetStatWidget;
 
 class ListBalanceSheets extends ListRecords
 {
@@ -13,8 +14,15 @@ class ListBalanceSheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            BalanceSheetStatWidget::class,
         ];
     }
 }

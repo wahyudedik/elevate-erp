@@ -14,10 +14,10 @@ class BalanceSheet extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'balance_sheets';
 
@@ -28,6 +28,15 @@ class BalanceSheet extends Model
         'total_assets',
         'total_liabilities',
         'total_equity',
+    ];
+
+    protected $casts = [
+        'branch_id' => 'integer',
+        'company_id' => 'integer',
+        'financial_report_id' => 'integer',
+        'total_assets' => 'decimal:2',
+        'total_liabilities' => 'decimal:2',
+        'total_equity' => 'decimal:2',
     ];
 
     public function branch()

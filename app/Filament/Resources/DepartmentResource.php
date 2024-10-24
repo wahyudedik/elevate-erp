@@ -19,20 +19,14 @@ use App\Filament\Imports\DepartmentImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\DepartmentResource\Pages;
 use App\Filament\Resources\DepartmentResource\RelationManagers;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportBulkAction;
 
 class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationBadgeTooltip = 'Total Department';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 5;
 
     protected static bool $isScopedToTenant = true;
 
@@ -41,8 +35,6 @@ class DepartmentResource extends Resource
     protected static ?string $tenantRelationshipName = 'departments';
 
     protected static ?string $navigationGroup = 'Master Data';
-
-    protected static ?string $navigationParentItem = null;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
@@ -149,6 +141,8 @@ class DepartmentResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(DepartmentExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
@@ -214,5 +208,13 @@ class DepartmentResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'name',
+            'description',
+        ];
     }
 }

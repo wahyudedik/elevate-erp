@@ -2,15 +2,17 @@
 
 namespace App\Models\ManagementCRM;
 
+use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\ManagementSalesAndPurchasing\OrderProcessing;
 use App\Models\ManagementSalesAndPurchasing\SalesTransaction;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable;
 
 class Customer extends Model
 {
@@ -21,6 +23,8 @@ class Customer extends Model
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
+        'company_id',
+        'branch_id',
         'name',
         'email',
         'phone',
@@ -31,9 +35,26 @@ class Customer extends Model
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'name' => 'string',
+        'email' => 'string',
+        'phone' => 'string',
+        'address' => 'string',
+        'company' => 'string',
         'status' => 'string',
     ];
-    
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
     public function interactions()
     {
         return $this->hasMany(CustomerInteraction::class);

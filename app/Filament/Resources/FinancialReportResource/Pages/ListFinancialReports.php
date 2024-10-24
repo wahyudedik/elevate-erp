@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\FinancialReportResource\Pages;
 
-use App\Filament\Resources\FinancialReportResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\FinancialReportResource;
+use App\Filament\Resources\FinancialReportResource\Widgets\FinancialReport;
 
 class ListFinancialReports extends ListRecords
 {
@@ -13,8 +14,15 @@ class ListFinancialReports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            FinancialReport::class,
         ];
     }
 }

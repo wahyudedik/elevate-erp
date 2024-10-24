@@ -14,17 +14,27 @@ class CustomerImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->required()
+                ->numeric(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable(),
             ImportColumn::make('name')
                 ->required(),
             ImportColumn::make('email')
                 ->required()
-                ->unique(),
-            ImportColumn::make('phone'),
-            ImportColumn::make('address'),
-            ImportColumn::make('company'),
+                ->rules(['email', 'unique:customers,email']),
+            ImportColumn::make('phone')
+                ->nullable(),
+            ImportColumn::make('address')
+                ->nullable(),
+            ImportColumn::make('company')
+                ->nullable(),
             ImportColumn::make('status')
+                ->required()
                 ->rules(['in:active,inactive'])
-                ->default('active'),
+                ->default('active')
         ];
     }
 

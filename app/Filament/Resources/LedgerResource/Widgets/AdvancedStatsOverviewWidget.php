@@ -38,13 +38,18 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->iconColor('danger'),
 
             Stat::make('Latest Transaction Date', function () {
-                return Ledger::latest('transaction_date')->value('transaction_date');
+                return $this->formatDate(Ledger::latest('transaction_date')->value('transaction_date'));
             })->icon('heroicon-o-calendar')
                 ->description('Most recent transaction')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
         ];
+    }
+
+    protected function formatDate($date)
+    {
+        return $date->format('d M Y');
     }
 
     protected function formatNumber($number)

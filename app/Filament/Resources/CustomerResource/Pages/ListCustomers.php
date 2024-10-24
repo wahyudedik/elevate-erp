@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\CustomerResource\Pages;
 
-use App\Filament\Resources\CustomerResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\CustomerResource;
+use App\Filament\Resources\CustomerResource\Widgets\CustomerStatsOverviewWidget;
 
 class ListCustomers extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListCustomers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return[
+            CustomerStatsOverviewWidget::class,
         ];
     }
 }

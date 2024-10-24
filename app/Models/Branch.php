@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\Scopes\CompanyScope;
+use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementSDM\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -23,10 +24,11 @@ class Branch extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
+    
     protected $table = 'branches';
 
     protected $fillable = [
@@ -55,6 +57,11 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function customer()
+    {
+        return $this->hasMany(Customer::class, 'branch_id');
+    }
 
     public function leave()
     {

@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\PositionResource\Pages;
 
-use App\Filament\Resources\PositionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\PositionResource;
+use App\Filament\Resources\PositionResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListPositions extends ListRecords
 {
@@ -12,9 +13,13 @@ class ListPositions extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        return [];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus')
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

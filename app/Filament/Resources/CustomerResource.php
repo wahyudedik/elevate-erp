@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CustomerRelations;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -30,16 +31,17 @@ class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Customers';
+    protected static ?string $cluster = CustomerRelations::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 17;
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'customer';
 
     protected static ?string $navigationGroup = 'Management CRM';
-
-    protected static ?string $navigationParentItem = 'Customer Relation';
 
     protected static ?string $navigationIcon = 'carbon-customer';
 
@@ -49,6 +51,11 @@ class CustomerResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Customer Profile')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
@@ -60,7 +67,7 @@ class CustomerResource extends Resource
                         Forms\Components\TextInput::make('phone')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\Textarea::make('address')
+                        Forms\Components\RichEditor::make('address')
                             ->maxLength(65535)
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('company')
@@ -96,6 +103,11 @@ class CustomerResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->toggleable()
@@ -126,8 +138,13 @@ class CustomerResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -198,6 +215,8 @@ class CustomerResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(CustomerExporter::class)
@@ -251,9 +270,6 @@ class CustomerResource extends Resource
     {
         return [
             InteractionsRelationManager::class,
-            SaleRelationManager::class,
-            CustomerSupportRelationManager::class,
-            ProjectRelationManager::class,
         ];
     }
 
@@ -263,6 +279,20 @@ class CustomerResource extends Resource
             'index' => Pages\ListCustomers::route('/'),
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'name',
+            'email',
+            'phone',
+            'address',
+            'company',
+            'status',
         ];
     }
 }

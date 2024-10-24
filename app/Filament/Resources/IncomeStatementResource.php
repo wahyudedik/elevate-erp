@@ -15,6 +15,7 @@ use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Clusters\FinancialReporting;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Exports\IncomeStatementExporter;
 use App\Filament\Imports\IncomeStatementImporter;
@@ -24,17 +25,15 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\IncomeStatementResource\Pages;
 use App\Filament\Resources\IncomeStatementResource\RelationManagers;
 use App\Filament\Resources\IncomeStatementResource\RelationManagers\FinancialReportRelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class IncomeStatementResource extends Resource
 {
     protected static ?string $model = IncomeStatement::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Income Statements';
+    protected static ?string $cluster = FinancialReporting::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 15;
 
     protected static bool $isScopedToTenant = true;
 
@@ -42,9 +41,7 @@ class IncomeStatementResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'incomeStatement';
 
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Financial Reporting';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -55,7 +52,7 @@ class IncomeStatementResource extends Resource
                 Forms\Components\Section::make('Income Statement Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
                             ->label('Branch')
@@ -73,7 +70,7 @@ class IncomeStatementResource extends Resource
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id),
                                 Forms\Components\Select::make('branch_id')
-                                    ->relationship('branch', 'name')
+                                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                                     ->searchable()
                                     ->preload()
                                     ->label('Branch')
@@ -250,6 +247,7 @@ class IncomeStatementResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(IncomeStatementExporter::class)
@@ -362,5 +360,17 @@ class IncomeStatementResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'financial_report_id',
+            'total_revenue',
+            'total_expenses',
+            'net_income',
+        ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\FinancialReporting;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -26,17 +27,15 @@ use App\Filament\Resources\FinancialReportResource\RelationManagers;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\CashFlowRelationManager;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\BalanceSheetRelationManager;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\IncomeStatementRelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class FinancialReportResource extends Resource
 {
     protected static ?string $model = FinancialReport::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Financial Reports';
+    protected static ?string $cluster = FinancialReporting::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 12;
 
     protected static bool $isScopedToTenant = true;
 
@@ -44,9 +43,7 @@ class FinancialReportResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'financialReport';
 
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Financial Reporting';
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
@@ -57,7 +54,7 @@ class FinancialReportResource extends Resource
                 Forms\Components\Section::make('Financial Report')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload()
@@ -241,6 +238,8 @@ class FinancialReportResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(FinancialReportExporter::class)
@@ -348,5 +347,18 @@ class FinancialReportResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'report_name',
+            'report_type', //'balance_sheet', 'income_statement', 'cash_flow'
+            'report_period_start',
+            'report_period_end',
+            'notes',
+        ];
     }
 }

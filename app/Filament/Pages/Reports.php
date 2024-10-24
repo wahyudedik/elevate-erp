@@ -3,12 +3,13 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use App\Filament\Clusters\Dashboard;
 
 class Reports extends Page
 {
+    protected static ?string $cluster = Dashboard::class;
+    
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
-    protected static ?string $navigationParentItem = 'Dashboard';
 
     protected static ?int $navigationSort = 3;
 

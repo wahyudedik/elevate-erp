@@ -1,38 +1,35 @@
 <?php
 
-namespace App\Filament\Resources\CustomerResource\Widgets;
+namespace App\Filament\Resources\DepartmentResource\Widgets;
 
-use App\Models\ManagementCRM\Customer;
+use App\Models\Department;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
-class CustomerStatsOverviewWidget extends BaseWidget
+class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
-
+ 
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Customers', $this->formatNumber(Customer::count()))
-                ->icon('heroicon-o-users')
+            Stat::make('Total Departments', $this->formatNumber(Department::count()))->icon('heroicon-o-building-office-2')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Total registered customers')
+                ->description('Total number of departments')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Active Customers', $this->formatNumber(Customer::where('status', 'active')->count()))
-                ->icon('heroicon-o-user-circle')
-                ->description('Customers with active status')
+            Stat::make('Departments with Branches', $this->formatNumber(Department::whereNotNull('branch_id')->count()))->icon('heroicon-o-building-storefront')
+                ->description('Departments associated with branches')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('primary'),
-            Stat::make('Inactive Customers', $this->formatNumber(Customer::where('status', 'inactive')->count()))
-                ->icon('heroicon-o-user-minus')
-                ->description("Customers with inactive status")
-                ->descriptionIcon('heroicon-o-chevron-down', 'before')
-                ->descriptionColor('danger')
-                ->iconColor('danger')
+                ->iconColor('warning'),
+            Stat::make('Recently Added', $this->formatNumber(Department::where('created_at', '>=', now()->subDays(30))->count()))->icon('heroicon-o-clock')
+                ->description("Departments added in the last 30 days")
+                ->descriptionIcon('heroicon-o-chevron-up', 'before')
+                ->descriptionColor('success')
+                ->iconColor('primary')
         ];
     }
 
@@ -49,4 +46,5 @@ class CustomerStatsOverviewWidget extends BaseWidget
         $formattedNumber = number_format($number, $suffixIndex > 0 ? 1 : 0, '.', ',');
         return $formattedNumber . $suffixes[$suffixIndex];
     }
+
 }

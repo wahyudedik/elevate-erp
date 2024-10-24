@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\AccountingResource\Pages;
 
-use App\Filament\Resources\AccountingResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\AccountingResource;
+use App\Filament\Resources\AccountingResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListAccountings extends ListRecords
 {
@@ -13,8 +14,15 @@ class ListAccountings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

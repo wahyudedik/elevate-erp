@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\CashFlowResource\Pages;
 
-use App\Filament\Resources\CashFlowResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\CashFlowResource;
+use App\Filament\Resources\CashFlowResource\Widgets\CashFlowStatWidget;
 
 class ListCashFlows extends ListRecords
 {
@@ -13,8 +14,15 @@ class ListCashFlows extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            CashFlowStatWidget::class,
         ];
     }
 }

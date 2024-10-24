@@ -15,10 +15,10 @@ class Ledger extends Model
 {
     use HasFactory, SoftDeletes, Notifiable;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'ledgers';
 
@@ -30,6 +30,16 @@ class Ledger extends Model
         'transaction_type',
         'amount',
         'transaction_description',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'account_id' => 'integer',
+        'transaction_type' => 'string',
+        'transaction_description' => 'string',
+        'transaction_date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     public function branch()

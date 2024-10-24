@@ -9,14 +9,17 @@ use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
+use Doctrine\DBAL\Query\QueryBuilder;
 use App\Filament\Exports\LedgerExporter;
 use App\Filament\Imports\LedgerImporter;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementFinancial\Ledger;
+use App\Filament\Clusters\Ledger as ledgers;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementFinancial\Transaction;
@@ -30,12 +33,9 @@ class LedgerResource extends Resource
 {
     protected static ?string $model = Ledger::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Ledgers';
+    protected static ?string $cluster = ledgers::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 9;
 
     protected static bool $isScopedToTenant = true;
 
@@ -43,9 +43,7 @@ class LedgerResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'ledger';
 
-    protected static ?string $navigationGroup = 'Management Financial';
-
-    protected static ?string $navigationParentItem = 'Book Keeping';
+    protected static ?string $navigationGroup = 'Book Keeping';
 
     protected static ?string $navigationIcon = 'tabler-report-analytics';
 
@@ -56,7 +54,7 @@ class LedgerResource extends Resource
                 Forms\Components\Section::make('Ledger Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload()
@@ -264,6 +262,8 @@ class LedgerResource extends Resource
                 ]),
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(LedgerExporter::class)
@@ -374,5 +374,18 @@ class LedgerResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'account_id',
+            'transaction_date',
+            'transaction_type',
+            'amount',
+            'transaction_description',
+        ];
     }
 }

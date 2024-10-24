@@ -20,18 +20,14 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Resources\PositionResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PositionResource\RelationManagers;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportBulkAction;
 
 class PositionResource extends Resource
 {
     protected static ?string $model = Position::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Positions';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 6;
 
     protected static bool $isScopedToTenant = true;
 
@@ -50,7 +46,7 @@ class PositionResource extends Resource
                 Forms\Components\Section::make('Position Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('department_id')
@@ -142,6 +138,8 @@ class PositionResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(PositionExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
@@ -224,5 +222,13 @@ class PositionResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'name',
+            'description',
+        ];
     }
 }

@@ -14,11 +14,10 @@ class JournalEntry extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
-
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'journal_entries';
 
@@ -33,6 +32,10 @@ class JournalEntry extends Model
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'description' => 'string',
+        'entry_type' => 'string',
         'entry_date' => 'date',
         'amount' => 'decimal:2',
     ];

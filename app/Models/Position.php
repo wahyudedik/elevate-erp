@@ -12,10 +12,10 @@ class Position extends Model
 {
     use HasFactory,  SoftDeletes, Notifiable;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'positions';
 
@@ -25,6 +25,14 @@ class Position extends Model
         'company_id',
         'branch_id',
         'department_id',
+    ];
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'department_id' => 'integer',
+        'name' => 'string',
+        'description' => 'string',
     ];
 
     public function company()

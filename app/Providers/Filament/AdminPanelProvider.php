@@ -48,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Gray,
-                'info' => Color::Blue,
+                'info' => Color::Amber,
                 // 'primary' => '#34507c',
                 'primary' => 'rgb(52, 80, 124)',
                 'success' => Color::Green,
@@ -56,7 +56,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Master Data',
-                'Management Users',
                 'Management Financial',
                 'Management SDM',
                 'Management CRM',
@@ -64,11 +63,13 @@ class AdminPanelProvider extends PanelProvider
                 'Management Sales And Purchasing',
                 'Management Stock',
                 'Management Supplier',
+                'Management Users',
                 'Reports',
             ])
             ->databaseNotifications()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([])
