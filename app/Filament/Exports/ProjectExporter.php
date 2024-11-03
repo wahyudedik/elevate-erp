@@ -21,8 +21,12 @@ class ProjectExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('name')
-                ->label('Name'),
+                ->label('Project Name'),
             ExportColumn::make('description')
                 ->label('Description'),
             ExportColumn::make('start_date')
@@ -34,13 +38,13 @@ class ProjectExporter extends Exporter
             ExportColumn::make('budget')
                 ->label('Budget'),
             ExportColumn::make('manager.name')
-                ->label('Manager'),
+                ->label('Project Manager'),
             ExportColumn::make('status')
                 ->label('Status'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
+                ->label('Updated At')
         ];
     }
 
@@ -54,5 +58,4 @@ class ProjectExporter extends Exporter
 
         return $body;
     }
-
 }

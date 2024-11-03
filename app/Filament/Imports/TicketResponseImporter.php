@@ -16,9 +16,16 @@ class TicketResponseImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('ticket_id')->label('ticket_id')->relationship(CustomerSupport::class, 'ticket_id')->searchable()->required(),
-            ImportColumn::make('response')->label('response')->string()->required(),
-            ImportColumn::make('employee_id')->label('employee_id')->relationship(Employee::class, 'employee_id')->searchable()->required(),
+            ImportColumn::make('id'),
+            ImportColumn::make('company_id')
+                ->required()
+                ->relationship(),
+            ImportColumn::make('branch_id')
+                ->relationship(),
+            ImportColumn::make('ticket_id'),
+            ImportColumn::make('response')
+                ->required(),
+            ImportColumn::make('employee_id'),
         ];
     }
 

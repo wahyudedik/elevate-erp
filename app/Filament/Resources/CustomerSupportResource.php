@@ -2,40 +2,45 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\CustomerSupportExporter;
-use App\Filament\Imports\CustomerSupportImporter;
 use Schema;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Builder;
-use App\Models\ManagementCRM\CustomerSupport;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CustomerSupportResource\Pages;
-use App\Filament\Resources\CustomerSupportResource\RelationManagers;
-use App\Filament\Resources\CustomerSupportResource\RelationManagers\TicketResponseRelationManager;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Actions\ImportAction;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\ManagementCRM\CustomerSupport;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\CustomerSupportExporter;
+use App\Filament\Imports\CustomerSupportImporter;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\CustomerSupportResource\Pages;
+use App\Filament\Resources\CustomerSupportResource\RelationManagers;
+use App\Filament\Clusters\CustomerSupport as ClustersCustomerSupport;
+use App\Filament\Resources\CustomerSupportResource\RelationManagers\TicketResponseRelationManager;
 
 class CustomerSupportResource extends Resource
 {
     protected static ?string $model = CustomerSupport::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Customer Support';
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $cluster = ClustersCustomerSupport::class;
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?int $navigationSort = 20;
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'customerSupport';
+
+    protected static ?string $navigationGroup = 'Customer Support';
 
     protected static ?string $navigationIcon = 'hugeicons-customer-service';
 
@@ -45,6 +50,11 @@ class CustomerSupportResource extends Resource
             ->schema([
                 Section::make('Customer Support Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('customer_id')
                             ->relationship('customer', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->required()
@@ -73,7 +83,20 @@ class CustomerSupportResource extends Resource
                             ->default('open')
                             ->required(),
                     ])
+                    ->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
+                    ])
                     ->columns(2)
+                    ->collapsible(),
+
             ]);
     }
 
@@ -82,10 +105,14 @@ class CustomerSupportResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('customer.name')
                     ->label('Customer')
                     ->toggleable()
@@ -103,6 +130,7 @@ class CustomerSupportResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('priority')
                     ->toggleable()
+                    ->badge()
                     ->colors([
                         'danger' => 'high',
                         'warning' => 'medium',
@@ -125,8 +153,14 @@ class CustomerSupportResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('customer')
                     ->relationship('customer', 'name')
                     ->searchable()
@@ -163,6 +197,9 @@ class CustomerSupportResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('change_status')
@@ -206,21 +243,49 @@ class CustomerSupportResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                    Tables\Actions\DeleteAction::make(),
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(CustomerSupportExporter::class),
-                ImportAction::make()->importer(CustomerSupportImporter::class)
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(CustomerSupportExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export ticket list completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(CustomerSupportImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import ticket list completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(CustomerSupportExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export ticket list completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(CustomerSupportExporter::class)
             ])
             ->emptyStateActions([
-                CreateAction::make()
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -237,6 +302,27 @@ class CustomerSupportResource extends Resource
             'index' => Pages\ListCustomerSupports::route('/'),
             'create' => Pages\CreateCustomerSupport::route('/create'),
             'edit' => Pages\EditCustomerSupport::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'customer_id',
+            'subject',
+            'description',
+            'status',  // open, in_progress, resolved, closed
+            'priority',  // low, medium, high, urgent
         ];
     }
 }

@@ -138,7 +138,7 @@ class Employee extends Model
         return $this->hasMany(Candidate::class);
     }
 
-    public function ticketResponse(): HasMany
+    public function ticketResponses(): HasMany
     {
         return $this->hasMany(TicketResponse::class);
     }

@@ -26,16 +26,15 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Suppliers';
+    protected static ?int $navigationSort = 27;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'supplier';
 
     protected static ?string $navigationGroup = 'Management Stock';
-
-    protected static ?string $navigationParentItem = null;
 
     protected static ?string $navigationIcon = 'polaris-package-fulfilled-icon';
 

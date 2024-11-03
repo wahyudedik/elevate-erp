@@ -30,6 +30,7 @@
         "mansoor/blade-lets-icons": "^1.0",
         "postare/blade-mdi": "^1.0",
         "ryangjchandler/blade-tabler-icons": "^2.3",
+        "saade/blade-iconsax": "^1.2",
         "troccoli/blade-health-icons": "^3.0"
     },
     "require-dev": {

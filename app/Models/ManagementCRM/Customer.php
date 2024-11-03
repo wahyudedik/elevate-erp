@@ -67,7 +67,7 @@ class Customer extends Model
 
     public function customerSupport(): HasMany
     {
-        return $this->hasMany(CustomerSupport::class);
+        return $this->hasMany(CustomerSupport::class, 'customer_id');
     }
 
     public function project(): HasMany

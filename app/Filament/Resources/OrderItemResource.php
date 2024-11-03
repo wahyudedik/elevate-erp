@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Models\ManagementCRM\OrderItem;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\OrderItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\ManagementSalesAndPurchasing\OrderItem;
 use App\Filament\Resources\OrderItemResource\RelationManagers;
 
 class OrderItemResource extends Resource

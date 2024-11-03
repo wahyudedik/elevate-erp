@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ProjectMilestoneResource\Pages;
 
-use App\Filament\Resources\ProjectMilestoneResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ProjectMilestoneResource;
+use App\Filament\Resources\ProjectMilestoneResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListProjectMilestones extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListProjectMilestones extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

@@ -14,9 +14,17 @@ class ProjectMonitoringImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('project_id')
+            ImportColumn::make('company_id')
                 ->numeric()
                 ->required()
+                ->relationship(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable()
+                ->relationship(),
+            ImportColumn::make('project_id')
+                ->numeric()
+                ->nullable()
                 ->relationship(),
             ImportColumn::make('progress_report')
                 ->required(),

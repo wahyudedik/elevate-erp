@@ -15,12 +15,21 @@ class TicketResponseExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('ticket_id')
-                ->label('Ticket ID'),
-            ExportColumn::make('response')
-                ->label('Response'),
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
+            ExportColumn::make('created_at')
+                ->label('Created At'),
             ExportColumn::make('employee.first_name')
                 ->label('Employee'),
+            ExportColumn::make('response')
+                ->label('Response'),
+            ExportColumn::make('ticket_id')
+                ->label('Ticket ID'),
+            ExportColumn::make('updated_at')
+                ->label('Updated At'),
         ];
     }
 

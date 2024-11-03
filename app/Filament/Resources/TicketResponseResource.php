@@ -8,11 +8,13 @@ use Doctrine\DBAL\Query;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Clusters\CustomerSupport;
 use App\Models\ManagementCRM\TicketResponse;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Exports\TicketResponseExporter;
@@ -20,53 +22,66 @@ use App\Filament\Imports\TicketResponseImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TicketResponseResource\Pages;
 use App\Filament\Resources\TicketResponseResource\RelationManagers;
+use App\Filament\Resources\TicketResponseResource\RelationManagers\CustomerSupportRelationManager;
+use Filament\Tables\Actions\CreateAction;
 
 class TicketResponseResource extends Resource
 {
     protected static ?string $model = TicketResponse::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Ticket Response';
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $cluster = CustomerSupport::class;
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?int $navigationSort = 21;
 
-    protected static ?string $navigationParentItem = 'Customer Supports';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'ticketResponses';
+
+    protected static ?string $navigationGroup = 'Customer Support';
+
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('ticket_id')
-                    ->relationship('customerSupport', 'subject', fn(Builder $query) => $query->where('status', 'open'))
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->label('Ticket'),
-                Forms\Components\RichEditor::make('response')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\Select::make('employee_id')
-                    ->relationship('employee', 'first_name', fn(Builder $query) => $query->where('status', 'active'))
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->label('Employee'),
-                Forms\Components\DateTimePicker::make('created_at')
-                    ->label('Created At')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->visible(fn($context) => $context === 'edit'),
-                Forms\Components\DateTimePicker::make('updated_at')
-                    ->label('Updated At')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->visible(fn($context) => $context === 'edit'),
+                Forms\Components\Section::make('Ticket Response')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('ticket_id')
+                            ->relationship('customerSupport', 'subject', fn(Builder $query) => $query->where('status', 'open'))
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Ticket'),
+                        Forms\Components\RichEditor::make('response')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('employee_id')
+                            ->relationship('employee', 'first_name', fn(Builder $query) => $query->where('status', 'active'))
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Employee'),
+                    ]),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -75,9 +90,14 @@ class TicketResponseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('customerSupport.subject')
                     ->label('Ticket')
                     ->searchable()
@@ -111,8 +131,14 @@ class TicketResponseResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('ticket')
                     ->relationship('customerSupport', 'subject')
                     ->searchable()
@@ -156,6 +182,8 @@ class TicketResponseResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('edit respond')
                         ->icon('heroicon-o-chat-bubble-left-right')
                         ->color('success')
@@ -184,21 +212,53 @@ class TicketResponseResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(TicketResponseExporter::class),
-                ImportAction::make()->importer(TicketResponseImporter::class),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(TicketResponseExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export ticket completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(TicketResponseImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import ticket completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(TicketResponseExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export ticket completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(TicketResponseExporter::class),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            CustomerSupportRelationManager::class
         ];
     }
 
@@ -208,6 +268,25 @@ class TicketResponseResource extends Resource
             'index' => Pages\ListTicketResponses::route('/'),
             'create' => Pages\CreateTicketResponse::route('/create'),
             'edit' => Pages\EditTicketResponse::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'ticket_id',  // ID tiket dukungan yang direspons
+            'response',          // ID karyawan yang memberikan respons
+            'employee_id',        // Isi dari respons
         ];
     }
 }

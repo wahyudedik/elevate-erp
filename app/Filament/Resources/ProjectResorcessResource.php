@@ -2,75 +2,95 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\ProjectResourceExporter;
-use App\Filament\Exports\ProjectTaskExporter;
-use App\Filament\Imports\ProjectResourceImporter;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
-use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
 use App\Models\ProjectResorcess;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use App\Models\ManagementProject\Project;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Clusters\ProjectPlanning;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Exports\ProjectTaskExporter;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\ProjectResourceExporter;
+use App\Filament\Imports\ProjectResourceImporter;
 use App\Models\ManagementProject\ProjectResource;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProjectResorcessResource\Pages;
 use App\Filament\Resources\ProjectResorcessResource\RelationManagers;
-use App\Models\ManagementProject\Project;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
+use App\Filament\Resources\ProjectResorcessResource\RelationManagers\ProjectRelationManager;
 
 class ProjectResorcessResource extends Resource
 {
     protected static ?string $model = ProjectResource::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Project Resource';
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $cluster = ProjectPlanning::class;
 
-    protected static ?string $navigationGroup = 'Management Project';
+    protected static ?int $navigationSort = 25;
 
-    protected static ?string $navigationParentItem = 'Projects';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'projectResource';
+
+    protected static ?string $navigationGroup = 'Project Execution';
+
+    protected static ?string $navigationIcon = 'carbon-group-resource';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('project_id')
-                    ->relationship('project', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
+                Forms\Components\Section::make('Project Resource')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('project_id')
+                            ->relationship('project', 'name', fn($query) => $query->where('status', 'planning'))
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('resource_name')
                             ->required()
                             ->maxLength(255),
-                    ]),
-                Forms\Components\TextInput::make('resource_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('resource_type')
-                    ->options([
-                        'human' => 'Human',
-                        'material' => 'Material',
-                        'financial' => 'Financial',
+                        Forms\Components\Select::make('resource_type')
+                            ->options([
+                                'human' => 'Human',
+                                'material' => 'Material',
+                                'financial' => 'Financial',
+                            ])
+                            ->required(),
+                        Forms\Components\TextInput::make('resource_cost')
+                            ->numeric()
+                            ->prefix('IDR')
+                            ->maxValue(42949672.95)
+                            ->step(0.01),
+                    ])->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
-                    ->required(),
-                Forms\Components\TextInput::make('resource_cost')
-                    ->numeric()
-                    ->prefix('IDR')
-                    ->maxValue(42949672.95)
-                    ->step(0.01),
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -79,9 +99,14 @@ class ProjectResorcessResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('project.name')
                     ->label('Project')
                     ->sortable()
@@ -117,8 +142,14 @@ class ProjectResorcessResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('project')
                     ->relationship('project', 'name')
                     ->searchable()
@@ -195,6 +226,8 @@ class ProjectResorcessResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('assignProject')
                         ->form([
                             Forms\Components\Select::make('project_id')
@@ -230,12 +263,33 @@ class ProjectResorcessResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ProjectResourceExporter::class),
-                ImportAction::make()->importer(ProjectResourceImporter::class)
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ProjectResourceExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export resource completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ProjectResourceImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import resource completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateType')
                         ->form([
                             Forms\Components\Select::make('resource_type')
@@ -258,15 +312,26 @@ class ProjectResorcessResource extends Resource
                         })
                         ->icon('heroicon-o-tag')
                         ->color('info'),
+                    ExportBulkAction::make()->exporter(ProjectResourceExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export resource completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(ProjectTaskExporter::class)
+            ])
+            ->emptyStateActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            ProjectRelationManager::class,
         ];
     }
 
@@ -276,6 +341,26 @@ class ProjectResorcessResource extends Resource
             'index' => Pages\ListProjectResorcesses::route('/'),
             'create' => Pages\CreateProjectResorcess::route('/create'),
             'edit' => Pages\EditProjectResorcess::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'project_id',
+            'resource_name',
+            'resource_type', // human, material, financial, equipment
+            'resource_cost', // Jumlah sumber daya yang dialokasikan
         ];
     }
 }

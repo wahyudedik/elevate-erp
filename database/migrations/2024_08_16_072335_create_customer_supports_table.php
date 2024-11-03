@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('customer_supports', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
@@ -25,9 +24,8 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('ticket_responses', function (Blueprint $table) {
+        Schema::create('ticket_responses', function (Blueprint $table) { 
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('ticket_id')->nullable()->constrained('customer_supports')->onDelete('cascade');

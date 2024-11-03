@@ -12,15 +12,15 @@ use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Models\ManagementStock\PurchaseTransaction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Exports\PurchaseTransactionExporter;
 use App\Filament\Imports\PurchaseTransactionImporter;
 use App\Filament\Resources\PurchaseTransactionResource\Pages;
-use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
 use App\Filament\Resources\PurchaseTransactionResource\RelationManagers;
 use App\Filament\Resources\PurchaseTransactionResource\RelationManagers\SupplierRelationManager;
 use App\Filament\Resources\PurchaseTransactionResource\RelationManagers\PurchaseItemsRelationManager;
-use Filament\Tables\Actions\ExportBulkAction;
 
 class PurchaseTransactionResource extends Resource
 {

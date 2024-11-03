@@ -28,10 +28,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
         ->name('supplier-transactions.print');
 
-    // salles transaction
-    Route::get('/sales-transaction/{salesTransaction}/print-invoice', [SalesTransactionController::class, 'printInvoice'])
-        ->name('sales-transaction.print-invoice');
-
     // print journal entry
     Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
         ->name('journal-entries.print');

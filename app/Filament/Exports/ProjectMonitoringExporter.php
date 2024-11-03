@@ -15,11 +15,14 @@ class ProjectMonitoringExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('project_id'),
             ExportColumn::make('progress_report'),
             ExportColumn::make('status'),
             ExportColumn::make('completion_percentage'),
             ExportColumn::make('report_date'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];

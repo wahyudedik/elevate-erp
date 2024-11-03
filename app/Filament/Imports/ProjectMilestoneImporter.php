@@ -14,9 +14,15 @@ class ProjectMilestoneImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('project_id')
+            ImportColumn::make('company_id')
                 ->numeric()
                 ->required(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable(),
+            ImportColumn::make('project_id')
+                ->numeric()
+                ->nullable(),
             ImportColumn::make('milestone_name')
                 ->rules(['required', 'string']),
             ImportColumn::make('milestone_description')
@@ -26,8 +32,7 @@ class ProjectMilestoneImporter extends Importer
                 ->required(),
             ImportColumn::make('status')
                 ->rules(['required', 'in:pending,achieved'])
-                ->default('pending'),
-        ];
+                ->default('pending'),        ];
     }
 
     public function resolveRecord(): ?ProjectMilestone

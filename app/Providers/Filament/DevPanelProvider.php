@@ -63,10 +63,10 @@ class DevPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->userMenuItems([
-                // MenuItem::make()
-                //     ->label('Pulse')
-                //     ->icon('heroicon-o-chart-bar')
-                //     ->url('/pulse'),
+                MenuItem::make()
+                    ->label('API')
+                    ->icon('fileicon-api-blueprint')
+                    ->url('docs/api'),
             ])
             ->plugins([
                 \Hasnayeen\Themes\ThemesPlugin::make()

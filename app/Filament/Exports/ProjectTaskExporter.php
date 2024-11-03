@@ -14,24 +14,26 @@ class ProjectTaskExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('project.name')
-                ->label('Project Name'),
+                ->label('Project'),
             ExportColumn::make('task_name')
                 ->label('Task Name'),
             ExportColumn::make('task_description')
                 ->label('Description'),
             ExportColumn::make('status')
                 ->label('Status'),
-            ExportColumn::make('assigned_to.name')
+            ExportColumn::make('assignedTo.name')
                 ->label('Assigned To'),
             ExportColumn::make('due_date')
                 ->label('Due Date'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
+                ->label('Updated At')
         ];
     }
 

@@ -2,74 +2,99 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\ProjectMilestoneExporter;
-use App\Filament\Imports\ProjectMilestoneImporter;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Clusters\ProjectPlanning;
+use Filament\Actions\Exports\Models\Export;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\ProjectMilestoneExporter;
+use App\Filament\Imports\ProjectMilestoneImporter;
 use App\Models\ManagementProject\ProjectMilestone;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProjectMilestoneResource\Pages;
 use App\Filament\Resources\ProjectMilestoneResource\RelationManagers;
+use App\Filament\Resources\ProjectMilestoneResource\RelationManagers\ProjectRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\ProjectMilestoneRelationManager;
-use Filament\Actions\Exports\Models\Export;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ImportAction;
 
 class ProjectMilestoneResource extends Resource
 {
     protected static ?string $model = ProjectMilestone::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Project Milestone';
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $cluster = ProjectPlanning::class;
 
-    protected static ?string $navigationGroup = 'Management Project';
+    protected static ?int $navigationSort = 24;
 
-    protected static ?string $navigationParentItem = 'Projects';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'projectTasks';
+
+    protected static ?string $navigationGroup = 'Project Execution';
+
+    protected static ?string $navigationIcon = 'iconsax-lin-save-add';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('project_id')
-                    ->relationship('project', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->label('Project'),
-                Forms\Components\TextInput::make('milestone_name')
-                    ->required()
-                    ->maxLength(255)
-                    ->label('Milestone Name'),
-                Forms\Components\Textarea::make('milestone_description')
-                    ->maxLength(65535)
-                    ->columnSpanFull()
-                    ->label('Description'),
-                Forms\Components\DatePicker::make('milestone_date')
-                    ->required()
-                    ->label('Date'),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'achieved' => 'Achieved',
+                Forms\Components\Section::make('General Information')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('project_id')
+                            ->relationship('project', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Project'),
+                        Forms\Components\TextInput::make('milestone_name')
+                            ->required()
+                            ->maxLength(255)
+                            ->label('Milestone Name'),
+                        Forms\Components\Textarea::make('milestone_description')
+                            ->maxLength(65535)
+                            ->columnSpanFull()
+                            ->label('Description'),
+                        Forms\Components\DatePicker::make('milestone_date')
+                            ->required()
+                            ->label('Date'),
+                        Forms\Components\Select::make('status')
+                            ->options([
+                                'pending' => 'Pending',
+                                'achieved' => 'Achieved',
+                            ])
+                            ->required()
+                            ->default('pending')
+                            ->label('Status')
+                    ])->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
-                    ->required()
-                    ->default('pending')
-                    ->label('Status')
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -78,9 +103,14 @@ class ProjectMilestoneResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('project.name')
                     ->label('Project')
                     ->searchable()
@@ -123,8 +153,14 @@ class ProjectMilestoneResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('project')
                     ->relationship('project', 'name')
                     ->searchable()
@@ -199,6 +235,9 @@ class ProjectMilestoneResource extends Resource
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('change_status')
                         ->label('Change Status')
                         ->icon('heroicon-o-arrow-path')
@@ -219,16 +258,36 @@ class ProjectMilestoneResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                    Tables\Actions\DeleteAction::make(),
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ProjectMilestoneExporter::class),
-                ImportAction::make()->importer(ProjectMilestoneImporter::class)
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ProjectMilestoneExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export Project Milestone Completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ProjectMilestoneImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import Project Milestone Completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('change_status')
                         ->label('Change Status')
                         ->icon('heroicon-o-arrow-path')
@@ -251,18 +310,26 @@ class ProjectMilestoneResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                        ExportBulkAction::make()->exporter(ProjectMilestoneExporter::class)
+                    ExportBulkAction::make()->exporter(ProjectMilestoneExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export Project Milestone Completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            ProjectRelationManager::class,
         ];
     }
 
@@ -272,6 +339,27 @@ class ProjectMilestoneResource extends Resource
             'index' => Pages\ListProjectMilestones::route('/'),
             'create' => Pages\CreateProjectMilestone::route('/create'),
             'edit' => Pages\EditProjectMilestone::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'project_id',
+            'milestone_name',
+            'milestone_description',
+            'milestone_date',
+            'status',  // planned, in_progress, completed, on_hold, delayed
         ];
     }
 }

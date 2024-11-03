@@ -60,9 +60,7 @@ class AdminPanelProvider extends PanelProvider
                 'Management SDM',
                 'Management CRM',
                 'Management Project',
-                'Management Sales And Purchasing',
                 'Management Stock',
-                'Management Supplier',
                 'Management Users',
                 'Reports',
             ])

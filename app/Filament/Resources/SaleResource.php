@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\Sales;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
@@ -23,17 +24,23 @@ use App\Filament\Resources\SaleResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SaleResource\RelationManagers;
 use App\Filament\Resources\SaleResource\RelationManagers\ItemsRelationManager;
+use Illuminate\Support\Facades\Auth;
 
 class SaleResource extends Resource
 {
     protected static ?string $model = Sale::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Sale';
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?string $navigationLabel = 'Sale';
+
+    protected static ?string $cluster = Sales::class;
+
+    protected static ?int $navigationSort = 19;
+
+    protected static bool $isScopedToTenant = true;
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'sale';
 
     protected static ?string $navigationGroup = 'Management CRM';
 
@@ -43,28 +50,49 @@ class SaleResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')
-                    ->relationship('customer', 'name', function ($query) {
-                        return $query->where('status', 'active');
-                    })
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\DatePicker::make('sale_date')
-                    ->required(),
-                Forms\Components\TextInput::make('total_amount')
-                    ->required()
-                    ->numeric()
-                    ->prefix('IDR')
-                    ->maxValue(42949672.95),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('customer_id')
+                            ->relationship('customer', 'name', function ($query) {
+                                return $query->where('status', 'active');
+                            })
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\DatePicker::make('sale_date')
+                            ->required(),
+                        Forms\Components\TextInput::make('total_amount')
+                            ->required()
+                            ->numeric()
+                            ->prefix('IDR')
+                            ->maxValue(42949672.95),
+                        Forms\Components\Select::make('status')
+                            ->options([
+                                'pending' => 'Pending',
+                                'completed' => 'Completed',
+                                'cancelled' => 'Cancelled',
+                            ])
+                            ->required()
+                            ->default('pending'),
+                    ])->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
-                    ->required()
-                    ->default('pending'),
+                    ->columns(2)
+                    ->collapsible(),
+
             ]);
     }
 
@@ -73,8 +101,13 @@ class SaleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('customer.name')
                     ->label('Customer')
@@ -118,8 +151,14 @@ class SaleResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('customer')
                     ->relationship('customer', 'name')
                     ->searchable()
@@ -206,6 +245,9 @@ class SaleResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('change_status')
@@ -226,10 +268,10 @@ class SaleResource extends Resource
                             $record->update(['status' => $data['status']]);
                             Notification::make()
                                 ->title('Status updated successfully')
+                                ->body('The status of the sale has been updated successfully.' . $record->status)
                                 ->success()
-                                ->send();
+                                ->sendToDatabase(Auth::user());
                         }),
-                    Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('print_invoice')
                         ->label('Print Invoice')
                         ->icon('heroicon-o-printer')
@@ -238,17 +280,47 @@ class SaleResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(SaleExporter::class),
-                ImportAction::make()->importer(SaleImporter::class),
+                CreateAction::make()
+                    ->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(SaleExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export sale completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(SaleImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import sale completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(SaleExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export sale completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(SaleExporter::class)
             ])
             ->emptyStateActions([
-                CreateAction::make()
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -265,6 +337,26 @@ class SaleResource extends Resource
             'index' => Pages\ListSales::route('/'),
             'create' => Pages\CreateSale::route('/create'),
             'edit' => Pages\EditSale::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'customer_id',
+            'sale_date',
+            'total_amount',
+            'status',  // pending, completed, canceled
         ];
     }
 }

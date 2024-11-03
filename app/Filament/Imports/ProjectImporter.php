@@ -14,25 +14,34 @@ class ProjectImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('name')
-                ->label('Project Name'),
-            ImportColumn::make('description')
-                ->label('Description'),
-            ImportColumn::make('start_date')
-                ->label('Start Date'),
-            ImportColumn::make('end_date')
-                ->label('End Date'),
-            ImportColumn::make('client_id')
-                ->label('Client')
-                ->relationship(),
-            ImportColumn::make('budget')
-                ->label('Budget')
+            ImportColumn::make('company_id')
+                ->required()
                 ->numeric(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable(),
+            ImportColumn::make('name')
+                ->required(),
+            ImportColumn::make('description')
+                ->nullable(),
+            ImportColumn::make('start_date')
+                ->required()
+                ->date(),
+            ImportColumn::make('end_date')
+                ->nullable()
+                ->date(),
+            ImportColumn::make('client_id')
+                ->nullable()
+                ->numeric(),
+            ImportColumn::make('budget')
+                ->numeric()
+                ->nullable(),
             ImportColumn::make('manager_id')
-                ->label('Project Manager')
-                ->relationship(),
+                ->nullable()
+                ->numeric(),
             ImportColumn::make('status')
-                ->label('Status')
+                ->required()
+                ->rules(['in:planning,in_progress,completed,on_hold,cancelled'])
         ];
     }
 

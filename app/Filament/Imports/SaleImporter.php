@@ -14,10 +14,16 @@ class SaleImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('customer_id')
-                ->label('Customer ID')
+            ImportColumn::make('company_id')
+                ->label('Company')
                 ->requiredMapping()
-                ->rules(['required', 'exists:customers,id']),
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->label('Branch')
+                ->rules(['nullable', 'exists:branches,id']),
+            ImportColumn::make('customer_id')
+                ->label('Customer')
+                ->rules(['nullable', 'exists:customers,id']),
             ImportColumn::make('sale_date')
                 ->label('Sale Date')
                 ->requiredMapping()
@@ -29,8 +35,7 @@ class SaleImporter extends Importer
             ImportColumn::make('status')
                 ->label('Status')
                 ->rules(['nullable', 'in:pending,completed,cancelled'])
-                ->default('pending'),
-        ];
+                ->default('pending'),        ];
     }
 
     public function resolveRecord(): ?Sale

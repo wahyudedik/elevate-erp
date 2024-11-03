@@ -14,24 +14,30 @@ class ProjectTaskImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->required()
+                ->numeric()
+                ->relationship('company'),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->relationship('branch'),
             ImportColumn::make('project_id')
-                ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'exists:projects,id']),
+                ->relationship('project'),
             ImportColumn::make('task_name')
-                ->requiredMapping()
-                ->rules(['required', 'string']),
+                ->required()
+                ->rules(['string']),
             ImportColumn::make('task_description')
-                ->rules(['nullable', 'string']),
+                ->rules(['string']),
             ImportColumn::make('status')
-                ->requiredMapping()
-                ->rules(['required', 'in:pending,in_progress,completed,overdue']),
+                ->required()
+                ->rules(['in:pending,in_progress,completed,overdue']),
             ImportColumn::make('assigned_to')
-                ->requiredMapping()
+                ->required()
                 ->numeric()
-                ->rules(['required', 'exists:employees,id']),
+                ->relationship('assignedEmployee'),
             ImportColumn::make('due_date')
-                ->rules(['nullable', 'date']),
+                ->date()
         ];
     }
 

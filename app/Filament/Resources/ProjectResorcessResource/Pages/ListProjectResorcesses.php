@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ProjectResorcessResource\Pages;
 
-use App\Filament\Resources\ProjectResorcessResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ProjectResorcessResource;
+use App\Filament\Resources\ProjectResorcessResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListProjectResorcesses extends ListRecords
 {
@@ -13,7 +14,15 @@ class ListProjectResorcesses extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
+        ];
+    }
+
 }

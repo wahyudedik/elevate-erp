@@ -14,8 +14,14 @@ class CustomerSupportImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('customer_id')
+            ImportColumn::make('company_id')
                 ->requiredMapping()
+                ->numeric()
+                ->rules(['exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->rules(['exists:branches,id']),
+            ImportColumn::make('customer_id')
                 ->numeric()
                 ->rules(['exists:customers,id']),
             ImportColumn::make('subject')
@@ -29,8 +35,7 @@ class CustomerSupportImporter extends Importer
                 ->rules(['in:low,medium,high']),
             ImportColumn::make('status')
                 ->rules(['in:open,in_progress,resolved,closed'])
-                ->default('open'),
-        ];
+                ->default('open'),        ];
     }
 
     public function resolveRecord(): ?CustomerSupport

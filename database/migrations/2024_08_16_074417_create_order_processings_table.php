@@ -20,9 +20,9 @@ return new class extends Migration
             $table->date('order_date');
             $table->decimal('total_amount', 15, 2);
             $table->enum('status', ['pending', 'shipped', 'delivered', 'cancelled'])->default('pending');
-            $table->foreignId('sales_transaction_id')->nullable()->constrained('sales_transactions')->onDelete('cascade');
+            $table->foreignId('sales_id')->nullable()->constrained('sales')->onDelete('cascade');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps();  
         });
 
         Schema::create('order_items', function (Blueprint $table) {
