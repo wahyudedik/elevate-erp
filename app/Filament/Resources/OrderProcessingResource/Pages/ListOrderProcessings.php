@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\OrderProcessingResource\Pages;
 
-use App\Filament\Resources\OrderProcessingResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\OrderProcessingResource;
+use App\Filament\Resources\OrderProcessingResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListOrderProcessings extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListOrderProcessings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

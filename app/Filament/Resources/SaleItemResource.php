@@ -41,7 +41,7 @@ class SaleItemResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'saleItem';
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?string $navigationGroup = 'Sales';
 
     protected static ?string $navigationIcon = 'iconsax-two-receipt-item';
 

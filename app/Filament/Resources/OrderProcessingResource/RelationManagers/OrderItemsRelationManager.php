@@ -6,8 +6,14 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
+use App\Models\ManagementCRM\OrderItem;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -19,52 +25,64 @@ class OrderItemsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('product_name')
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('Enter product name')
-                    ->autocomplete('off')
-                    ->autofocus()
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $state, Forms\Set $set) {
-                        $set('product_name', ucwords($state));
-                    }),
+                Forms\Components\Section::make('Order Item Details')
+                    ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('order_id')
+                            ->relationship('orderProcessing', 'id', fn($query) => $query->where('status', 'pending'))
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->label('Order'),
+                        Forms\Components\TextInput::make('product_name')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Enter product name')
+                            ->autocomplete('off')
+                            ->autofocus(),
+                        Forms\Components\TextInput::make('quantity')
+                            ->required()
+                            ->numeric()
+                            ->minValue(1)
+                            ->step(1)
+                            ->default(1)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('unit_price'))),
+                        Forms\Components\TextInput::make('unit_price')
+                            ->required()
+                            ->numeric()
+                            ->prefix('IDR')
+                            ->minValue(0.01)
+                            ->step(0.01)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('quantity'))),
+                        Forms\Components\TextInput::make('total_price')
+                            ->required()
+                            ->numeric()
+                            ->prefix('IDR')
+                            ->disabled()
+                            ->dehydrated()
+                            ->afterStateHydrated(fn($component, $state) => $component->state(number_format($state, 2))),
+                    ])
+                    ->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
-                Forms\Components\TextInput::make('quantity')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->step(1)
-                    ->default(1)
-                    ->live()
-                    ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('unit_price'))),
-
-                Forms\Components\TextInput::make('unit_price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('IDR')
-                    ->minValue(0.01)
-                    ->step(0.01)
-                    ->live()
-                    ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('quantity'))),
-
-                Forms\Components\TextInput::make('total_price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('IDR')
-                    ->disabled()
-                    ->dehydrated()
-                    ->afterStateHydrated(fn($component, $state) => $component->state(number_format($state, 2))),
-
-                Forms\Components\DateTimePicker::make('created_at')
-                    ->label('Created At')
-                    ->displayFormat('d/m/Y H:i')
-                    ->disabled(),
-
-                Forms\Components\DateTimePicker::make('updated_at')
-                    ->label('Last Updated At')
-                    ->displayFormat('d/m/Y H:i')
-                    ->disabled(),
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 
@@ -73,54 +91,206 @@ class OrderItemsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('product_name')
             ->columns([
-                Tables\Columns\TextColumn::make('product_name')
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
                     ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('order_id')
+                    ->label('Order ID')
                     ->sortable()
+                    ->searchable()
+                    ->toggleable()
+                    ->copyable()
+                    ->toggledHiddenByDefault()
+                    ->copyMessage('Order ID copied to clipboard')
+                    ->copyMessageDuration(1500),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('Product Name')
+                    ->sortable()
+                    ->searchable()
                     ->toggleable()
                     ->wrap(),
                 Tables\Columns\TextColumn::make('quantity')
-                    ->numeric()
+                    ->label('Quantity')
                     ->sortable()
+                    ->searchable()
                     ->toggleable()
-                    ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()->label('Total'),
-                    ]),
+                    ->alignRight(),
                 Tables\Columns\TextColumn::make('unit_price')
-                    ->money('idr')
+                    ->label('Unit Price')
+                    ->money('IDR')
                     ->sortable()
+                    ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('total_price')
-                    ->money('idr')
+                    ->label('Total Price')
+                    ->money('IDR')
                     ->sortable()
+                    ->searchable()
                     ->toggleable()
                     ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()->label('Total'),
+                        Tables\Columns\Summarizers\Sum::make()->money('usd'),
                     ]),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault:true)
-                    ->tooltip(fn(Model $record): string => $record->created_at->diffForHumans()),
+                    ->toggleable()
+                    ->toggledHiddenByDefault(true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Updated At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault:true)
-                    ->tooltip(fn(Model $record): string => $record->updated_at->diffForHumans()),
-            ])
+                    ->toggleable()
+                    ->toggledHiddenByDefault(true),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
-                //
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
+                Tables\Filters\SelectFilter::make('order_id')
+                    ->relationship('orderProcessing', 'id')
+                    ->label('Order ID')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\Filter::make('date_range')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from'),
+                        Forms\Components\DatePicker::make('created_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                            );
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\Action::make('updateQuantity')
+                        ->icon('heroicon-o-plus')
+                        ->color('success')
+                        ->form([
+                            Forms\Components\TextInput::make('quantity')
+                                ->numeric()
+                                ->required()
+                                ->minValue(1)
+                                ->label('New Quantity'),
+                        ])
+                        ->action(function (OrderItem $record, array $data) {
+                            $record->update([
+                                'quantity' => $data['quantity'],
+                                'total_price' => $data['quantity'] * $record->unit_price,
+                            ]);
+                            Notification::make()
+                                ->title('Quantity Updated')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('updatePrice')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('warning')
+                        ->form([
+                            Forms\Components\TextInput::make('unit_price')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0.01)
+                                ->label('New Unit Price'),
+                        ])
+                        ->action(function (OrderItem $record, array $data) {
+                            $record->update([
+                                'unit_price' => $data['unit_price'],
+                                'total_price' => $record->quantity * $data['unit_price'],
+                            ]);
+                            Notification::make()
+                                ->title('Price Updated')
+                                ->success()
+                                ->send();
+                        }),
+                ])
+            ])
+            ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\BulkAction::make('updateBulkQuantity')
+                        ->icon('heroicon-o-plus')
+                        ->color('success')
+                        ->form([
+                            Forms\Components\TextInput::make('quantity')
+                                ->numeric()
+                                ->required()
+                                ->minValue(1)
+                                ->label('New Quantity'),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'quantity' => $data['quantity'],
+                                    'total_price' => $data['quantity'] * $record->unit_price,
+                                ]);
+                            });
+                            Notification::make()
+                                ->title('Quantities Updated')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('updateBulkPrice')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('warning')
+                        ->form([
+                            Forms\Components\TextInput::make('unit_price')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0.01)
+                                ->label('New Unit Price'),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'unit_price' => $data['unit_price'],
+                                    'total_price' => $record->quantity * $data['unit_price'],
+                                ]);
+                            });
+                            Notification::make()
+                                ->title('Prices Updated')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 }

@@ -58,9 +58,8 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
-    // // Relasi dengan tabel employees
-    // public function employee()
-    // {
-    //     return $this->belongsTo(Employee::class);
-    // }
+    public function orderProcessing()
+    {
+        return $this->hasMany(OrderProcessing::class, 'sales_id');
+    }
 }

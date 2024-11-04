@@ -13,6 +13,7 @@ use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementCRM\SaleItem;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
+use App\Models\ManagementCRM\OrderItem;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ManagementSDM\Attendance;
 use App\Models\ManagementStock\Supplier;
@@ -22,6 +23,7 @@ use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementCRM\CustomerSupport;
+use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementSDM\EmployeePosition;
@@ -33,6 +35,8 @@ use App\Models\ManagementProject\ProjectResource;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use App\Models\ManagementProject\ProjectMonitoring;
+use App\Models\ManagementStock\PurchaseTransaction;
+use App\Models\ManagementStock\SupplierTransactions;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -72,6 +76,26 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
+
+    public function purchaseTransactions()
+    {
+        return $this->hasMany(PurchaseTransaction::class, 'company_id');
+    }
+
+    public function supplierTransactions()
+    {
+        return $this->hasMany(SupplierTransactions::class, 'company_id');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'company_id');
+    }
+
+    public function orderProcessing()
+    {
+        return $this->hasMany(OrderProcessing::class, 'company_id');
+    }
 
     public function supplier()
     {

@@ -6,10 +6,13 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Filament\Clusters\Sales;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementCRM\OrderItem;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,23 +23,25 @@ use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\OrderItemResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrderItemResource\RelationManagers;
+use App\Filament\Resources\OrderItemResource\RelationManagers\OrderProcessingRelationManager;
 
 class OrderItemResource extends Resource
 {
     protected static ?string $model = OrderItem::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Order Items';
+    protected static ?string $cluster = Sales::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 21;
 
-    protected static ?string $navigationGroup = 'Management Sales And Purchasing';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Sales Transactions';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantRelationshipName = 'orderItems';
+
+    protected static ?string $navigationGroup = 'Sales Processing';
+
+    protected static ?string $navigationIcon = 'fluentui-tray-item-add-20-o';
 
     public static function form(Form $form): Form
     {
@@ -44,8 +49,13 @@ class OrderItemResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Order Item Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('order_id')
-                            ->relationship('orderProcessing', 'id')
+                            ->relationship('orderProcessing', 'id', fn($query) => $query->where('status', 'pending'))
                             ->required()
                             ->searchable()
                             ->preload()
@@ -56,7 +66,6 @@ class OrderItemResource extends Resource
                             ->placeholder('Enter product name')
                             ->autocomplete('off')
                             ->autofocus(),
-
                         Forms\Components\TextInput::make('quantity')
                             ->required()
                             ->numeric()
@@ -65,7 +74,6 @@ class OrderItemResource extends Resource
                             ->default(1)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('unit_price'))),
-
                         Forms\Components\TextInput::make('unit_price')
                             ->required()
                             ->numeric()
@@ -74,7 +82,6 @@ class OrderItemResource extends Resource
                             ->step(0.01)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn($state, callable $set, $get) => $set('total_price', $state * $get('quantity'))),
-
                         Forms\Components\TextInput::make('total_price')
                             ->required()
                             ->numeric()
@@ -82,20 +89,20 @@ class OrderItemResource extends Resource
                             ->disabled()
                             ->dehydrated()
                             ->afterStateHydrated(fn($component, $state) => $component->state(number_format($state, 2))),
-
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Timestamps')
+                Forms\Components\Section::make('Additional Information')
                     ->schema([
-                        Forms\Components\DateTimePicker::make('created_at')
-                            ->label('Created At')
-                            ->disabled(),
-                        Forms\Components\DateTimePicker::make('updated_at')
-                            ->label('Updated At')
-                            ->disabled(),
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
-                    ->collapsed(),
+                    ->collapsible(),
             ]);
     }
 
@@ -104,10 +111,14 @@ class OrderItemResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('order_id')
                     ->label('Order ID')
                     ->sortable()
@@ -149,15 +160,21 @@ class OrderItemResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
+                    ->toggledHiddenByDefault(true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Updated At')
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
-            ])
+                    ->toggledHiddenByDefault(true),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('order_id')
                     ->relationship('orderProcessing', 'id')
                     ->label('Order ID')
@@ -185,6 +202,8 @@ class OrderItemResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('updateQuantity')
                         ->icon('heroicon-o-plus')
                         ->color('success')
@@ -228,12 +247,33 @@ class OrderItemResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(OrderItemExporter::class),
-                ImportAction::make()->importer(OrderItemImporter::class),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(OrderItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export order completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(OrderItemImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import order completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateBulkQuantity')
                         ->icon('heroicon-o-plus')
                         ->color('success')
@@ -278,15 +318,26 @@ class OrderItemResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+                    ExportBulkAction::make()->exporter(OrderItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export order completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(OrderItemExporter::class),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            OrderProcessingRelationManager::class,
         ];
     }
 
@@ -296,6 +347,27 @@ class OrderItemResource extends Resource
             'index' => Pages\ListOrderItems::route('/'),
             'create' => Pages\CreateOrderItem::route('/create'),
             'edit' => Pages\EditOrderItem::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'order_id',
+            'product_name',
+            'quantity',
+            'unit_price',
+            'total_price',
         ];
     }
 }

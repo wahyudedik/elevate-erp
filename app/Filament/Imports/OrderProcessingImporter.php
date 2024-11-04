@@ -5,7 +5,7 @@ namespace App\Filament\Imports;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Models\Import;
-use App\Models\ManagementSalesAndPurchasing\OrderProcessing;
+use App\Models\ManagementCRM\OrderProcessing;
 
 class OrderProcessingImporter extends Importer
 {
@@ -14,9 +14,15 @@ class OrderProcessingImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('customer_id')
+            ImportColumn::make('company_id')
                 ->numeric()
                 ->required(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable(),
+            ImportColumn::make('customer_id')
+                ->numeric()
+                ->nullable(),
             ImportColumn::make('order_date')
                 ->date()
                 ->required(),
@@ -27,7 +33,7 @@ class OrderProcessingImporter extends Importer
                 ->enum(['pending', 'shipped', 'delivered', 'cancelled'])
                 ->default('pending')
                 ->required(),
-            ImportColumn::make('sales_transaction_id')
+            ImportColumn::make('sales_id')
                 ->numeric()
                 ->nullable(),
         ];

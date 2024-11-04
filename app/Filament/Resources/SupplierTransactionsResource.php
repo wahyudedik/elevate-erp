@@ -7,6 +7,8 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Clusters\Procurement;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -22,58 +24,79 @@ use App\Filament\Exports\SupplierTransactionsExporter;
 use App\Filament\Imports\SupplierTransactionsImporter;
 use App\Filament\Resources\SupplierTransactionsResource\Pages;
 use App\Filament\Resources\SupplierTransactionsResource\RelationManagers;
+use App\Filament\Resources\SupplierTransactionsResource\RelationManagers\SupplierRelationManager;
 
 class SupplierTransactionsResource extends Resource
 {
     protected static ?string $model = SupplierTransactions::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Suppliers';
+    protected static ?string $cluster = Procurement::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 23;
 
-    protected static ?string $navigationGroup = 'Management Stock';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Suppliers';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantRelationshipName = 'supplierTransactions';
+
+    protected static ?string $navigationGroup = 'Supplier Management';
+
+    protected static ?string $navigationIcon = 'polaris-transaction-icon';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('supplier_id')
-                    ->relationship('supplier', 'supplier_name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\TextInput::make('transaction_code')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->placeholder('Enter transaction code')
-                    ->maxLength(255),
-                Forms\Components\Select::make('transaction_type')
-                    ->options([
-                        'purchase_order' => 'Purchase Order',
-                        'payment' => 'Payment',
-                        'refund' => 'Refund',
+                Forms\Components\Section::make('Supplier Transactions')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('supplier_id')
+                            ->relationship('supplier', 'supplier_name', fn($query) => $query->where('status', 'active'))
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('transaction_code')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->placeholder('Enter transaction code')
+                            ->maxLength(255),
+                        Forms\Components\Select::make('transaction_type')
+                            ->options([
+                                'purchase_order' => 'Purchase Order',
+                                'payment' => 'Payment',
+                                'refund' => 'Refund',
+                            ])
+                            ->required(),
+                        Forms\Components\TextInput::make('amount')
+                            ->numeric()
+                            ->required()
+                            ->prefix('IDR')
+                            ->maxValue(999999999999999.99),
+                        Forms\Components\DatePicker::make('transaction_date')
+                            ->required(),
+                        Forms\Components\RichEditor::make('notes')
+                            ->placeholder('Enter additional notes')
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ]),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
-                    ->required(),
-                Forms\Components\TextInput::make('amount')
-                    ->numeric()
-                    ->required()
-                    ->prefix('$')
-                    ->maxValue(999999999999999.99),
-                Forms\Components\DatePicker::make('transaction_date')
-                    ->required(),
-                Forms\Components\Textarea::make('notes')
-                    ->placeholder('Enter additional notes')
-                    ->maxLength(65535)
-                    ->columnSpanFull(),
-            ])
-            ->columns(2);
+                    ->columns(2)
+                    ->collapsible(),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -81,8 +104,13 @@ class SupplierTransactionsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')
                     ->label('Supplier')
@@ -117,6 +145,7 @@ class SupplierTransactionsResource extends Resource
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Notes')
                     ->limit(50)
+                    ->html()
                     ->toggleable()
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
@@ -135,8 +164,14 @@ class SupplierTransactionsResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('supplier')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable()
@@ -191,6 +226,8 @@ class SupplierTransactionsResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('printInvoice')
                         ->label('Print Invoice')
                         ->icon('heroicon-o-printer')
@@ -200,24 +237,53 @@ class SupplierTransactionsResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(SupplierTransactionsExporter::class),
-                ImportAction::make()->importer(SupplierTransactionsImporter::class)
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(SupplierTransactionsExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export supplier transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(SupplierTransactionsImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import supplier transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(SupplierTransactionsExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export supplier transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(SupplierTransactionsExporter::class)
             ])
             ->emptyStateActions([
-                CreateAction::make()
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            SupplierRelationManager::class,
         ];
     }
 
@@ -227,6 +293,28 @@ class SupplierTransactionsResource extends Resource
             'index' => Pages\ListSupplierTransactions::route('/'),
             'create' => Pages\CreateSupplierTransactions::route('/create'),
             'edit' => Pages\EditSupplierTransactions::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'supplier_id',
+            'transaction_code',
+            'transaction_type',
+            'amount',
+            'transaction_date',
+            'notes',
         ];
     }
 }

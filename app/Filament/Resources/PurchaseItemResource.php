@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Procurement;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\CreateAction;
@@ -27,16 +28,17 @@ class PurchaseItemResource extends Resource
 {
     protected static ?string $model = PurchaseItem::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Purchase Transactions';
+    protected static ?string $cluster = Procurement::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 25;
 
-    protected static ?string $navigationGroup = 'Management Sales And Purchasing';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Purchase Transactions';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'supplierTransactions';
+
+    protected static ?string $navigationGroup = 'Purchases';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

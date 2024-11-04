@@ -15,6 +15,8 @@ class SupplierExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('supplier_name'),
             ExportColumn::make('supplier_code'),
             ExportColumn::make('contact_name'),
@@ -30,8 +32,6 @@ class SupplierExporter extends Exporter
             ExportColumn::make('country'),
             ExportColumn::make('status'),
             ExportColumn::make('credit_limit'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
         ];
     }
 

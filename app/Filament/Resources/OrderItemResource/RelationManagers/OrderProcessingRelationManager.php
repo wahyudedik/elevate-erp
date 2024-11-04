@@ -1,57 +1,30 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\OrderItemResource\RelationManagers;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Support\Carbon;
-use App\Filament\Clusters\Sales;
-use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Auth;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementCRM\OrderProcessing;
-use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Exports\OrderProcessingExporter;
-use App\Filament\Imports\OrderProcessingImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\OrderProcessingResource\Pages;
-use App\Filament\Resources\OrderProcessingResource\RelationManagers;
-use App\Filament\Resources\OrderProcessingResource\RelationManagers\SalesRelationManager;
-use App\Filament\Resources\OrderProcessingResource\RelationManagers\CustomerRelationManager;
-use App\Filament\Resources\OrderProcessingResource\RelationManagers\OrderItemsRelationManager;
-use App\Filament\Resources\OrderProcessingResource\RelationManagers\SalesTransactionRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class OrderProcessingResource extends Resource
+class OrderProcessingRelationManager extends RelationManager
 {
-    protected static ?string $model = OrderProcessing::class;
+    protected static string $relationship = 'orderProcessing';
 
-    protected static ?string $cluster = Sales::class;
-
-    protected static ?int $navigationSort = 20;
-
-    protected static bool $isScopedToTenant = true;
-
-    protected static ?string $tenantOwnershipRelationshipName = 'company';
-
-    protected static ?string $tenantRelationshipName = 'orderProcessing';
-
-    protected static ?string $navigationGroup = 'Sales Processing';
-
-    protected static ?string $navigationIcon = 'carbon-ibm-watson-orders';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Order Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
@@ -100,9 +73,10 @@ class OrderProcessingResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
@@ -213,122 +187,18 @@ class OrderProcessingResource extends Resource
                         return $indicators;
                     })->columns(2),
             ])
-            ->actions([
-                ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('changeStatus')
-                        ->label('Change Status')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->form([
-                            Forms\Components\Select::make('status')
-                                ->options([
-                                    'pending' => 'Pending',
-                                    'shipped' => 'Shipped',
-                                    'delivered' => 'Delivered',
-                                    'cancelled' => 'Cancelled',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (OrderProcessing $record, array $data): void {
-                            $record->update(['status' => $data['status']]);
-                            Notification::make()
-                                ->title('Status updated successfully')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\Action::make('printInvoice')
-                        ->label('Print Invoice')
-                        ->icon('heroicon-o-printer')
-                        ->color('success')
-                        ->url(fn(OrderProcessing $record): string => route('order-processing.print-invoice', $record))
-                        ->openUrlInNewTab(),
-                ])
-            ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
-                ActionGroup::make([
-                    ExportAction::make()->exporter(OrderProcessingExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export Order Processing Completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()->importer(OrderProcessingImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('info')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Import Order Processing Completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                // Tables\Actions\CreateAction::make(),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    ExportBulkAction::make()->exporter(OrderProcessingExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export Order Processing Completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            SalesRelationManager::class,
-            CustomerRelationManager::class,
-            OrderItemsRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListOrderProcessings::route('/'),
-            'create' => Pages\CreateOrderProcessing::route('/create'),
-            'edit' => Pages\EditOrderProcessing::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
-
-    public static function getGloballySearchableAttributes(): array
-    {
-        return [
-            'company_id',
-            'branch_id',
-            'customer_id',
-            'order_date',
-            'total_amount',
-            'status',
-            'sales_id',
-        ];
     }
 }

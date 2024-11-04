@@ -14,6 +14,14 @@ class SupplierImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('id')
+                ->rules(['nullable', 'integer', 'exists:suppliers,id']),
+            ImportColumn::make('company_id')
+                ->requiredMapping()
+                ->rules(['required', 'integer', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->requiredMapping()
+                ->rules(['required', 'integer', 'exists:branches,id']),
             ImportColumn::make('supplier_name')
                 ->requiredMapping()
                 ->rules(['required', 'string']),

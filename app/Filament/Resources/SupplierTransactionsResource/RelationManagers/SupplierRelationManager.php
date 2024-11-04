@@ -1,55 +1,29 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\SupplierTransactionsResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use function Laravel\Prompts\alert;
-use Illuminate\Support\Facades\Auth;
-use App\Filament\Clusters\Procurement;
+use Filament\Facades\Filament;
 use App\Models\ManagementStock\Supplier;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Exports\SupplierExporter;
-use App\Filament\Imports\SupplierImporter;
-use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Resources\SupplierResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
-use App\Filament\Resources\SupplierResource\RelationManagers;
-use App\Filament\Resources\SupplierResource\RelationManagers\SupplierTransactionsRelationManager;
-
-class SupplierResource extends Resource
+class SupplierRelationManager extends RelationManager
 {
-    protected static ?string $model = Supplier::class;
+    protected static string $relationship = 'supplier';
 
-    protected static ?string $cluster = Procurement::class;
-
-    protected static ?int $navigationSort = 22;
-
-    protected static bool $isScopedToTenant = true;
-
-    protected static ?string $tenantOwnershipRelationshipName = 'company';
-
-    protected static ?string $tenantRelationshipName = 'supplier';
-
-    protected static ?string $navigationGroup = 'Supplier Management';
-
-    protected static ?string $navigationIcon = 'polaris-package-fulfilled-icon';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Supplier Information')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
@@ -116,9 +90,10 @@ class SupplierResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('supplier_name')
             ->columns([
                 Tables\Columns\TextColumn::make('branch.name')
                     ->label('Branch')
@@ -273,140 +248,18 @@ class SupplierResource extends Resource
                         false: fn(Builder $query) => $query->whereNull('tax_identification_number'),
                     ),
             ])
-            ->actions([
-                ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('send_email')
-                        ->icon('heroicon-o-envelope')
-                        ->color('success')
-                        ->form([
-                            Forms\Components\TextInput::make('subject')
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\RichEditor::make('content')
-                                ->required()
-                                ->maxLength(65535),
-                        ])
-                        ->action(function (Supplier $record, array $data) {
-                            // Add email sending logic here
-                            alert('error page');
-                            Notification::make()
-                                ->title('Email sent successfully')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\Action::make('update_status')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->form([
-                            Forms\Components\Select::make('status')
-                                ->options([
-                                    'active' => 'Active',
-                                    'inactive' => 'Inactive',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (Supplier $record, array $data) {
-                            $record->update($data);
-                            Notification::make()
-                                ->title('Supplier status updated successfully')
-                                ->success()
-                                ->send();
-                        }),
-                ])
-            ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
-                ActionGroup::make([
-                    ExportAction::make()->exporter(SupplierExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export supplier completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()->importer(SupplierImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('info')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Import supplier completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                // Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    ExportBulkAction::make()->exporter(SupplierExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export supplier completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ]),
-            ])
-            ->emptyStateActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            SupplierTransactionsRelationManager::class
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListSuppliers::route('/'),
-            'create' => Pages\CreateSupplier::route('/create'),
-            'edit' => Pages\EditSupplier::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
-
-    public static function getGloballySearchableAttributes(): array
-    {
-        return [
-            'company_id',
-            'branch_id',
-            'supplier_name',
-            'supplier_code',
-            'contact_name',
-            'email',
-            'phone',
-            'fax',
-            'website',
-            'tax_identification_number',
-            'address',
-            'city',
-            'state',
-            'postal_code',
-            'country',
-            'status',
-            'credit_limit',
-        ];
     }
 }

@@ -7,9 +7,9 @@ use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\ManagementStock\PurchaseTransaction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
 
 class Supplier extends Model
 {
@@ -61,6 +61,11 @@ class Supplier extends Model
     //     'status' => 'active',
     // ];
 
+    public function purchaseTransactions():HasMany
+    {
+        return $this->hasMany(PurchaseTransaction::class, 'supplier_id');
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
@@ -73,7 +78,7 @@ class Supplier extends Model
 
     public function supplierTransactions():HasMany
     {
-        return $this->hasMany(SupplierTransactions::class);
+        return $this->hasMany(SupplierTransactions::class, 'supplier_id');
     }
 
     public function inventories():HasMany

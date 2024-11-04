@@ -1,57 +1,31 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\OrderProcessingResource\RelationManagers;
 
-use App\Filament\Clusters\Sales;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Resources\Resource;
+use Filament\Facades\Filament;
 use App\Models\ManagementCRM\Sale;
-use App\Filament\Exports\SaleExporter;
-use App\Filament\Imports\SaleImporter;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Actions\ExportBulkAction;
-use App\Filament\Resources\SaleResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SaleResource\RelationManagers;
-use App\Filament\Resources\SaleResource\RelationManagers\ItemsRelationManager;
-use Illuminate\Support\Facades\Auth;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class SaleResource extends Resource
+class SalesRelationManager extends RelationManager
 {
-    protected static ?string $model = Sale::class;
+    protected static string $relationship = 'sales';
 
-    protected static ?string $navigationLabel = 'Sales';
-
-    protected static ?string $cluster = Sales::class;
-
-    protected static ?int $navigationSort = 19;
-
-    protected static bool $isScopedToTenant = true;
-
-    protected static ?string $tenantOwnershipRelationshipName = 'company';
-
-    protected static ?string $tenantRelationshipName = 'sale';
-
-    protected static ?string $navigationGroup = 'Sales';
-
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Additional Information')
-                    ->schema([
+                    ->schema(components: [
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
@@ -96,9 +70,10 @@ class SaleResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
@@ -243,120 +218,18 @@ class SaleResource extends Resource
                         return $indicators;
                     })->columns(2),
             ])
-            ->actions([
-                ActionGroup::make([
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\Action::make('change_status')
-                        ->label('Change Status')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->form([
-                            Forms\Components\Select::make('status')
-                                ->label('New Status')
-                                ->options([
-                                    'pending' => 'Pending',
-                                    'completed' => 'Completed',
-                                    'cancelled' => 'Cancelled',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (Sale $record, array $data): void {
-                            $record->update(['status' => $data['status']]);
-                            Notification::make()
-                                ->title('Status updated successfully')
-                                ->body('The status of the sale has been updated successfully.' . $record->status)
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    Tables\Actions\Action::make('print_invoice')
-                        ->label('Print Invoice')
-                        ->icon('heroicon-o-printer')
-                        ->url(fn(Sale $record): string => route('sale.print-invoice', $record))
-                        ->openUrlInNewTab(),
-                ])
-            ])
             ->headerActions([
-                CreateAction::make()
-                    ->icon('heroicon-o-plus'),
-                ActionGroup::make([
-                    ExportAction::make()->exporter(SaleExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export sale completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()->importer(SaleImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('info')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Import sale completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                // Tables\Actions\CreateAction::make(),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    ExportBulkAction::make()->exporter(SaleExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export sale completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ]),
-            ])
-            ->emptyStateActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            ItemsRelationManager::class
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListSales::route('/'),
-            'create' => Pages\CreateSale::route('/create'),
-            'edit' => Pages\EditSale::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
-
-    public static function getGloballySearchableAttributes(): array
-    {
-        return [
-            'company_id',
-            'branch_id',
-            'customer_id',
-            'sale_date',
-            'total_amount',
-            'status',  // pending, completed, canceled
-        ];
     }
 }

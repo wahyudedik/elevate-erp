@@ -7,12 +7,11 @@ use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
+use App\Models\ManagementCRM\OrderProcessing;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementCRM\CustomerInteraction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\ManagementSalesAndPurchasing\OrderProcessing;
-use App\Models\ManagementSalesAndPurchasing\SalesTransaction;
 
 class Customer extends Model
 {
@@ -75,13 +74,8 @@ class Customer extends Model
         return $this->hasMany(Project::class, 'client_id');
     }
 
-    public function salesTransaction(): HasMany
+    public function orderProcessing()
     {
-        return $this->hasMany(SalesTransaction::class);
-    }
-
-    public function orderProccessing(): HasMany
-    {
-        return $this->hasMany(OrderProcessing::class);
+        return $this->hasMany(OrderProcessing::class, 'customer_id');
     }
 }

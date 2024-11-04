@@ -3,9 +3,9 @@
 namespace App\Filament\Exports;
 
 use Filament\Actions\Exports\Exporter;
+use App\Models\ManagementCRM\OrderItem;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Models\Export;
-use App\Models\ManagementSalesAndPurchasing\OrderItem;
 
 class OrderItemExporter extends Exporter
 {
@@ -16,6 +16,10 @@ class OrderItemExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company_id')
+                ->label('Company ID'),
+            ExportColumn::make('branch_id')
+                ->label('Branch ID'),
             ExportColumn::make('order_id')
                 ->label('Order ID'),
             ExportColumn::make('product_name')
@@ -26,6 +30,8 @@ class OrderItemExporter extends Exporter
                 ->label('Unit Price'),
             ExportColumn::make('total_price')
                 ->label('Total Price'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

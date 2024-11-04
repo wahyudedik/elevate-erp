@@ -6,11 +6,11 @@ use Filament\Clusters\Cluster;
 
 class Procurement extends Cluster
 {
-    protected static ?string $navigationLabel = 'Project Planning';
+    protected static ?string $navigationLabel = 'Procurement';
 
-    protected static ?string $navigationGroup = 'Management Project';
+    protected static ?string $navigationGroup = 'Management Stock';  
 
-    protected static ?int $navigationSort = 22; //26
+    protected static ?int $navigationSort = 26; //29
 
-    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static ?string $navigationIcon = 'polaris-package-fulfilled-icon';
 }

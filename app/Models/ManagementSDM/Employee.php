@@ -12,10 +12,9 @@ use App\Models\ManagementProject\Project;
 use App\Models\ManagementCRM\TicketResponse;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementCRM\CustomerInteraction;
+use App\Models\ManagementStock\PurchaseTransaction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\ManagementSalesAndPurchasing\SalesTransaction;
-use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
 
 class Employee extends Model
 {
@@ -146,11 +145,6 @@ class Employee extends Model
     public function project(): HasMany
     {
         return $this->hasMany(Project::class, 'manager_id');
-    }
-
-    public function salesTransaction(): HasMany
-    {
-        return $this->hasMany(SalesTransaction::class, 'sales_rep_id');
     }
 
     public function purchaseTransaction(): HasMany

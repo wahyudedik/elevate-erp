@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Procurement;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
@@ -26,16 +27,17 @@ class PurchaseTransactionResource extends Resource
 {
     protected static ?string $model = PurchaseTransaction::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Purchase Transactions';
+    protected static ?string $cluster = Procurement::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 24;
 
-    protected static ?string $navigationGroup = 'Management Sales And Purchasing';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = null;
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'purchaseTransactions';
+
+    protected static ?string $navigationGroup = 'Purchases';
 
     protected static ?string $navigationIcon = 'bx-purchase-tag-alt';
 
@@ -46,61 +48,10 @@ class PurchaseTransactionResource extends Resource
                 Forms\Components\Section::make('Purchase Transaction Details')
                     ->schema([
                         Forms\Components\Select::make('supplier_id')
-                            ->relationship('supplier', 'supplier_name')
+                            ->relationship('supplier', 'supplier_name', )
                             ->required()
                             ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('supplier_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('supplier_code')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('contact_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('email')
-                                    ->email()
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('phone')
-                                    ->tel()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('fax')
-                                    ->tel()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('website')
-                                    ->url()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('tax_identification_number')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('address')
-                                    ->required()
-                                    ->maxLength(65535),
-                                Forms\Components\TextInput::make('city')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('state')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('postal_code')
-                                    ->required()
-                                    ->maxLength(20),
-                                Forms\Components\TextInput::make('country')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\Select::make('status')
-                                    ->required()
-                                    ->options([
-                                        'active' => 'Active',
-                                        'inactive' => 'Inactive',
-                                    ]),
-                                Forms\Components\TextInput::make('credit_limit')
-                                    ->numeric()
-                                    ->required(),
-                            ]),
+                            ->preload(),
                         Forms\Components\DatePicker::make('transaction_date')
                             ->required()
                             ->default(now()),

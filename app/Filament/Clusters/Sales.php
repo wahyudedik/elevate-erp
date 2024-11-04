@@ -7,7 +7,7 @@ use Filament\Clusters\Cluster;
 
 class Sales extends Cluster
 {
-    protected static ?string $navigationLabel = 'Sale';
+    protected static ?string $navigationLabel = 'Sales';
 
     protected static ?string $navigationGroup = 'Management CRM';
 
@@ -20,5 +20,5 @@ class Sales extends Cluster
         return Sale::count();
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
 }

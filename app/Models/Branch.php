@@ -9,6 +9,7 @@ use App\Models\Scopes\CompanyScope;
 use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementCRM\SaleItem;
 use App\Models\ManagementSDM\Schedule;
+use App\Models\ManagementCRM\OrderItem;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ManagementStock\Supplier;
 use Illuminate\Notifications\Notifiable;
@@ -17,6 +18,7 @@ use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementCRM\CustomerSupport;
+use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementFinancial\Accounting;
@@ -28,6 +30,8 @@ use App\Models\ManagementProject\ProjectResource;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use App\Models\ManagementProject\ProjectMonitoring;
+use App\Models\ManagementStock\PurchaseTransaction;
+use App\Models\ManagementStock\SupplierTransactions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Branch extends Model
@@ -68,19 +72,39 @@ class Branch extends Model
         'status' => 'string',
     ];
 
+    public function purchaseTransactions()
+    {
+        return $this->hasMany(PurchaseTransaction::class, 'branch_id');
+    }
+
+    public function supplierTransactions()
+    {
+        return $this->hasMany(SupplierTransactions::class, 'branch_id');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'branch_id');
+    }
+
+    public function orderProcessing()
+    {
+        return $this->hasMany(OrderProcessing::class, 'branch_id');
+    }
+
     public function supplier()
     {
-        return $this->hasMany(Supplier::class, 'company_id');
+        return $this->hasMany(Supplier::class, 'branch_id');
     }
 
     public function projectMonitoring()
     {
-        return $this->hasMany(ProjectMonitoring::class, 'company_id');
+        return $this->hasMany(ProjectMonitoring::class, 'branch_id');
     }
 
     public function projectResource()
     {
-        return $this->hasMany(ProjectResource::class, 'company_id');
+        return $this->hasMany(ProjectResource::class, 'branch_id');
     }
 
     public function branch()
@@ -90,12 +114,12 @@ class Branch extends Model
 
     public function projectTasks()
     {
-        return $this->hasMany(ProjectTask::class, 'company_id');
+        return $this->hasMany(ProjectTask::class, 'branch_id');
     }
 
     public function project()
     {
-        return $this->hasMany(Project::class, 'company_id');
+        return $this->hasMany(Project::class, 'branch_id');
     }
 
     public function ticketResponses()
@@ -105,7 +129,7 @@ class Branch extends Model
 
     public function customerSupport()
     {
-        return $this->hasMany(CustomerSupport::class, 'company_id');
+        return $this->hasMany(CustomerSupport::class, 'branch_id');
     }
 
     public function saleItem()

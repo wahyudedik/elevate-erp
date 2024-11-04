@@ -31,13 +31,12 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active');  // Status pemasok
             $table->decimal('credit_limit', 15, 2)->nullable();  // Batas kredit untuk pemasok
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         // Tabel untuk riwayat transaksi dengan pemasok
         Schema::create('supplier_transactions', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade');

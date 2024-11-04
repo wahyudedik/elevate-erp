@@ -3,9 +3,9 @@
 namespace App\Filament\Imports;
 
 use Filament\Actions\Imports\Importer;
+use App\Models\ManagementCRM\OrderItem;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Models\Import;
-use App\Models\ManagementSalesAndPurchasing\OrderItem;
 
 class OrderItemImporter extends Importer
 {
@@ -14,9 +14,15 @@ class OrderItemImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('order_id')
+            ImportColumn::make('company_id')
                 ->numeric()
                 ->required(),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable(),
+            ImportColumn::make('order_id')
+                ->numeric()
+                ->nullable(),
             ImportColumn::make('product_name')
                 ->rules(['required', 'string']),
             ImportColumn::make('quantity')
@@ -27,8 +33,7 @@ class OrderItemImporter extends Importer
                 ->required(),
             ImportColumn::make('total_price')
                 ->numeric()
-                ->required(),
-        ];
+                ->required(),        ];
     }
 
     public function resolveRecord(): ?OrderItem

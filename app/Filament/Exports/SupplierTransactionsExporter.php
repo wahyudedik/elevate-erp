@@ -16,6 +16,10 @@ class SupplierTransactionsExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('supplier.name')
                 ->label('Supplier'),
             ExportColumn::make('transaction_code')
@@ -28,6 +32,8 @@ class SupplierTransactionsExporter extends Exporter
                 ->label('Transaction Date'),
             ExportColumn::make('notes')
                 ->label('Notes'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
