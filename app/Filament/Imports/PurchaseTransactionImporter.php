@@ -5,7 +5,7 @@ namespace App\Filament\Imports;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Models\Import;
-use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
+use App\Models\ManagementStock\PurchaseTransaction;
 
 class PurchaseTransactionImporter extends Importer
 {
@@ -19,29 +19,33 @@ class PurchaseTransactionImporter extends Importer
                 ->requiredMapping()
                 ->rules(['required', 'date']),
 
-            ImportColumn::make('invoice_number')
-                ->label('Invoice Number')
+            ImportColumn::make('company_id')
+                ->label('Company')
                 ->requiredMapping()
-                ->rules(['required', 'string', 'max:255']),
+                ->rules(['required', 'exists:companies,id']),
 
-            ImportColumn::make('supplier_name')
-                ->label('Supplier Name')
-                ->requiredMapping()
-                ->rules(['required', 'string', 'max:255']),
+            ImportColumn::make('branch_id')
+                ->label('Branch')
+                ->rules(['nullable', 'exists:branches,id']),
+
+            ImportColumn::make('supplier_id')
+                ->label('Supplier')
+                ->rules(['nullable', 'exists:suppliers,id']),
 
             ImportColumn::make('total_amount')
                 ->label('Total Amount')
                 ->requiredMapping()
                 ->rules(['required', 'numeric', 'min:0']),
 
-            ImportColumn::make('payment_status')
-                ->label('Payment Status')
+            ImportColumn::make('status')
+                ->label('Status')
                 ->requiredMapping()
-                ->rules(['required', 'string', 'in:paid,unpaid,partial']),
+                ->rules(['required', 'string', 'in:pending,received,cancelled']),
 
-            ImportColumn::make('notes')
-                ->label('Notes')
-                ->rules(['nullable', 'string']),
+            ImportColumn::make('purchasing_agent_id')
+                ->label('Purchasing Agent')
+                ->requiredMapping()
+                ->rules(['required', 'exists:employees,id']),
         ];
     }
 

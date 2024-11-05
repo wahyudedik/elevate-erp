@@ -36,7 +36,12 @@ class PurchaseTransaction extends Model
         'purchasing_agent_id' => 'integer',
     ];
 
-    public function emplooyee()
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class, 'purchase_transaction_id');
+    }
+
+    public function purchasingAgent()
     {
         return $this->belongsTo(Employee::class, 'purchasing_agent_id');
     }

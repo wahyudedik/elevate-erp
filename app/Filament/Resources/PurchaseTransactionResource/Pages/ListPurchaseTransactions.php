@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\PurchaseTransactionResource\Pages;
 
-use App\Filament\Resources\PurchaseTransactionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\PurchaseTransactionResource;
+use App\Filament\Resources\PurchaseTransactionResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListPurchaseTransactions extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListPurchaseTransactions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

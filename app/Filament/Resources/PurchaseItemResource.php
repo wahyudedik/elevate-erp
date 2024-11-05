@@ -40,7 +40,7 @@ class PurchaseItemResource extends Resource
 
     protected static ?string $navigationGroup = 'Purchases';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'iconsax-two-forward-item';
 
     public static function form(Form $form): Form
     {

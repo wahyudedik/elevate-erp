@@ -17,6 +17,7 @@ use App\Models\ManagementProject\Project;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
+use App\Models\ManagementStock\PurchaseItem;
 use App\Models\ManagementCRM\CustomerSupport;
 use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
@@ -71,6 +72,11 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class, 'branch_id');
+    }
 
     public function purchaseTransactions()
     {

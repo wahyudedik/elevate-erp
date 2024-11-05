@@ -7,8 +7,10 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Clusters\Procurement;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
@@ -47,8 +49,13 @@ class PurchaseTransactionResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Purchase Transaction Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('supplier_id')
-                            ->relationship('supplier', 'supplier_name', )
+                            ->relationship('supplier', 'supplier_name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -70,7 +77,7 @@ class PurchaseTransactionResource extends Resource
                             ->required()
                             ->default('pending'),
                         Forms\Components\Select::make('purchasing_agent_id')
-                            ->relationship('purchasingAgent', 'first_name')
+                            ->relationship('purchasingAgent', 'first_name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -96,10 +103,14 @@ class PurchaseTransactionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')
                     ->label('Supplier')
                     ->sortable()
@@ -136,8 +147,14 @@ class PurchaseTransactionResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('supplier')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable()
@@ -176,6 +193,8 @@ class PurchaseTransactionResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('change_status')
                     ->label('Change Status')
@@ -230,18 +249,46 @@ class PurchaseTransactionResource extends Resource
 
             ])
             ->headerActions([
-                ExportAction::make()->exporter(PurchaseTransactionExporter::class),
-                ImportAction::make()->importer(PurchaseTransactionImporter::class),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(PurchaseTransactionExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export purchase transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(PurchaseTransactionImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import purchase transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(PurchaseTransactionExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export purchase transaction completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-
-                ExportBulkAction::make()->exporter(PurchaseTransactionExporter::class),
             ])
             ->emptyStateActions([
-                CreateAction::make(),
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -249,7 +296,7 @@ class PurchaseTransactionResource extends Resource
     {
         return [
             PurchaseItemsRelationManager::class,
-            SupplierRelationManager::class,
+            SupplierRelationManager::class, //done
         ];
     }
 
@@ -259,6 +306,27 @@ class PurchaseTransactionResource extends Resource
             'index' => Pages\ListPurchaseTransactions::route('/'),
             'create' => Pages\CreatePurchaseTransaction::route('/create'),
             'edit' => Pages\EditPurchaseTransaction::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'supplier_id',
+            'transaction_date',
+            'total_amount',
+            'status',
+            'purchasing_agent_id',
         ];
     }
 }

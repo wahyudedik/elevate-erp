@@ -22,6 +22,7 @@ use App\Models\ManagementProject\Project;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
+use App\Models\ManagementStock\PurchaseItem;
 use App\Models\ManagementCRM\CustomerSupport;
 use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
@@ -76,6 +77,11 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class, 'company_id');
+    }
 
     public function purchaseTransactions()
     {

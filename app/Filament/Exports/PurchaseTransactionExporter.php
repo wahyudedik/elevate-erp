@@ -5,7 +5,7 @@ namespace App\Filament\Exports;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Models\Export;
-use App\Models\ManagementSalesAndPurchasing\PurchaseTransaction;
+use App\Models\ManagementStock\PurchaseTransaction;
 
 class PurchaseTransactionExporter extends Exporter
 {
@@ -16,6 +16,10 @@ class PurchaseTransactionExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('transaction_number')
                 ->label('Transaction Number'),
             ExportColumn::make('transaction_date')
@@ -26,6 +30,10 @@ class PurchaseTransactionExporter extends Exporter
                 ->label('Total Amount'),
             ExportColumn::make('status')
                 ->label('Status'),
+            ExportColumn::make('purchasing_agent.name')
+                ->label('Purchasing Agent'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
