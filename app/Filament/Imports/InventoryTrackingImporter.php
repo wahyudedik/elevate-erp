@@ -14,9 +14,19 @@ class InventoryTrackingImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->required()
+                ->numeric()
+                ->rules(['exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->nullable()
+                ->numeric()
+                ->rules(['exists:branches,id']),
             ImportColumn::make('inventory_id')
                 ->label('Inventory ID')
-                ->required()
+                ->nullable()
                 ->numeric()
                 ->rules(['exists:inventories,id']),
             ImportColumn::make('quantity_before')
@@ -37,8 +47,7 @@ class InventoryTrackingImporter extends Importer
             ImportColumn::make('transaction_date')
                 ->label('Transaction Date')
                 ->required()
-                ->date(),
-        ];
+                ->date(),        ];
     }
 
     public function resolveRecord(): ?InventoryTracking

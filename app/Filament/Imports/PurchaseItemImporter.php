@@ -5,7 +5,7 @@ namespace App\Filament\Imports;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Models\Import;
-use App\Models\ManagementSalesAndPurchasing\PurchaseItem;
+use App\Models\ManagementStock\PurchaseItem;
 
 class PurchaseItemImporter extends Importer
 {
@@ -14,9 +14,17 @@ class PurchaseItemImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->rules(['required', 'integer', 'exists:companies,id']),
+
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['nullable', 'integer', 'exists:branches,id']),
+
             ImportColumn::make('purchase_transaction_id')
                 ->label('Purchase Transaction ID')
-                ->rules(['required', 'integer']),
+                ->rules(['nullable', 'integer', 'exists:purchase_transactions,id']),
 
             ImportColumn::make('product_name')
                 ->label('Product Name')
@@ -35,8 +43,7 @@ class PurchaseItemImporter extends Importer
             ImportColumn::make('total_price')
                 ->label('Total Price')
                 ->numeric()
-                ->rules(['required', 'numeric', 'min:0']),
-        ];
+                ->rules(['required', 'numeric', 'min:0']),        ];
     }
 
     public function resolveRecord(): ?PurchaseItem

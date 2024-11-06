@@ -16,6 +16,10 @@ class InventoryTrackingExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('inventory.name')
                 ->label('Inventory Name'),
             ExportColumn::make('quantity_before')
@@ -28,11 +32,12 @@ class InventoryTrackingExporter extends Exporter
                 ->label('Remarks'),
             ExportColumn::make('transaction_date')
                 ->label('Transaction Date'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
-        ];
+                ->label('Updated At'),        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

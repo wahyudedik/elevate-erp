@@ -19,6 +19,7 @@ use App\Models\ManagementSDM\Attendance;
 use App\Models\ManagementStock\Supplier;
 use Spatie\Permission\Models\Permission;
 use App\Models\ManagementProject\Project;
+use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
@@ -33,6 +34,7 @@ use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
 use App\Models\ManagementCRM\CustomerInteraction;
 use App\Models\ManagementProject\ProjectResource;
+use App\Models\ManagementStock\InventoryTracking;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use App\Models\ManagementProject\ProjectMonitoring;
@@ -77,6 +79,16 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
+
+    public function inventoryTracking()
+    {
+        return $this->hasMany(InventoryTracking::class, 'company_id');
+    }
+
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'company_id');
+    }
 
     public function purchaseItems()
     {

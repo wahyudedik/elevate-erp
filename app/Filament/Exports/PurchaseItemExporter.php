@@ -5,7 +5,7 @@ namespace App\Filament\Exports;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Models\Export;
-use App\Models\ManagementSalesAndPurchasing\PurchaseItem;
+use App\Models\ManagementStock\PurchaseItem;
 
 class PurchaseItemExporter extends Exporter
 {
@@ -16,6 +16,10 @@ class PurchaseItemExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company_id')
+                ->label('Company ID'),
+            ExportColumn::make('branch_id')
+                ->label('Branch ID'),
             ExportColumn::make('purchase_transaction_id')
                 ->label('Purchase Transaction ID'),
             ExportColumn::make('product_name')
@@ -26,11 +30,12 @@ class PurchaseItemExporter extends Exporter
                 ->label('Unit Price'),
             ExportColumn::make('total_price')
                 ->label('Total Price'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
-        ];
+                ->label('Updated At'),        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

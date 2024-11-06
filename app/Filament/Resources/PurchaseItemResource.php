@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Clusters\Procurement;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -36,7 +37,7 @@ class PurchaseItemResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'company';
 
-    protected static ?string $tenantRelationshipName = 'supplierTransactions';
+    protected static ?string $tenantRelationshipName = 'purchaseItems';
 
     protected static ?string $navigationGroup = 'Purchases';
 
@@ -46,42 +47,50 @@ class PurchaseItemResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('purchase_transaction_id')
-                    ->relationship('purchaseTransaction', 'id')
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->placeholder('Select Purchase Transaction'),
+                Forms\Components\Section::make('Purchase Item Details')
+                    ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
 
-                Forms\Components\TextInput::make('product_name')
-                    ->required()
-                    ->maxLength(255)
-                    ->autocomplete()
-                    ->placeholder('Enter product name'),
+                        Forms\Components\Select::make('purchase_transaction_id')
+                            ->relationship('purchaseTransaction', 'id', fn($query) => $query->where('status', 'pending'))
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Select Purchase Transaction'),
 
-                Forms\Components\TextInput::make('quantity')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->step(1)
-                    ->placeholder('Enter quantity'),
+                        Forms\Components\TextInput::make('product_name')
+                            ->required()
+                            ->maxLength(255)
+                            ->autocomplete()
+                            ->placeholder('Enter product name'),
 
-                Forms\Components\TextInput::make('unit_price')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->step(0.01)
-                    ->prefix('IDR')
-                    ->placeholder('Enter unit price'),
+                        Forms\Components\TextInput::make('quantity')
+                            ->required()
+                            ->numeric()
+                            ->minValue(1)
+                            ->step(1)
+                            ->placeholder('Enter quantity'),
 
-                Forms\Components\Placeholder::make('total_price')
-                    ->default(function ($get) {
-                        return $get('quantity') * $get('unit_price');
-                    })
-                    ->content(function ($get) {
-                        return 'IDR ' . number_format($get('quantity') * $get('unit_price'), 2);
-                    }),
+                        Forms\Components\TextInput::make('unit_price')
+                            ->required()
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(0.01)
+                            ->prefix('IDR')
+                            ->placeholder('Enter unit price'),
 
+                        Forms\Components\Placeholder::make('total_price')
+                            ->default(function ($get) {
+                                return $get('quantity') * $get('unit_price');
+                            })
+                            ->content(function ($get) {
+                                return 'IDR ' . number_format($get('quantity') * $get('unit_price'), 2);
+                            }),
+                    ])->columns(2),
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
@@ -101,10 +110,14 @@ class PurchaseItemResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('purchaseTransaction.id')
                     ->label('Purchase Transaction')
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -144,8 +157,14 @@ class PurchaseItemResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable()
                     ->searchable(),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('purchase_transaction_id')
                     ->relationship('purchaseTransaction', 'id')
                     ->label('Purchase Transaction')
@@ -195,6 +214,8 @@ class PurchaseItemResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('updatePrice')
                         ->label('Update Price')
                         ->icon('heroicon-o-currency-dollar')
@@ -251,17 +272,46 @@ class PurchaseItemResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(PurchaseItemExporter::class),
-                ImportAction::make()->importer(PurchaseItemImporter::class)
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(PurchaseItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export purchase item completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(PurchaseItemImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import purchase item completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(PurchaseItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export purchase item completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(PurchaseItemExporter::class)
             ])
             ->emptyStateActions([
-                CreateAction::make(),
+                CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -278,6 +328,27 @@ class PurchaseItemResource extends Resource
             'index' => Pages\ListPurchaseItems::route('/'),
             'create' => Pages\CreatePurchaseItem::route('/create'),
             'edit' => Pages\EditPurchaseItem::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'purchase_transaction_id',
+            'product_name',
+            'quantity',
+            'unit_price',
+            'total_price',
         ];
     }
 }

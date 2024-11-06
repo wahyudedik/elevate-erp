@@ -296,7 +296,7 @@ class PurchaseTransactionResource extends Resource
     {
         return [
             PurchaseItemsRelationManager::class,
-            SupplierRelationManager::class, //done
+            SupplierRelationManager::class,
         ];
     }
 

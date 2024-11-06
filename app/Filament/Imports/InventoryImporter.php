@@ -14,6 +14,12 @@ class InventoryImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['nullable', 'exists:branches,id']),
             ImportColumn::make('item_name')
                 ->label('Item Name')
                 ->rules(['required', 'string']),
@@ -34,7 +40,7 @@ class InventoryImporter extends Importer
                 ->rules(['nullable', 'string']),
             ImportColumn::make('supplier_id')
                 ->label('Supplier ID')
-                ->rules(['required', 'exists:suppliers,id']),
+                ->rules(['nullable', 'exists:suppliers,id']),
             ImportColumn::make('status')
                 ->label('Status')
                 ->rules(['required', 'in:in_stock,out_of_stock,discontinued'])

@@ -15,6 +15,8 @@ class InventoryExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company.name')->label('Company'),
+            ExportColumn::make('branch.name')->label('Branch'),
             ExportColumn::make('item_name'),
             ExportColumn::make('sku'),
             ExportColumn::make('quantity'),
@@ -23,9 +25,9 @@ class InventoryExporter extends Exporter
             ExportColumn::make('location'),
             ExportColumn::make('supplier.name')->label('Supplier'),
             ExportColumn::make('status'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
-        ];
+            ExportColumn::make('updated_at'),        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string
