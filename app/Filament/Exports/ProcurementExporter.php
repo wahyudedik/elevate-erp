@@ -16,6 +16,10 @@ class ProcurementExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('supplier.name')
                 ->label('Supplier'),
             ExportColumn::make('procurement_date')
@@ -24,6 +28,8 @@ class ProcurementExporter extends Exporter
                 ->label('Total Cost'),
             ExportColumn::make('status')
                 ->label('Status'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

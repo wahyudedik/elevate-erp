@@ -21,6 +21,7 @@ use Spatie\Permission\Models\Permission;
 use App\Models\ManagementProject\Project;
 use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementStock\Procurement;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementStock\PurchaseItem;
@@ -30,6 +31,7 @@ use App\Models\ManagementProject\ProjectTask;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementSDM\EmployeePosition;
 use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementStock\ProcurementItem;
 use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
 use App\Models\ManagementCRM\CustomerInteraction;
@@ -79,6 +81,16 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
+
+    public function procurementItems()
+    {
+        return $this->hasMany(ProcurementItem::class,  'company_id');
+    }
+
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'company_id');
+    }
 
     public function inventoryTracking()
     {
@@ -132,7 +144,7 @@ class Company extends Model implements HasCurrentTenantLabel
 
     public function branch()
     {
-        return $this->hasMany(Branch::class, 'branch_id');
+        return $this->hasMany(Branch::class, 'company_id');
     }
 
     public function projectTasks()
@@ -147,7 +159,7 @@ class Company extends Model implements HasCurrentTenantLabel
 
     public function ticketResponses()
     {
-        return $this->hasMany(TicketResponse::class, 'branch_id');
+        return $this->hasMany(TicketResponse::class, 'company_id');
     }
 
     public function customerSupport()

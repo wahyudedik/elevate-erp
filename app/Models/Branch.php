@@ -16,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
 use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementStock\Procurement;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementStock\PurchaseItem;
@@ -25,6 +26,7 @@ use App\Models\ManagementProject\ProjectTask;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementStock\ProcurementItem;
 use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
 use App\Models\ManagementCRM\CustomerInteraction;
@@ -74,6 +76,16 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function procurementItems()
+    {
+        return $this->hasMany(ProcurementItem::class,  'branch_id');
+    }
+
+    public function procurements()
+    {
+        return $this->hasMany(Procurement::class, 'branch_id');
+    }
 
     public function inventoryTracking()
     {

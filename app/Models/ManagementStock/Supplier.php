@@ -86,8 +86,8 @@ class Supplier extends Model
         return $this->hasMany(Inventory::class, 'supplier_id');
     }
 
-    public function procurement():HasMany
+    public function procurements()
     {
-        return $this->hasMany(Procurement::class);
+        return $this->hasMany(Procurement::class, 'supplier_id');
     }
 }

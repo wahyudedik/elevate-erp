@@ -14,10 +14,16 @@ class ProcurementImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->requiredMapping()
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['nullable', 'exists:branches,id']),
             ImportColumn::make('supplier_id')
                 ->label('Supplier ID')
-                ->requiredMapping()
-                ->rules(['required', 'exists:suppliers,id']),
+                ->rules(['nullable', 'exists:suppliers,id']),
             ImportColumn::make('procurement_date')
                 ->label('Procurement Date')
                 ->requiredMapping()
@@ -25,7 +31,7 @@ class ProcurementImporter extends Importer
             ImportColumn::make('total_cost')
                 ->label('Total Cost')
                 ->requiredMapping()
-                ->rules(['required', 'numeric', 'min:0']),
+                ->rules(['required', 'numeric', 'min:0', 'decimal:0,2']),
             ImportColumn::make('status')
                 ->label('Status')
                 ->requiredMapping()

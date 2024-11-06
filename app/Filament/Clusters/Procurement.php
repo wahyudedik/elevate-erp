@@ -12,5 +12,5 @@ class Procurement extends Cluster
 
     protected static ?int $navigationSort = 26; //29
 
-    protected static ?string $navigationIcon = 'polaris-package-fulfilled-icon';
+    protected static ?string $navigationIcon = 'gmdi-production-quantity-limits-tt';
 }

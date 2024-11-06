@@ -2,42 +2,49 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\ProcurementExporter;
-use App\Filament\Imports\ProcurementImporter;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementStock\Procurement;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Exports\ProcurementExporter;
+use App\Filament\Imports\ProcurementImporter;
+use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProcurementResource\Pages;
+use App\Filament\Clusters\Procurement as ClustersProcurement;
 use App\Filament\Resources\ProcurementResource\RelationManagers;
 use App\Filament\Resources\ProcurementResource\RelationManagers\ItemsRelationManager;
 use App\Filament\Resources\ProcurementResource\RelationManagers\SupplierRelationManager;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ImportAction;
 
 class ProcurementResource extends Resource
 {
     protected static ?string $model = Procurement::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Procurement';
+    protected static ?string $cluster = ClustersProcurement::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationGroup = 'Management Stock';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = null;
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'procurements';
+
+    protected static ?string $navigationGroup = 'Procurements';
+
+    protected static ?string $navigationLabel = 'Procurement';
 
     protected static ?string $navigationIcon = 'gmdi-production-quantity-limits-tt';
 
@@ -47,57 +54,84 @@ class ProcurementResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Procurement Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('supplier_id')
                             ->relationship('supplier', 'supplier_name')
                             ->required()
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('supplier_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('supplier_code')
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('contact_name')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('email')
-                                    ->email()
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('phone')
-                                    ->tel()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('fax')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('website')
-                                    ->url()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('tax_identification_number')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('address')
-                                    ->maxLength(65535)
-                                    ->columnSpanFull(),
-                                Forms\Components\TextInput::make('city')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('state')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('postal_code')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('country')
-                                    ->maxLength(255),
-                                Forms\Components\Select::make('status')
-                                    ->options([
-                                        'active' => 'Active',
-                                        'inactive' => 'Inactive',
+                                Forms\Components\Section::make('Supplier Information')
+                                    ->schema([
+                                        Forms\Components\Hidden::make('company_id')
+                                            ->default(Filament::getTenant()->id),
+                                        Forms\Components\Select::make('branch_id')
+                                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                                            ->nullable()
+                                            ->searchable()
+                                            ->preload(),
+                                        Forms\Components\TextInput::make('supplier_name')
+                                            ->required()
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('supplier_code')
+                                            ->required()
+                                            ->unique(ignoreRecord: true)
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('contact_name')
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('email')
+                                            ->email()
+                                            ->unique(ignoreRecord: true)
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('phone')
+                                            ->tel()
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('fax')
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('website')
+                                            ->url()
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('tax_identification_number')
+                                            ->maxLength(255),
+                                        Forms\Components\RichEditor::make('address')
+                                            ->maxLength(65535)
+                                            ->columnSpanFull(),
+                                        Forms\Components\TextInput::make('city')
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('state')
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('postal_code')
+                                            ->maxLength(255),
+                                        Forms\Components\TextInput::make('country')
+                                            ->maxLength(255),
+                                        Forms\Components\Select::make('status')
+                                            ->options([
+                                                'active' => 'Active',
+                                                'inactive' => 'Inactive',
+                                            ])
+                                            ->required()
+                                            ->default('active'),
+                                        Forms\Components\TextInput::make('credit_limit')
+                                            ->numeric()
+                                            ->prefix('IDR')
+                                            ->maxValue(9999999999999.99),
+                                    ])->columns(2),
+                                Forms\Components\Section::make('Additional Information')
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('created_at')
+                                            ->label('Created at')
+                                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                                        Forms\Components\Placeholder::make('updated_at')
+                                            ->label('Last modified at')
+                                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                                     ])
-                                    ->required()
-                                    ->default('active'),
-                                Forms\Components\TextInput::make('credit_limit')
-                                    ->numeric()
-                                    ->prefix('IDR')
-                                    ->maxValue(9999999999999.99),
+                                    ->columns(2)
+                                    ->collapsible(),
                             ])->columns(2),
                         Forms\Components\DatePicker::make('procurement_date')
                             ->required()
@@ -121,14 +155,15 @@ class ProcurementResource extends Resource
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created At')
-                            ->content(fn(?Procurement $record): string => $record ? $record->created_at->diffForHumans() : '-'),
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last Modified At')
-                            ->content(fn(?Procurement $record): string => $record ? $record->updated_at->diffForHumans() : '-'),
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
-                    ->hidden(fn(?Procurement $record) => $record === null),
+                    ->collapsible(),
             ]);
     }
 
@@ -137,10 +172,13 @@ class ProcurementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')
                     ->label('Supplier')
                     ->sortable()
@@ -178,8 +216,14 @@ class ProcurementResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('supplier')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable()
@@ -256,6 +300,8 @@ class ProcurementResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('changeStatus')
                         ->label('Change Status')
                         ->icon('heroicon-o-arrow-path')
@@ -281,17 +327,38 @@ class ProcurementResource extends Resource
                         ->label('Print Details')
                         ->icon('heroicon-o-printer')
                         ->color('success')
-                        // ->url(fn(Procurement $record): string => route('procurement.print', $record))
+                        ->url(fn(Procurement $record): string => route('procurement.print', $record))
                         ->openUrlInNewTab(),
                 ])
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ProcurementExporter::class),
-                ImportAction::make()->importer(ProcurementImporter::class),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ProcurementExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ProcurementImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('changeBulkStatus')
                         ->label('Change Status')
                         ->icon('heroicon-o-arrow-path')
@@ -315,8 +382,19 @@ class ProcurementResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+                    ExportBulkAction::make()->exporter(ProcurementExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(ProcurementExporter::class),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -324,7 +402,7 @@ class ProcurementResource extends Resource
     {
         return [
             ItemsRelationManager::class,
-            SupplierRelationManager::class,
+            SupplierRelationManager::class, //done
         ];
     }
 
@@ -334,6 +412,26 @@ class ProcurementResource extends Resource
             'index' => Pages\ListProcurements::route('/'),
             'create' => Pages\CreateProcurement::route('/create'),
             'edit' => Pages\EditProcurement::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'supplier_id',
+            'procurement_date',
+            'total_cost',
+            'status',
         ];
     }
 }
