@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\Employee;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -21,18 +22,15 @@ use App\Filament\Imports\EmployeePositionImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\EmployeePositionResource\Pages;
 use App\Filament\Resources\EmployeePositionResource\RelationManagers;
-use App\Filament\Resources\EmployeePositionResource\RelationManagers\EmployeeRelationManager;
+use App\Filament\Resources\EmployeePositionResource\RelationManagers\EmployeeRelationManager; 
 
 class EmployeePositionResource extends Resource
 {
     protected static ?string $model = EmployeePosition::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Employee Positions';
+    protected static ?string $cluster = Employee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 2; //29
 
     protected static bool $isScopedToTenant = true;
 
@@ -40,10 +38,9 @@ class EmployeePositionResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'employeePosition';
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $navigationGroup = 'Employee Management';
 
-    protected static ?string $navigationParentItem = 'Employee Management';
-
+    protected static ?string $navigationIcon = 'clarity-employee-line';
     public static function form(Form $form): Form
     {
         return $form

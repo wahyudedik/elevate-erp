@@ -3,7 +3,10 @@
 namespace App\Models\ManagementSDM;
 
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
+use App\Models\Position;
+use App\Models\Department;
 use Filament\Facades\Filament;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +34,7 @@ class Employee extends Model
     protected $fillable = [
         'user_id',
         'company_id',
+        'branch_id',
         'first_name',
         'last_name',
         'employee_code',
@@ -39,8 +43,8 @@ class Employee extends Model
         'date_of_birth',
         'gender',
         'national_id_number',
-        'position',
-        'department',
+        'position_id',
+        'department_id',
         'date_of_joining',
         'salary',
         'employment_status',
@@ -57,12 +61,47 @@ class Employee extends Model
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
+        'user_id' => 'integer',
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'first_name' => 'string',
+        'last_name' => 'string',
+        'employee_code' => 'string',
+        'email' => 'string',
+        'phone' => 'string',
         'date_of_birth' => 'date',
+        'gender' => 'string',
+        'national_id_number' => 'string',
+        'position_id' => 'integer',
+        'department_id' => 'integer',
         'date_of_joining' => 'date',
         'salary' => 'decimal:2',
+        'employment_status' => 'string',
+        'manager_id' => 'integer',
+        'address' => 'string',
+        'city' => 'string',
+        'state' => 'string',
+        'postal_code' => 'string',
+        'country' => 'string',
+        'status' => 'string',
         'profile_picture' => 'string',
         'contract' => 'string',
     ];
+
+    public function position()
+    {
+        return $this->belongsTo(Position::class, 'position_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     //relasi user
     public function user()

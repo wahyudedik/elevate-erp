@@ -8,6 +8,7 @@ use App\Models\ManagementSDM\Shift;
 use App\Models\Scopes\CompanyScope;
 use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementCRM\SaleItem;
+use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use App\Models\ManagementCRM\OrderItem;
 use Illuminate\Database\Eloquent\Model;
@@ -76,6 +77,11 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'branch_id');
+    }
 
     public function procurementItems()
     {

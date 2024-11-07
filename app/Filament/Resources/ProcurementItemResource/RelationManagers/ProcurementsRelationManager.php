@@ -1,59 +1,29 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\ProcurementItemResource\RelationManagers;
 
-use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
-use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Auth;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ImportAction;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\ManagementStock\Procurement;
-use Illuminate\Database\Eloquent\Collection;
-use App\Filament\Exports\ProcurementExporter;
-use App\Filament\Imports\ProcurementImporter;
-use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ProcurementResource\Pages;
-use App\Filament\Clusters\Procurement as ClustersProcurement;
-use App\Filament\Resources\ProcurementResource\RelationManagers;
-use App\Filament\Resources\ProcurementResource\RelationManagers\ItemsRelationManager;
-use App\Filament\Resources\ProcurementResource\RelationManagers\SupplierRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class ProcurementResource extends Resource
+class ProcurementsRelationManager extends RelationManager
 {
-    protected static ?string $model = Procurement::class;
+    protected static string $relationship = 'procurements';
 
-    protected static ?string $cluster = ClustersProcurement::class;
-
-    protected static ?int $navigationSort = 1;
-
-    protected static bool $isScopedToTenant = true;
-
-    protected static ?string $tenantOwnershipRelationshipName = 'company';
-
-    protected static ?string $tenantRelationshipName = 'procurements';
-
-    protected static ?string $navigationGroup = 'Procurements';
-
-    protected static ?string $navigationLabel = 'Procurement';
-
-    protected static ?string $navigationIcon = 'gmdi-production-quantity-limits-tt';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Procurement Details')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
@@ -167,10 +137,15 @@ class ProcurementResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('id')
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
@@ -214,7 +189,6 @@ class ProcurementResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
                     ->relationship('branch', 'name')
                     ->searchable()
@@ -291,143 +265,18 @@ class ProcurementResource extends Resource
                         return $indicators;
                     })->columns(2),
             ])
-            ->actions([
-                ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('changeStatus')
-                        ->label('Change Status')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->form([
-                            Forms\Components\Select::make('status')
-                                ->label('New Status')
-                                ->options([
-                                    'ordered' => 'Ordered',
-                                    'received' => 'Received',
-                                    'cancelled' => 'Cancelled',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (Procurement $record, array $data): void {
-                            $record->update(['status' => $data['status']]);
-                            Notification::make()
-                                ->title('Status updated successfully')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\Action::make('printDetails')
-                        ->label('Print Details')
-                        ->icon('heroicon-o-printer')
-                        ->color('success')
-                        ->url(fn(Procurement $record): string => route('procurement.print', $record))
-                        ->openUrlInNewTab(),
-                ])
-            ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
-                ActionGroup::make([
-                    ExportAction::make()->exporter(ProcurementExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export department completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                    ImportAction::make()->importer(ProcurementImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
-                        ->color('info')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Import department completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                // Tables\Actions\CreateAction::make(),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\BulkAction::make('changeBulkStatus')
-                        ->label('Change Status')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('warning')
-                        ->form([
-                            Forms\Components\Select::make('status')
-                                ->label('New Status')
-                                ->options([
-                                    'ordered' => 'Ordered',
-                                    'received' => 'Received',
-                                    'cancelled' => 'Cancelled',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (Collection $records, array $data): void {
-                            $records->each(function ($record) use ($data) {
-                                $record->update(['status' => $data['status']]);
-                            });
-                            Notification::make()
-                                ->title('Statuses updated successfully')
-                                ->success()
-                                ->send();
-                        }),
-                    ExportBulkAction::make()->exporter(ProcurementExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Export department completed' . ' ' . now())
-                                ->success()
-                                ->sendToDatabase(Auth::user());
-                        }),
-                ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->icon('heroicon-o-plus'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            ItemsRelationManager::class,
-            SupplierRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListProcurements::route('/'),
-            'create' => Pages\CreateProcurement::route('/create'),
-            'edit' => Pages\EditProcurement::route('/{record}/edit'),
-        ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
-
-    public static function getGloballySearchableAttributes(): array
-    {
-        return [
-            'company_id',
-            'branch_id',
-            'supplier_id',
-            'procurement_date',
-            'total_cost',
-            'status',
-        ];
     }
 }

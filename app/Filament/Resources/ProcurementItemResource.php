@@ -7,6 +7,11 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Clusters\Procurement;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,23 +23,27 @@ use App\Filament\Imports\ProcurementItemImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProcurementItemResource\Pages;
 use App\Filament\Resources\ProcurementItemResource\RelationManagers;
+use App\Filament\Resources\ProcurementItemResource\RelationManagers\ProcurementsRelationManager;
 
 class ProcurementItemResource extends Resource
 {
     protected static ?string $model = ProcurementItem::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Procurement';
+    protected static ?string $cluster = Procurement::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationGroup = 'Management Stock';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Procurements';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $tenantRelationshipName = 'procurementItems';
+
+    protected static ?string $navigationGroup = 'Procurements';
+
+    protected static ?string $navigationLabel = 'Procurement Item';
+
+    protected static ?string $navigationIcon = 'hugeicons-group-items';
 
     public static function form(Form $form): Form
     {
@@ -42,8 +51,13 @@ class ProcurementItemResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Procurement Item Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('procurement_id')
-                            ->relationship('procurement', 'id')
+                            ->relationship('procurements', 'id')
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -74,9 +88,19 @@ class ProcurementItemResource extends Resource
                             ->disabled()
                             ->dehydrated()
                             ->afterStateHydrated(fn($component, $state) => $component->state(number_format($state, 2))),
+                    ])->columns(2),
+                Forms\Components\Section::make('Additional Information')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
-
+                    ->collapsible(),
             ]);
     }
 
@@ -84,7 +108,12 @@ class ProcurementItemResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('procurement.id')
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('procurements.id')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -112,10 +141,16 @@ class ProcurementItemResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('procurement')
-                    ->relationship('procurement', 'id')
+                    ->relationship('procurements', 'id')
                     ->label('Procurement')
                     ->searchable()
                     ->preload(),
@@ -141,6 +176,8 @@ class ProcurementItemResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
                 Tables\Actions\Action::make('calculate_total')
                     ->label('Calculate Total')
                     ->icon('heroicon-o-calculator')
@@ -163,6 +200,8 @@ class ProcurementItemResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('calculate_totals')
                         ->label('Calculate Totals')
                         ->icon('heroicon-o-calculator')
@@ -174,12 +213,39 @@ class ProcurementItemResource extends Resource
                         })
                         ->requiresConfirmation()
                         ->color('success'),
+                    ExportBulkAction::make()->exporter(ProcurementItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(ProcurementItemExporter::class),
             ])
             ->headerActions([
-                ExportAction::make()->exporter(ProcurementItemExporter::class),
-                ImportAction::make()->importer(ProcurementItemImporter::class),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ProcurementItemExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ProcurementItemImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
@@ -192,7 +258,7 @@ class ProcurementItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ProcurementsRelationManager::class,
         ];
     }
 
@@ -202,6 +268,27 @@ class ProcurementItemResource extends Resource
             'index' => Pages\ListProcurementItems::route('/'),
             'create' => Pages\CreateProcurementItem::route('/create'),
             'edit' => Pages\EditProcurementItem::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'procurement_id',
+            'item_name',
+            'quantity',
+            'unit_price',
+            'total_price',
         ];
     }
 }

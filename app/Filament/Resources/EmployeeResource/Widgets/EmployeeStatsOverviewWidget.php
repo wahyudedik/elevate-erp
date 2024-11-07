@@ -28,7 +28,7 @@ class EmployeeStatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-check-circle', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Departments', $this->formatNumber(Employee::distinct('department')->count()))
+            Stat::make('Departments', $this->formatNumber(Employee::distinct('department_id')->count()))
                 ->icon('heroicon-o-building-office')
                 ->description("Total number of departments")
                 ->descriptionIcon('heroicon-o-briefcase', 'before')

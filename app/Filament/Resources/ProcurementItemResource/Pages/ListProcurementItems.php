@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ProcurementItemResource\Pages;
 
-use App\Filament\Resources\ProcurementItemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ProcurementItemResource;
+use App\Filament\Resources\ProcurementItemResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListProcurementItems extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListProcurementItems extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

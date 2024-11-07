@@ -14,9 +14,17 @@ class ProcurementItemImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('procurement_id')
+            ImportColumn::make('company_id')
                 ->numeric()
                 ->required()
+                ->rules(['exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->nullable()
+                ->rules(['exists:branches,id']),
+            ImportColumn::make('procurement_id')
+                ->numeric()
+                ->nullable()
                 ->rules(['exists:procurements,id']),
             ImportColumn::make('item_name')
                 ->rules(['required', 'string', 'max:255']),
@@ -27,11 +35,11 @@ class ProcurementItemImporter extends Importer
             ImportColumn::make('unit_price')
                 ->numeric()
                 ->required()
-                ->rules(['numeric', 'min:0', 'decimal:0,2']),
+                ->rules(['numeric', 'min:0', 'decimal:0,15,2']),
             ImportColumn::make('total_price')
                 ->numeric()
                 ->required()
-                ->rules(['numeric', 'min:0', 'decimal:0,2'])
+                ->rules(['numeric', 'min:0', 'decimal:0,15,2'])
         ];
     }
 

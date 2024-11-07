@@ -15,14 +15,16 @@ class ProcurementItemExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('procurement_id'),
             ExportColumn::make('item_name'),
             ExportColumn::make('quantity'),
             ExportColumn::make('unit_price'),
             ExportColumn::make('total_price'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
-        ];
+            ExportColumn::make('updated_at'),        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\EmployeeResource\Pages;
 
-use App\Filament\Resources\EmployeeResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\EmployeeResource;
+use App\Filament\Resources\EmployeeResource\Widgets\EmployeeStatsOverviewWidget;
 
 class ListEmployees extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListEmployees extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            EmployeeStatsOverviewWidget::class ,
         ];
     }
 }

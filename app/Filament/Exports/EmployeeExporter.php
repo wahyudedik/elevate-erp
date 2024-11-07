@@ -16,6 +16,9 @@ class EmployeeExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('user_id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('first_name'),
             ExportColumn::make('last_name'),
             ExportColumn::make('employee_code'),
@@ -24,8 +27,8 @@ class EmployeeExporter extends Exporter
             ExportColumn::make('date_of_birth'),
             ExportColumn::make('gender'),
             ExportColumn::make('national_id_number'),
-            ExportColumn::make('position'),
-            ExportColumn::make('department'),
+            ExportColumn::make('position_id'),
+            ExportColumn::make('department_id'),
             ExportColumn::make('date_of_joining'),
             ExportColumn::make('salary'),
             ExportColumn::make('employment_status'),
@@ -38,6 +41,9 @@ class EmployeeExporter extends Exporter
             ExportColumn::make('status'),
             ExportColumn::make('profile_picture'),
             ExportColumn::make('contract'),
+            ExportColumn::make('deleted_at'),
+            ExportColumn::make('created_at'),
+            ExportColumn::make('updated_at'),
         ];
     }
 

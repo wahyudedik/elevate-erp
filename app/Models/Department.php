@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
+use App\Models\ManagementSDM\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,6 +34,11 @@ class Department extends Model
         'name' => 'string',
         'description' => 'string',
     ];
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'department_id');
+    }
 
     public function positions()
     {

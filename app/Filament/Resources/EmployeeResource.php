@@ -4,14 +4,17 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Position;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\ManagementSDM\Employee;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +27,7 @@ use App\Models\ManagementSDM\EmployeePosition;
 use Filament\Notifications\DatabaseNotification;
 use App\Filament\Resources\EmployeeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Clusters\Employee as ClustersEmployee;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
 use App\Filament\Resources\EmployeeResource\RelationManagers\UserRelationManager;
 use App\Filament\Resources\EmployeeResource\RelationManagers\PayrollRelationManager;
@@ -34,12 +38,9 @@ class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Employee';
+    protected static ?string $cluster = ClustersEmployee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 1; //29
 
     protected static bool $isScopedToTenant = true;
 
@@ -47,9 +48,9 @@ class EmployeeResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'employee';
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $navigationGroup = 'Employee Management';
 
-    protected static ?string $navigationParentItem = 'Employee Management';
+    protected static ?string $navigationIcon = 'clarity-employee-group-line';
 
     public static function form(Form $form): Form
     {
@@ -89,40 +90,21 @@ class EmployeeResource extends Resource
 
                 Forms\Components\Section::make('Employment Details')
                     ->schema([
-                        Forms\Components\Select::make('position')
-                            ->options([
-                                'manager' => 'Manager',
-                                'supervisor' => 'Supervisor',
-                                'team_lead' => 'Team Lead',
-                                'developer' => 'Developer',
-                                'designer' => 'Designer',
-                                'analyst' => 'Analyst',
-                                'hr_specialist' => 'HR Specialist',
-                                'accountant' => 'Accountant',
-                                'sales_representative' => 'Sales Representative',
-                                'customer_support' => 'Customer Support',
-                                'marketing_specialist' => 'Marketing Specialist',
-                                'project_manager' => 'Project Manager',
-                                'quality_assurance' => 'Quality Assurance',
-                                'other' => 'Other',
-                            ])
-                            ->required()
-                            ->searchable(),
-                        Forms\Components\Select::make('department')
-                            ->options([
-                                'human_resources' => 'Human Resources',
-                                'finance' => 'Finance',
-                                'marketing' => 'Marketing',
-                                'sales' => 'Sales',
-                                'operations' => 'Operations',
-                                'information_technology' => 'Information Technology',
-                                'research_and_development' => 'Research and Development',
-                                'customer_service' => 'Customer Service',
-                                'legal' => 'Legal',
-                                'administration' => 'Administration',
-                            ])
-                            ->required()
-                            ->searchable(),
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('position_id')
+                            ->relationship('position', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('department_id')
+                            ->relationship('department', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\DatePicker::make('date_of_joining')
                             ->required()
                             ->default(now()),
@@ -138,11 +120,9 @@ class EmployeeResource extends Resource
                             ])
                             ->default('permanent'),
                         Forms\Components\Select::make('manager_id')
-                            ->relationship('manager', 'first_name')
-                            ->label('Manager')
-                            ->options(function () {
-                                return Employee::where('position', 'Manager')->pluck('first_name', 'id');
-                            })->searchable()
+                            ->relationship('manager', 'position_id')
+                            ->nullable()
+                            ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('status')
                             ->options([
@@ -157,19 +137,43 @@ class EmployeeResource extends Resource
                             ->relationship('user', 'name')
                             ->label('User')
                             ->preload()
-                            // ->createOptionForm([
-                            //     Forms\Components\TextInput::make('name')
-                            //         ->required()
-                            //         ->maxLength(255),
-                            //     Forms\Components\TextInput::make('email')
-                            //         ->email()
-                            //         ->required()
-                            //         ->maxLength(255),
-                            //     Forms\Components\TextInput::make('password')
-                            //         ->password()
-                            //         ->required()
-                            //         ->maxLength(255),
-                            // ]),
+                            ->createOptionForm([
+                                Forms\Components\FileUpload::make('image')
+                                    ->image()
+                                    ->avatar()
+                                    ->disk('public')
+                                    ->directory('user-images')
+                                    ->visibility('public')
+                                    ->maxSize(5024)
+                                    ->columnSpanFull()
+                                    ->label('Profile Image'),
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('email')
+                                    ->email()
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\DateTimePicker::make('email_verified_at'),
+                                Forms\Components\Select::make('roles')
+                                    ->relationship('roles', 'name')
+                                    // ->multiple()
+                                    ->preload()
+                                    ->searchable(),
+                                Forms\Components\TextInput::make('password')
+                                    ->password()
+                                    ->maxLength(255)
+                                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                                    ->dehydrated(fn($state) => filled($state))
+                                    ->required(fn(string $context): bool => $context === 'create'),
+                                Forms\Components\Select::make('usertype')
+                                    ->options([
+                                        'staff' => 'Staff',
+                                        'member' => 'Member',
+                                    ])
+                                    ->required()
+                                    ->default('staff'),
+                            ]),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Address Information')
@@ -234,6 +238,16 @@ class EmployeeResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('User ID')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('profile_picture')
                     ->label('Profile Picture')
                     ->circular()
@@ -283,11 +297,11 @@ class EmployeeResource extends Resource
                 Tables\Columns\TextColumn::make('national_id_number')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('position')
+                Tables\Columns\TextColumn::make('position.name')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('department')
+                Tables\Columns\TextColumn::make('department.name')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -345,9 +359,14 @@ class EmployeeResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('employment_status')
                     ->options([
                         'permanent' => 'Permanent',
@@ -437,13 +456,13 @@ class EmployeeResource extends Resource
                 Tables\Filters\SelectFilter::make('position')
                     ->label('Position')
                     ->options(function () {
-                        return Employee::distinct()->pluck('position', 'position')->toArray();
+                        return Employee::distinct()->pluck('position_id', 'id')->toArray();
                     })
                     ->indicator('Position'),
                 Tables\Filters\SelectFilter::make('department')
                     ->label('Department')
                     ->options(function () {
-                        return Employee::distinct()->pluck('department', 'department')->toArray();
+                        return Employee::distinct()->pluck('department_id', 'id')->toArray();
                     })
                     ->indicator('Department'),
             ])
@@ -522,6 +541,7 @@ class EmployeeResource extends Resource
                 ]),
             ])
             ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(EmployeeExporter::class)
@@ -573,7 +593,7 @@ class EmployeeResource extends Resource
     {
         return [
             EmployeePositionRelationManager::class,
-            // UserRelationManager::class,
+            UserRelationManager::class,
             AttendanceRelationManager::class,
             PayrollRelationManager::class,
         ];
@@ -594,5 +614,36 @@ class EmployeeResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'user_id',
+            'company_id',
+            'branch_id',
+            'first_name',
+            'last_name',
+            'employee_code',
+            'email',
+            'phone',
+            'date_of_birth',
+            'gender',
+            'national_id_number',
+            'position_id',
+            'department_id',
+            'date_of_joining',
+            'salary',
+            'employment_status',
+            'manager_id',
+            'address',
+            'city',
+            'state',
+            'postal_code',
+            'country',
+            'status',
+            'profile_picture',
+            'contract'
+        ];
     }
 }
