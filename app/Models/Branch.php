@@ -26,6 +26,7 @@ use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementFinancial\Accounting;
+use App\Models\ManagementSDM\EmployeePosition;
 use App\Models\ManagementFinancial\Transaction;
 use App\Models\ManagementStock\ProcurementItem;
 use App\Models\ManagementFinancial\BalanceSheet;
@@ -77,6 +78,11 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function employeePositions()
+    {
+        return $this->hasMany(EmployeePosition::class, 'branch_id');
+    }
 
     public function employees()
     {

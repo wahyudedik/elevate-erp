@@ -2,16 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Clusters\Employee;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Actions\ActionGroup;
+use App\Filament\Clusters\Employee;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +23,7 @@ use App\Filament\Imports\EmployeePositionImporter;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\EmployeePositionResource\Pages;
 use App\Filament\Resources\EmployeePositionResource\RelationManagers;
-use App\Filament\Resources\EmployeePositionResource\RelationManagers\EmployeeRelationManager; 
+use App\Filament\Resources\EmployeePositionResource\RelationManagers\EmployeeRelationManager;
 
 class EmployeePositionResource extends Resource
 {
@@ -47,6 +48,11 @@ class EmployeePositionResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Employee Position Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('employee_id')
                             ->relationship('employee', 'first_name')
                             ->required()
@@ -99,15 +105,24 @@ class EmployeePositionResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No.')
+                    ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
                     ->label('Employee')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('employee.position')
+                Tables\Columns\TextColumn::make('position')
                     ->searchable()
                     ->sortable()
-                    ->label('Employee')
+                    ->label('Position')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
@@ -125,16 +140,20 @@ class EmployeePositionResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('employee')
                     ->relationship('employee', 'first_name')
                     ->searchable()
                     ->preload()
                     ->label('Filter by Employee'),
                 Tables\Filters\SelectFilter::make('position')
-                    ->relationship('employee', 'position')
                     ->searchable()
                     ->preload()
                     ->label('Filter by Position'),
@@ -214,26 +233,27 @@ class EmployeePositionResource extends Resource
                 ]),
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(EmployeePositionExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Employees Position exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(EmployeePositionImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Employees Position imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(EmployeePositionExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export Position exported completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(EmployeePositionImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import Position imported completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -241,13 +261,12 @@ class EmployeePositionResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(EmployeePositionExporter::class)
+                ExportBulkAction::make()->exporter(EmployeePositionExporter::class)
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->after(function () {
                         Notification::make()
-                            ->title('Employees Position exported successfully')
+                            ->title('Export Position exported completed' . ' ' . now())
                             ->success()
                             ->sendToDatabase(Auth::user());
                     }),
@@ -280,5 +299,17 @@ class EmployeePositionResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'employee_id',
+            'position',
+            'start_date',
+            'end_date',
+        ];
     }
 }

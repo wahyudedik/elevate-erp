@@ -15,9 +15,13 @@ class EmployeePositionImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('employee_id')
+            ImportColumn::make('company_id')
                 ->requiredMapping()
-                ->rules(['required', 'exists:employees,id']),
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->rules(['nullable', 'exists:branches,id']),
+            ImportColumn::make('employee_id')
+                ->rules(['nullable', 'exists:employees,id']),
             ImportColumn::make('position')
                 ->requiredMapping()
                 ->rules(['required', 'string']),
@@ -25,8 +29,7 @@ class EmployeePositionImporter extends Importer
                 ->requiredMapping()
                 ->rules(['required', 'date']),
             ImportColumn::make('end_date')
-                ->rules(['nullable', 'date', 'after:start_date']),
-        ];
+                ->rules(['nullable', 'date', 'after:start_date']),        ];
     }
 
     public function resolveRecord(): ?EmployeePosition

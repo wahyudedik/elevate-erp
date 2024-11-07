@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ class EmployeePosition extends Model
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
         'company_id',
+        'branch_id',
         'employee_id',
         'position',
         'start_date',
@@ -32,9 +34,19 @@ class EmployeePosition extends Model
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'employee_id' => 'integer',
+        'position' => 'string',
         'start_date' => 'date',
-        'end_date' => 'date',
+        'end_date' => 'date', 
     ];
+
+    // Relasi dengan tabel branches
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     // Relasi dengan tabel employees
     public function employee()

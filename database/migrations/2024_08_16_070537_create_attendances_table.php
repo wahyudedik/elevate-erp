@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('name');
             $table->time('start_time');
-            $table->time('end_time');
+            $table->time('end_time'); 
             $table->softDeletes();
             $table->timestamps();
         });

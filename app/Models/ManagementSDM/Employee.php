@@ -128,7 +128,7 @@ class Employee extends Model
     // Relasi dengan tabel employee_positions
     public function employeePosition()
     {
-        return $this->hasMany(EmployeePosition::class);
+        return $this->hasMany(EmployeePosition::class, 'employee_id');
     }
 
     protected static function boot()

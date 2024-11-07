@@ -592,8 +592,8 @@ class EmployeeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            EmployeePositionRelationManager::class,
-            UserRelationManager::class,
+            EmployeePositionRelationManager::class, //done
+            UserRelationManager::class, //done
             AttendanceRelationManager::class,
             PayrollRelationManager::class,
         ];

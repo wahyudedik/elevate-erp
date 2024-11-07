@@ -7,26 +7,22 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
 use App\Models\ManagementSDM\Shift;
+use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ShiftResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ShiftResource\RelationManagers;
 use App\Filament\Resources\ShiftResource\RelationManagers\ScheduleRelationManager;
-use Filament\Tables\Actions\ActionGroup;
 
 class ShiftResource extends Resource
 {
     protected static ?string $model = Shift::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Shift';
+    protected static ?string $cluster = Employee::class;
 
-    protected static ?string $navigationLabel = 'Shift';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 3; //29
 
     protected static bool $isScopedToTenant = true;
 
@@ -34,9 +30,7 @@ class ShiftResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'shift';
 
-    protected static ?string $navigationGroup = 'Management SDM';
-
-    protected static ?string $navigationParentItem = 'Attendance';
+    protected static ?string $navigationGroup = 'Attendance Management';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

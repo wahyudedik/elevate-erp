@@ -399,8 +399,8 @@
                             <div class="pic"><img src="{{ asset('home/assets/img/team/team-1.jpg') }}"
                                     class="img-fluid" alt=""></div>
                             <div class="member-info">
-                                <h4>Dony</h4>
-                                <span>Chief Executive Officer</span>
+                                <h4>Irvan</h4>
+                                <span>Networking</span>
                                 <p>"Jangan tunggu momen yang sempurna; ambil momen tersebut dan jadikan sempurna."</p>
                                 <div class="social">
                                     <a href=""><i class="bi bi-twitter-x"></i></a>
