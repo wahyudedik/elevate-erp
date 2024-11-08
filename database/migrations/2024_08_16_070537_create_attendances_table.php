@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('name');
             $table->time('start_time');
-            $table->time('end_time'); 
+            $table->time('end_time');
             $table->softDeletes();
             $table->timestamps();
         });

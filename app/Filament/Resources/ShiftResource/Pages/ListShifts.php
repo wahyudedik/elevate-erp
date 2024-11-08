@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ShiftResource\Pages;
 
-use App\Filament\Resources\ShiftResource;
 use Filament\Actions;
+use App\Filament\Resources\ShiftResource;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\ShiftResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListShifts extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListShifts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

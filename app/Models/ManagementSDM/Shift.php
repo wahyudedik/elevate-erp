@@ -30,6 +30,9 @@ class Shift extends Model
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'name' => 'string',
         'start_time' => 'datetime',
         'end_time' => 'datetime',
     ];

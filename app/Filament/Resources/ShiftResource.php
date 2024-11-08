@@ -9,12 +9,20 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Filament\Clusters\Employee;
 use App\Models\ManagementSDM\Shift;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Exports\ShiftExporter;
+use App\Filament\Imports\ShiftImporter;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ShiftResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ShiftResource\RelationManagers;
 use App\Filament\Resources\ShiftResource\RelationManagers\ScheduleRelationManager;
+use Filament\Tables\Actions\ExportBulkAction;
 
 class ShiftResource extends Resource
 {
@@ -32,7 +40,7 @@ class ShiftResource extends Resource
 
     protected static ?string $navigationGroup = 'Attendance Management';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'fluentui-shifts-30-minutes-20-o';
 
     public static function form(Form $form): Form
     {
@@ -41,11 +49,10 @@ class ShiftResource extends Resource
                 Forms\Components\Section::make('Shift Details')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
-                            ->relationship('branch', 'name')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
-                            ->preload()
-                            ->label('Branch')
-                            ->searchable(),
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
@@ -114,7 +121,7 @@ class ShiftResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
@@ -168,11 +175,43 @@ class ShiftResource extends Resource
                     Tables\Actions\RestoreAction::make(),
                 ])
             ])
+            ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ShiftExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ShiftImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(ShiftExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
             ])
             ->emptyStateActions([
@@ -204,5 +243,16 @@ class ShiftResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'name',
+            'start_time',
+            'end_time',
+        ];
     }
 }

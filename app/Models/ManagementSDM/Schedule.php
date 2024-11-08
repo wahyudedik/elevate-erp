@@ -15,10 +15,10 @@ class Schedule extends Model
 {
     use HasFactory, SoftDeletes, Notifiable;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'schedules';
 
@@ -35,6 +35,11 @@ class Schedule extends Model
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
+        'user_id' => 'integer',
+        'branch_id' => 'integer',
+        'employee_id' => 'integer',
+        'shift_id' => 'integer',
         'date' => 'date',
         'is_wfa' => 'boolean',
         'is_banned' => 'boolean',
