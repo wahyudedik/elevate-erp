@@ -14,10 +14,16 @@ class CandidateInterviewImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->requiredMapping()
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['nullable', 'exists:branches,id']),
             ImportColumn::make('candidate_id')
                 ->label('Candidate ID')
-                ->requiredMapping()
-                ->rules(['required', 'exists:candidates,id']),
+                ->rules(['nullable', 'exists:candidates,id']),
             ImportColumn::make('interview_date')
                 ->label('Interview Date')
                 ->requiredMapping()

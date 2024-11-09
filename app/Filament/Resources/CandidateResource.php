@@ -453,7 +453,7 @@ class CandidateResource extends Resource
     {
         return [
             ApplicationRelationManager::class,
-            InterviewsRelationManager::class,
+            InterviewsRelationManager::class, //done
         ];
     }
 

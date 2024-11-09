@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Employee;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -309,41 +310,41 @@ class CandidateInterviewResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(CandidateInterviewExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(CandidateInterviewImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    })
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(CandidateInterviewExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(CandidateInterviewImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    ExportBulkAction::make()->exporter(CandidateInterviewExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(CandidateInterviewExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Data exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()

@@ -16,6 +16,10 @@ class CandidateInterviewExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('candidate.name')
                 ->label('Candidate Name'),
             ExportColumn::make('interview_date')
@@ -28,6 +32,8 @@ class CandidateInterviewExporter extends Exporter
                 ->label('Interview Notes'),
             ExportColumn::make('result')
                 ->label('Result'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
