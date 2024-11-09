@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('candidates', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('first_name');
-            $table->string('last_name'); 
+            $table->string('last_name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable(); 
+            $table->string('phone')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('national_id_number')->unique()->nullable();  // Nomor KTP/Paspor
@@ -40,7 +39,6 @@ return new class extends Migration
         // Tabel untuk wawancara
         Schema::create('candidate_interviews', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('candidate_id')->nullable()->constrained('candidates')->onDelete('cascade');

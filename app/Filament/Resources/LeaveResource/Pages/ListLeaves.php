@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\LeaveResource\Pages;
 
-use App\Filament\Resources\LeaveResource;
 use Filament\Actions;
+use App\Filament\Resources\LeaveResource;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\LeaveResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListLeaves extends ListRecords
 {
@@ -13,9 +14,17 @@ class ListLeaves extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Add New Leave')
-                ->icon('heroicon-o-plus'),
+            // Actions\CreateAction::make()
+            //     ->label('Add New Leave')
+            //     ->icon('heroicon-o-plus'),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
+        ];
+    }
+
 }

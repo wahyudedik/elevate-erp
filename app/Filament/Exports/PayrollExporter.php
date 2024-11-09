@@ -17,6 +17,10 @@ class PayrollExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('employee.name')
                 ->label('Employee Name'),
             ExportColumn::make('basic_salary')
@@ -33,11 +37,12 @@ class PayrollExporter extends Exporter
                 ->label('Payment Status'),
             ExportColumn::make('payment_method')
                 ->label('Payment Method'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
-        ];
+                ->label('Updated At'),        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

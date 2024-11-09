@@ -16,6 +16,8 @@ class CandidateExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('first_name'),
             ExportColumn::make('last_name'),
             ExportColumn::make('email'),
@@ -33,6 +35,7 @@ class CandidateExporter extends Exporter
             ExportColumn::make('state'),
             ExportColumn::make('postal_code'),
             ExportColumn::make('country'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];

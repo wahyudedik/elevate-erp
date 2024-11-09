@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\PayrollResource\Pages;
 
-use App\Filament\Resources\PayrollResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\PayrollResource;
+use App\Filament\Resources\PayrollResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListPayrolls extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListPayrolls extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

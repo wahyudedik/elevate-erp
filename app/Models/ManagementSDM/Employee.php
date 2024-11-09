@@ -168,12 +168,12 @@ class Employee extends Model
 
     public function payroll(): HasMany
     {
-        return $this->hasMany(Payroll::class);
+        return $this->hasMany(Payroll::class, 'employee_id');
     }
 
     public function candidate(): HasMany
     {
-        return $this->hasMany(Candidate::class);
+        return $this->hasMany(Candidate::class, 'recruiter_id');
     }
 
     public function ticketResponses(): HasMany

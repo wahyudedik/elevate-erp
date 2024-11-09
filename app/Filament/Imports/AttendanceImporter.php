@@ -15,20 +15,57 @@ class AttendanceImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('employee_id')
+            ImportColumn::make('company_id')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'exists:employees,id']),
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('user_id')
+                ->requiredMapping()
+                ->numeric()
+                ->rules(['required', 'exists:users,id']),
+            ImportColumn::make('branch_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:branches,id']),
+            ImportColumn::make('employee_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:employees,id']),
+            ImportColumn::make('schedule_id')
+                ->numeric()
+                ->rules(['nullable', 'exists:schedules,id']),
             ImportColumn::make('date')
                 ->requiredMapping()
                 ->date()
                 ->rules(['required', 'date']),
+            ImportColumn::make('schedules_check_in')
+                ->time()
+                ->rules(['nullable', 'date_format:H:i:s']),
+            ImportColumn::make('schedules_check_out')
+                ->time()
+                ->rules(['nullable', 'date_format:H:i:s']),
+            ImportColumn::make('schedules_latitude')
+                ->numeric()
+                ->rules(['required']),
+            ImportColumn::make('schedules_longitude')
+                ->numeric()
+                ->rules(['required']),
             ImportColumn::make('check_in')
                 ->time()
                 ->rules(['nullable', 'date_format:H:i:s']),
             ImportColumn::make('check_out')
                 ->time()
                 ->rules(['nullable', 'date_format:H:i:s']),
+            ImportColumn::make('latitude_check_in')
+                ->numeric()
+                ->rules(['nullable']),
+            ImportColumn::make('longitude_check_in')
+                ->numeric()
+                ->rules(['nullable']),
+            ImportColumn::make('latitude_check_out')
+                ->numeric()
+                ->rules(['nullable']),
+            ImportColumn::make('longitude_check_out')
+                ->numeric()
+                ->rules(['nullable']),
             ImportColumn::make('status')
                 ->requiredMapping()
                 ->rules(['required', 'in:present,absent,late,on_leave']),

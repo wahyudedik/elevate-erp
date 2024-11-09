@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\CandidateResource\Pages;
 
-use App\Filament\Resources\CandidateResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\CandidateResource;
+use App\Filament\Resources\CandidateResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListCandidates extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListCandidates extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

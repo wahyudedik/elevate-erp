@@ -2,41 +2,37 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\AttendanceExporter;
-use App\Filament\Imports\AttendanceImporter;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
+use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Attendance;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Exports\AttendanceExporter;
+use App\Filament\Imports\AttendanceImporter;
 use Filament\Tables\Actions\ExportBulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AttendanceResource\Pages;
 use App\Filament\Resources\AttendanceResource\RelationManagers;
 use App\Filament\Resources\AttendanceResource\RelationManagers\EmployeeRelationManager;
 use App\Filament\Resources\AttendanceResource\RelationManagers\AttendanceRelationManager;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\ImportAction;
-use Illuminate\Support\Facades\Auth;
 
 class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Attendance';
+    protected static ?string $cluster = Employee::class;
 
-    protected static ?string $navigationLabel = 'Attendance Records';
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 5;
 
     protected static bool $isScopedToTenant = true;
 
@@ -44,9 +40,7 @@ class AttendanceResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'attendance';
 
-    protected static ?string $navigationGroup = 'Management SDM';
-
-    protected static ?string $navigationParentItem = 'Attendance';
+    protected static ?string $navigationGroup = 'Attendance Management';
 
     protected static ?string $navigationIcon = 'iconpark-checkin-o';
 
@@ -56,8 +50,18 @@ class AttendanceResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Attendance Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('user_id')
+                            ->relationship('user', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('employee_id')
-                            ->relationship('employee', 'first_name')
+                            ->relationship('employee', 'first_name, last_name')
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -123,18 +127,16 @@ class AttendanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->modifyQueryUsing(function (Builder $query) {
-            //     $is_super_admin = Auth::user()->hasRole('super_admin');
-
-            //     if (!$is_super_admin) {
-            //         $query->where('user_id', Auth::user()->id);
-            //     }
-            // })
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
@@ -206,6 +208,11 @@ class AttendanceResource extends Resource
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('employee')
                     ->relationship('employee', 'first_name')
                     ->searchable()
@@ -358,6 +365,7 @@ class AttendanceResource extends Resource
                 ])
             ])
             ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(AttendanceExporter::class)
@@ -372,7 +380,7 @@ class AttendanceResource extends Resource
                     ImportAction::make()
                         ->importer(AttendanceImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
-                        ->color('warning')
+                        ->color('info')
                         ->after(function () {
                             Notification::make()
                                 ->title('Attendances imported successfully.' .  ' ' . now()->format('Y-m-d H:i:s'))
@@ -426,5 +434,29 @@ class AttendanceResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'user_id',
+            'branch_id',
+            'employee_id',
+            'schedule_id',
+            'date',
+            'schedules_check_in',
+            'schedules_check_out',
+            'schedules_latitude',
+            'schedules_longitude',
+            'check_in',
+            'check_out',
+            'latitude_check_in',
+            'longitude_check_in',
+            'latitude_check_out',
+            'longitude_check_out',
+            'status',
+            'note',
+        ];
     }
 }

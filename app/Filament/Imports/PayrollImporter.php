@@ -15,32 +15,40 @@ class PayrollImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->requiredMapping()
+                ->rules(['required', 'exists:companies,id']),
+
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->rules(['nullable', 'exists:branches,id']),
+
             ImportColumn::make('employee_id')
                 ->label('Employee ID')
-                ->requiredMapping()
-                ->rules(['required', 'exists:employees,id']),
+                ->rules(['nullable', 'exists:employees,id']),
 
             ImportColumn::make('basic_salary')
                 ->label('Basic Salary')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'numeric', 'min:0']),
+                ->rules(['required', 'numeric', 'min:0', 'decimal:0,2']),
 
             ImportColumn::make('allowances')
                 ->label('Allowances')
                 ->numeric()
-                ->rules(['nullable', 'numeric', 'min:0']),
+                ->rules(['nullable', 'numeric', 'min:0', 'decimal:0,2']),
 
             ImportColumn::make('deductions')
                 ->label('Deductions')
                 ->numeric()
-                ->rules(['nullable', 'numeric', 'min:0']),
+                ->rules(['nullable', 'numeric', 'min:0', 'decimal:0,2']),
 
             ImportColumn::make('net_salary')
                 ->label('Net Salary')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'numeric', 'min:0']),
+                ->rules(['required', 'numeric', 'min:0', 'decimal:0,2']),
 
             ImportColumn::make('payment_date')
                 ->label('Payment Date')

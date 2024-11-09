@@ -15,10 +15,10 @@ class Leave extends Model
 {
     use HasFactory, SoftDeletes, Notifiable;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'leaves';
 
@@ -52,6 +52,4 @@ class Leave extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
-
-
 }

@@ -3,23 +3,24 @@
 namespace App\Models\ManagementSDM;
 
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Support\Carbon;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory; 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Attendance extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
     // Nama tabel yang digunakan oleh model ini
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     protected $table = 'attendances';
 
@@ -48,9 +49,30 @@ class Attendance extends Model
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
         'date' => 'date',
+        'schedules_check_in' => 'time',
+        'schedules_check_out' => 'time',
+        'schedules_latitude' => 'double',
+        'schedules_longitude' => 'double',
         'check_in' => 'datetime',
         'check_out' => 'datetime',
+        'latitude_check_in' => 'double',
+        'longitude_check_in' => 'double',
+        'latitude_check_out' => 'double',
+        'longitude_check_out' => 'double',
+        'status' => 'string',
     ];
+
+    // relasi dengan tabel branch
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    // Relasi dengan tabel users
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     // Relasi dengan tabel employees 
     public function employee()
@@ -87,6 +109,5 @@ class Attendance extends Model
         $minutes = $duration->i;
 
         return "{$hours} jam {$minutes} menit";
-
     }
 }

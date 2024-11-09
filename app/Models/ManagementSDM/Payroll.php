@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +14,10 @@ class Payroll extends Model
 {
     use HasFactory, SoftDeletes, Notifiable;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new CompanyScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'payrolls';
@@ -24,6 +25,7 @@ class Payroll extends Model
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
         'company_id',
+        'branch_id',
         'employee_id',
         'basic_salary',
         'allowances',
@@ -43,10 +45,15 @@ class Payroll extends Model
         'net_salary' => 'decimal:2',
     ];
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
     // Relasi dengan tabel employees
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     // Relasi dengan tabel companies

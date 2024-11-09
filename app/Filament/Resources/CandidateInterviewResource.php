@@ -16,6 +16,7 @@ use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Clusters\Employee as cluster;
 use App\Models\ManagementSDM\CandidateInterview;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Exports\CandidateInterviewExporter;
@@ -27,16 +28,17 @@ class CandidateInterviewResource extends Resource
 {
     protected static ?string $model = CandidateInterview::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Candidate Interview';
+    protected static ?string $cluster = cluster::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 9; //29
 
-    protected static ?string $navigationParentItem = 'Recruitment Management';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'candidateInterviews';
+
+    protected static ?string $navigationGroup = 'Recruitment Management';
 
     protected static ?string $navigationIcon = 'gmdi-find-replace-o';
 
@@ -44,8 +46,13 @@ class CandidateInterviewResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
+                Forms\Components\Section::make('Candidate Interview Information')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('candidate_id')
                             ->relationship('candidate', 'first_name')
                             ->required()
@@ -138,6 +145,11 @@ class CandidateInterviewResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('candidate.first_name')
                     ->label('Candidate')
                     ->toggleable()
@@ -184,11 +196,15 @@ class CandidateInterviewResource extends Resource
                     ->label('Updated At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-
-            ])
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('interview_type')
                     ->options([
                         'phone' => 'Phone',
@@ -357,5 +373,19 @@ class CandidateInterviewResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'candidate_id',
+            'interview_date',
+            'interviewer',
+            'interview_type',  // phone, video, in_person
+            'interview_notes',
+            'result',  // passed, failed, pending 
+        ];
     }
 }

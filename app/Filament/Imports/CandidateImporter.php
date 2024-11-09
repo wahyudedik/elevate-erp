@@ -16,15 +16,21 @@ class CandidateImporter extends Importer
     {
         return [
             ImportColumn::make('id'),
+            ImportColumn::make('company_id'),
+            ImportColumn::make('branch_id'),
             ImportColumn::make('first_name'),
             ImportColumn::make('last_name'),
-            ImportColumn::make('email'),
+            ImportColumn::make('email')
+                ->rules(['email', 'unique:candidates,email']),
             ImportColumn::make('phone'),
             ImportColumn::make('date_of_birth'),
-            ImportColumn::make('gender'),
-            ImportColumn::make('national_id_number'),
+            ImportColumn::make('gender')
+                ->rules(['in:male,female,other']),
+            ImportColumn::make('national_id_number')
+                ->rules(['unique:candidates,national_id_number']),
             ImportColumn::make('position_applied'),
-            ImportColumn::make('status'),
+            ImportColumn::make('status')
+                ->rules(['in:applied,interviewing,offered,hired,rejected']),
             ImportColumn::make('recruiter_id'),
             ImportColumn::make('application_date'),
             ImportColumn::make('resume'),
@@ -33,6 +39,7 @@ class CandidateImporter extends Importer
             ImportColumn::make('state'),
             ImportColumn::make('postal_code'),
             ImportColumn::make('country'),
+            ImportColumn::make('deleted_at'),
             ImportColumn::make('created_at'),
             ImportColumn::make('updated_at'),
         ];

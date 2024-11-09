@@ -13,13 +13,12 @@ return new class extends Migration
     { 
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->decimal('basic_salary', 15, 2);
             $table->decimal('allowances', 15, 2)->default(0); 
-            $table->decimal('deductions', 15, 2)->default(0);
+            $table->decimal('deductions', 15, 2)->default(0); 
             $table->decimal('net_salary', 15, 2);
             $table->date('payment_date');
             $table->enum('payment_status', ['pending', 'paid'])->default('pending');

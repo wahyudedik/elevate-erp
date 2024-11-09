@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CandidateResource\RelationManagers\InterviewsRelationManager;
 use Carbon\Carbon;
 use Filament\Forms;
 use App\Models\User;
@@ -10,11 +9,13 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ManagementSDM\Candidate;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Models\ManagementSDM\Recruitment;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,23 +27,25 @@ use App\Models\ManagementSDM\CandidateInterview;
 use App\Filament\Resources\CandidateResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CandidateResource\RelationManagers;
-use App\Filament\Resources\CandidateResource\RelationManagers\ApplicationRelationManager;
 use App\Filament\Resources\CandidateResource\RelationManagers\EmployeeRelationManager;
+use App\Filament\Resources\CandidateResource\RelationManagers\InterviewsRelationManager;
+use App\Filament\Resources\CandidateResource\RelationManagers\ApplicationRelationManager;
 
 class CandidateResource extends Resource
 {
     protected static ?string $model = Candidate::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Candidates';
+    protected static ?string $cluster = Employee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 8; //29
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Recruitment Management';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'candidates';
+
+    protected static ?string $navigationGroup = 'Recruitment Management';
 
     protected static ?string $navigationIcon = 'iconpark-find-o';
 
@@ -52,6 +55,11 @@ class CandidateResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Personal Information')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('first_name')
                             ->required()
                             ->maxLength(255),
@@ -157,6 +165,11 @@ class CandidateResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('first_name')
                     ->searchable()
                     ->toggleable()
@@ -232,9 +245,14 @@ class CandidateResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('gender')
                     ->options([
                         'male' => 'Male',
@@ -387,26 +405,27 @@ class CandidateResource extends Resource
 
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(CandidateExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(CandidateImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    })
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(CandidateExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export candidate completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(CandidateImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import candidate completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -414,13 +433,12 @@ class CandidateResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(CandidateImporter::class)
+                ExportBulkAction::make()->exporter(CandidateExporter::class)
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->after(function () {
                         Notification::make()
-                            ->title('Candidates exported successfully')
+                            ->title('Export candidate completed' . ' ' . now())
                             ->success()
                             ->sendToDatabase(Auth::user());
                     }),
@@ -445,6 +463,39 @@ class CandidateResource extends Resource
             'index' => Pages\ListCandidates::route('/'),
             'create' => Pages\CreateCandidate::route('/create'),
             'edit' => Pages\EditCandidate::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'date_of_birth',
+            'gender',
+            'national_id_number',  // Nomor KTP/Paspor
+            'position_applied',  // Posisi yang dilamar
+            'status',  // applied, interviewing, offered, hired, rejected
+            'recruiter_id',  // ID dari recruiter yang menangani
+            'application_date',
+            'resume',  // Resume/CV kandidat
+            'address',
+            'city',
+            'state',
+            'postal_code',
+            'country',
         ];
     }
 }

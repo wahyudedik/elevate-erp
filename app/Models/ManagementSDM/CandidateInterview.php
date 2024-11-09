@@ -2,10 +2,12 @@
 
 namespace App\Models\ManagementSDM;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CandidateInterview extends Model
 {
@@ -16,6 +18,8 @@ class CandidateInterview extends Model
 
     // Atribut yang dapat diisi secara massal 
     protected $fillable = [
+        'company_id',
+        'branch_id',
         'candidate_id',
         'interview_date',
         'interviewer',
@@ -27,12 +31,27 @@ class CandidateInterview extends Model
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
         'interview_date' => 'date',
+        'interview_type' => 'string',
+        'result' => 'string',
+        'deleted_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    // Relasi dengan tabel companies
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 
     // Relasi dengan tabel candidates
     public function candidate()
     {
-        return $this->belongsTo(Candidate::class);
+        return $this->belongsTo(Candidate::class, 'candidate_id');
     }
 }
- 

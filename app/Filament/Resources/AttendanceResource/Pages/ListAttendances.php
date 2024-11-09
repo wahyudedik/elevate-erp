@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\AttendanceResource\Pages;
 
-use App\Filament\Resources\AttendanceResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\AttendanceResource;
+use App\Filament\Resources\AttendanceResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListAttendances extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListAttendances extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

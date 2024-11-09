@@ -594,8 +594,8 @@ class EmployeeResource extends Resource
         return [
             EmployeePositionRelationManager::class, //done
             UserRelationManager::class, //done
-            AttendanceRelationManager::class,
-            PayrollRelationManager::class,
+            AttendanceRelationManager::class, //done
+            PayrollRelationManager::class, //done
         ];
     }
 

@@ -2,10 +2,12 @@
 
 namespace App\Models\ManagementSDM;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Candidate extends Model
 {
@@ -16,6 +18,8 @@ class Candidate extends Model
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
+        'company_id',
+        'branch_id',
         'first_name',
         'last_name', 
         'email',
@@ -39,7 +43,12 @@ class Candidate extends Model
     protected $casts = [
         'date_of_birth' => 'date',
         'application_date' => 'date',
-    ];
+        'company_id' => 'integer',
+        'branch_id' => 'integer',
+        'recruiter_id' => 'integer',
+        'deleted_at' => 'datetime',
+        'gender' => 'string',
+        'status' => 'string',    ];
 
     protected static function boot()
     {
@@ -69,11 +78,21 @@ class Candidate extends Model
     // Relasi dengan tabel candidate_interviews
     public function interviews()
     {
-        return $this->hasMany(CandidateInterview::class);
+        return $this->hasMany(CandidateInterview::class, 'candidate_id');
     }
 
     public function Application()
     {
         return $this->hasMany(Applications::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

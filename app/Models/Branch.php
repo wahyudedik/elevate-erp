@@ -6,12 +6,15 @@ use App\Models\ManagementCRM\Sale;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Models\Scopes\CompanyScope;
+use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementCRM\Customer;
 use App\Models\ManagementCRM\SaleItem;
 use App\Models\ManagementSDM\Employee;
 use App\Models\ManagementSDM\Schedule;
 use App\Models\ManagementCRM\OrderItem;
+use App\Models\ManagementSDM\Candidate;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ManagementSDM\Attendance;
 use App\Models\ManagementStock\Supplier;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
@@ -31,6 +34,7 @@ use App\Models\ManagementFinancial\Transaction;
 use App\Models\ManagementStock\ProcurementItem;
 use App\Models\ManagementFinancial\BalanceSheet;
 use App\Models\ManagementFinancial\JournalEntry;
+use App\Models\ManagementSDM\CandidateInterview;
 use App\Models\ManagementCRM\CustomerInteraction;
 use App\Models\ManagementProject\ProjectResource;
 use App\Models\ManagementStock\InventoryTracking;
@@ -78,6 +82,27 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function candidateInterviews()
+    {
+        return $this->hasMany(CandidateInterview::class, 'branch_id');
+    }
+
+    public function candidates()
+    {
+        return $this->hasMany(Candidate::class, 'branch_id');
+    }
+
+    public function payroll()
+    {
+        return $this->hasMany(Payroll::class, 'branch_id');
+    }
+
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class, 'branch_id');
+    }
+
 
     public function employeePositions()
     {

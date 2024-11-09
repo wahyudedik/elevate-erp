@@ -7,22 +7,29 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
 use App\Models\ManagementSDM\Leave;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Exports\LeaveExporter;
+use App\Filament\Imports\LeaveImporter;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\LeaveResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\LeaveResource\RelationManagers;
+use Filament\Tables\Actions\ExportBulkAction;
 
 class LeaveResource extends Resource
 {
     protected static ?string $model = Leave::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Financial Reports';
+    protected static ?string $cluster = Employee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 6;
 
     protected static bool $isScopedToTenant = true;
 
@@ -30,11 +37,9 @@ class LeaveResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'leave';
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $navigationGroup = 'Attendance Management';
 
-    protected static ?string $navigationParentItem = 'Attendance';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'pepicon-leave-circle-off';
 
     public static function form(Form $form): Form
     {
@@ -57,9 +62,9 @@ class LeaveResource extends Resource
                         Forms\Components\DatePicker::make('end_date')
                             ->required()
                             ->afterOrEqual('start_date'),
-                        Forms\Components\Textarea::make('reason')
-                            ->required()
-                            ->rows(3),
+                        Forms\Components\RichEditor::make('reason')
+                            ->columnSpanFull()
+                            ->required(),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'pending' => 'Pending',
@@ -68,9 +73,9 @@ class LeaveResource extends Resource
                             ])
                             ->required()
                             ->default('pending'),
-                        Forms\Components\Textarea::make('note')
-                            ->nullable()
-                            ->rows(3),
+                        Forms\Components\RichEditor::make('note')
+                            ->columnSpanFull()
+                            ->nullable(),
                     ])
                     ->columns(2),
                 Forms\Components\Section::make('Additional Information')
@@ -116,6 +121,7 @@ class LeaveResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('reason')
                     ->label('Reason')
+                    ->html()
                     ->limit(50)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
@@ -135,6 +141,7 @@ class LeaveResource extends Resource
                 Tables\Columns\TextColumn::make('note')
                     ->label('Note')
                     ->limit(50)
+                    ->html()
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         if (strlen($state) <= 50) {
@@ -153,9 +160,14 @@ class LeaveResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -164,12 +176,44 @@ class LeaveResource extends Resource
                 Tables\Actions\ForceDeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
             ])
+            ->headerActions([
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(LeaveExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export leave completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(LeaveImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import department completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make()
+                    Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(LeaveExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export leave completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
             ])
             ->emptyStateActions([
@@ -201,5 +245,19 @@ class LeaveResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'user_id',
+            'start_date',
+            'end_date',
+            'reason',
+            'status',
+            'note',
+        ];
     }
 }
