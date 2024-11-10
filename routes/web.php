@@ -12,6 +12,7 @@ use App\Http\Controllers\BalanceSheetController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\IncomeStatementController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\SalesTransactionController;
 use App\Http\Controllers\SupplierTransactionController;
 
@@ -63,9 +64,12 @@ Route::get('/login', function () {
 })->name('login');
 
 // route guest
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::get('/', [LandingPageController::class, 'client'])
+        ->name('client');
 
 // print candidate application
 Route::get('/apply/{recruitment}', [CandidateController::class, 'showApplicationForm'])

@@ -30,8 +30,8 @@ class DevPanelProvider extends PanelProvider
             ->path('dev')
             ->login()
             ->sidebarFullyCollapsibleOnDesktop()
-            ->brandName('Elevate ERP')
-            ->brandLogo(asset('home/assets/img/1-removebg.png'),)
+            ->brandName('ADMINISTRATOR')
+            // ->brandLogo(asset('home/assets/img/1-removebg.png'),)
             ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([

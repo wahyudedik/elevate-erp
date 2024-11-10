@@ -41,7 +41,8 @@ class ClientDevResource extends Resource
                             ->imageResizeTargetHeight('1080')
                             ->required()
                             ->label('Client Logo')
-                            ->helperText('Upload a high-quality logo image (16:9 aspect ratio recommended)'),
+                            ->helperText('Upload a high-quality logo image (16:9 aspect ratio recommended)')
+                            ->directory('client-logos'),
                     ])
                     ->columns(2),
                 Forms\Components\Section::make('Additional Information')
