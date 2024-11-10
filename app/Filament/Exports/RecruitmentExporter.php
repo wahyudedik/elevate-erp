@@ -16,6 +16,10 @@ class RecruitmentExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company_id')
+                ->label('Company ID'),
+            ExportColumn::make('branch_id')
+                ->label('Branch ID'),
             ExportColumn::make('job_title')
                 ->label('Job Title'),
             ExportColumn::make('job_description')
@@ -30,6 +34,8 @@ class RecruitmentExporter extends Exporter
                 ->label('Closing Date'),
             ExportColumn::make('status')
                 ->label('Status'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

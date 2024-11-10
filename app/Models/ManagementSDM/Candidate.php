@@ -83,7 +83,7 @@ class Candidate extends Model
 
     public function Application()
     {
-        return $this->hasMany(Applications::class);
+        return $this->hasMany(Applications::class, 'candidate_id');
     }
 
     public function company()

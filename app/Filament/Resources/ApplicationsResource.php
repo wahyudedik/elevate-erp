@@ -8,11 +8,13 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\Layout\View;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,16 +30,17 @@ class ApplicationsResource extends Resource
 {
     protected static ?string $model = Applications::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Applications Candidates';
+    protected static ?string $cluster = Employee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 11; //29
 
-    protected static ?string $navigationParentItem = 'Recruitment Management';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'applications';
+
+    protected static ?string $navigationGroup = 'Recruitment Management';
 
     protected static ?string $navigationIcon = 'fileicon-docz';
 
@@ -45,8 +48,13 @@ class ApplicationsResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
+                Forms\Components\Section::make('General Information')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('recruitment_id')
                             ->relationship('recruitment', 'job_title')
                             ->required()
@@ -97,6 +105,11 @@ class ApplicationsResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('recruitment.job_title')
                     ->label('Recruitment')
                     ->toggleable()
@@ -131,9 +144,14 @@ class ApplicationsResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'applied' => 'Applied',
@@ -196,43 +214,43 @@ class ApplicationsResource extends Resource
                 ])
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(ApplicationsExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(ApplicationsImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Candidates imported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    })
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(ApplicationsExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export applications completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(ApplicationsImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import applications completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(ApplicationsExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export applications completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(ApplicationsExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Data exported successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
@@ -262,5 +280,17 @@ class ApplicationsResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'recruitment_id',
+            'candidate_id',
+            'status',  // applied, interviewing, offered, hired, rejected
+            'resume',  // File path untuk resume/CV kandidat
+        ];
     }
 }

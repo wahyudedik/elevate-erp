@@ -8,11 +8,13 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use App\Filament\Clusters\Employee;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Collection;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Models\ManagementSDM\Recruitment;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,16 +30,17 @@ class RecruitmentResource extends Resource
 {
     protected static ?string $model = Recruitment::class;
 
-    protected static ?string $navigationBadgeTooltip = 'Total Recruitment';
+    protected static ?string $cluster = Employee::class;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+    protected static ?int $navigationSort = 10; //29
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationParentItem = 'Recruitment Management';
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
+
+    protected static ?string $tenantRelationshipName = 'recruitments';
+
+    protected static ?string $navigationGroup = 'Recruitment Management';
 
     protected static ?string $navigationIcon = 'vaadin-user-card';
 
@@ -47,6 +50,11 @@ class RecruitmentResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Job Details')
                     ->schema([
+                        Forms\Components\Select::make('branch_id')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('job_title')
                             ->required()
                             ->maxLength(255),
@@ -100,6 +108,11 @@ class RecruitmentResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Branch')
+                    ->searchable()
+                    ->icon('heroicon-m-building-storefront')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('job_title')
                     ->searchable()
                     ->sortable()
@@ -146,9 +159,14 @@ class RecruitmentResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Branch'),
                 Tables\Filters\SelectFilter::make('employment_type')
                     ->options([
                         'full_time' => 'Full Time',
@@ -267,39 +285,40 @@ class RecruitmentResource extends Resource
                             $records->each->update(['status' => 'open', 'closing_date' => null]);
                         })
                         ->deselectRecordsAfterCompletion(),
+
+                    ExportBulkAction::make()->exporter(RecruitmentExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export recruitment completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()
-                    ->exporter(RecruitmentExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Recruitment Exported Successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->exporter(RecruitmentExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Recruitment Exported Successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
-                ImportAction::make()
-                    ->importer(RecruitmentImporter::class)
-                    ->icon('heroicon-o-arrow-up-tray')
-                    ->color('warning')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Recruitment Imported Successfully')
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
+                CreateAction::make()->icon('heroicon-o-plus'),
+                ActionGroup::make([
+                    ExportAction::make()->exporter(RecruitmentExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Export recruitment completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                    ImportAction::make()->importer(RecruitmentImporter::class)
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Import recruitment completed' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
+                ])->icon('heroicon-o-cog-6-tooth')
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
@@ -329,5 +348,20 @@ class RecruitmentResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_id',
+            'branch_id',
+            'job_title',            // Judul pekerjaan
+            'job_description',      // Deskripsi pekerjaan
+            'employment_type',      // full_time, part_time, contract
+            'location',             // Lokasi kerja
+            'posted_date',          // Tanggal lowongan diposting
+            'closing_date',         // Tanggal penutupan lowongan
+            'status',  // Jumlah posisi yang dibutuhkan
+        ];
     }
 }

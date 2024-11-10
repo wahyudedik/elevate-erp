@@ -18,8 +18,10 @@ use App\Models\ManagementSDM\Attendance;
 use App\Models\ManagementStock\Supplier;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementProject\Project;
+use App\Models\ManagementSDM\Recruitment;
 use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
+use App\Models\ManagementSDM\Applications;
 use App\Models\ManagementStock\Procurement;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
@@ -82,6 +84,16 @@ class Branch extends Model
         'radius' => 'integer',
         'status' => 'string',
     ];
+
+    public function applications()
+    {
+        return $this->hasMany(Applications::class, 'baranch_id');
+    }
+
+    public function recruitments()
+    {
+        return $this->hasMany(Recruitment::class, 'branch_id');
+    }
 
     public function candidateInterviews()
     {

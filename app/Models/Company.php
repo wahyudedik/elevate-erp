@@ -20,6 +20,7 @@ use App\Models\ManagementSDM\Attendance;
 use App\Models\ManagementStock\Supplier;
 use Spatie\Permission\Models\Permission;
 use App\Models\ManagementProject\Project;
+use App\Models\ManagementSDM\Recruitment;
 use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementStock\Procurement;
@@ -42,6 +43,7 @@ use App\Models\ManagementStock\InventoryTracking;
 use App\Models\ManagementFinancial\FinancialReport;
 use App\Models\ManagementFinancial\IncomeStatement;
 use App\Models\ManagementProject\ProjectMonitoring;
+use App\Models\ManagementSDM\Applications;
 use App\Models\ManagementStock\PurchaseTransaction;
 use App\Models\ManagementStock\SupplierTransactions;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
@@ -83,6 +85,16 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
+
+    public function applications()
+    {
+        return $this->hasMany(Applications::class, 'company_id');
+    }
+
+    public function recruitments()
+    {
+        return $this->hasMany(Recruitment::class, 'company_id');
+    }
 
     public function candidateInterviews()
     {

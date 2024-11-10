@@ -14,20 +14,36 @@ class RecruitmentImporter extends Importer
     public static function getColumns(): array
     {
         return [
+            ImportColumn::make('company_id')
+                ->label('Company ID')
+                ->required(),
+            ImportColumn::make('branch_id')
+                ->label('Branch ID')
+                ->nullable(),
             ImportColumn::make('job_title')
-                ->label('Job Title'),
+                ->label('Job Title')
+                ->required(),
             ImportColumn::make('job_description')
-                ->label('Job Description'),
+                ->label('Job Description')
+                ->required(),
             ImportColumn::make('employment_type')
-                ->label('Employment Type'),
+                ->label('Employment Type')
+                ->required()
+                ->acceptsOnly(['full_time', 'part_time', 'contract', 'internship']),
             ImportColumn::make('location')
-                ->label('Location'),
+                ->label('Location')
+                ->required(),
             ImportColumn::make('posted_date')
-                ->label('Posted Date'),
+                ->label('Posted Date')
+                ->required()
+                ->date(),
             ImportColumn::make('closing_date')
-                ->label('Closing Date'),
+                ->label('Closing Date')
+                ->nullable()
+                ->date(),
             ImportColumn::make('status')
-                ->label('Status'),
+                ->label('Status')
+                ->default('open'),
         ];
     }
 

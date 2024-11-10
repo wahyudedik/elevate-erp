@@ -452,7 +452,7 @@ class CandidateResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ApplicationRelationManager::class,
+            ApplicationRelationManager::class, //done
             InterviewsRelationManager::class, //done
         ];
     }

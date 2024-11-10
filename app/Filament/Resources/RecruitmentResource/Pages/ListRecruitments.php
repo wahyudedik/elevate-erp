@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\RecruitmentResource\Pages;
 
-use App\Filament\Resources\RecruitmentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\RecruitmentResource;
+use App\Filament\Resources\RecruitmentResource\Widgets\AdvancedStatsOverviewWidget;
 
 class ListRecruitments extends ListRecords
 {
@@ -13,7 +14,14 @@ class ListRecruitments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return[
+            AdvancedStatsOverviewWidget::class,
         ];
     }
 }

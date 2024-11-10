@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('recruitments', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('job_title');
@@ -29,7 +28,6 @@ return new class extends Migration
 
         Schema::create('applications', function (Blueprint $table) { 
             $table->id();
-            // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('recruitment_id')->nullable()->constrained('recruitments')->onDelete('cascade');

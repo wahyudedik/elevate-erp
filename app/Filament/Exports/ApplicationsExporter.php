@@ -16,6 +16,10 @@ class ApplicationsExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('recruitment.name')
                 ->label('Recruitment'),
             ExportColumn::make('candidate.name')
@@ -24,6 +28,8 @@ class ApplicationsExporter extends Exporter
                 ->label('Status'),
             ExportColumn::make('resume')
                 ->label('Resume'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
