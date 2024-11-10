@@ -361,7 +361,8 @@
                             Anda lebih cerdas dan lebih cepat!"</p>
                     </div>
                     <div class="col-xl-3 cta-btn-container text-center">
-                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/081654932383">Register Now</a>
+                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/081654932383">Register
+                            Now</a>
                     </div>
                 </div>
 
@@ -402,7 +403,7 @@
 
                     <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
                         <div class="team-member d-flex align-items-start">
-                            <div class="pic"><img src="{{ asset('home/assets/img/team/team-2.jpg') }}"
+                            <div class="pic"><img src="{{ asset('home/assets/img/team/team-3.jpg') }}"
                                     class="img-fluid" alt=""></div>
                             <div class="member-info">
                                 <h4>Wahyu Dedik</h4>
@@ -444,7 +445,7 @@
                                 <i class="bi bi-geo-alt flex-shrink-0"></i>
                                 <div>
                                     <h3>Address</h3>
-                                    {{-- {!! $abouts->address !!} --}}
+                                    <p>{{ $contactUs->address }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -452,7 +453,7 @@
                                 <i class="bi bi-telephone flex-shrink-0"></i>
                                 <div>
                                     <h3>Call Us</h3>
-                                    {{-- <p>{{ $abouts->tlp }}</p> --}}
+                                    <p>{{ $contactUs->call }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -460,7 +461,7 @@
                                 <i class="bi bi-envelope flex-shrink-0"></i>
                                 <div>
                                     <h3>Email Us</h3>
-                                    {{-- {!! $abouts->email !!} --}}
+                                    <p>{{ $contactUs->email }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -469,10 +470,9 @@
 
                     <div class="col-lg-7">
 
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d48389.78314118045!2d-74.006138!3d40.710059!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a22a3bda30d%3A0xb89d1fe6bc499443!2sDowntown%20Conference%20Center!5e0!3m2!1sen!2sus!4v1676961268712!5m2!1sen!2sus"
-                            frameborder="0" style="border:0; width: 100%; height: 370px;" allowfullscreen=""
-                            loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="{{ $contactUs->location }}" frameborder="0"
+                            style="border:0; width: 100%; height: 370px;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
 
                     </div><!-- End Contact Form -->
 
@@ -490,14 +490,36 @@
             <div class="container">
                 <div class="row justify-content-center text-center">
                     <div class="col-lg-6">
-                        <h4>Join Our Newsletter</h4>
-                        <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
-                        <form action="forms/newsletter.php" method="post" class="php-email-form">
-                            <div class="newsletter-form"><input type="email" name="email"><input type="submit"
-                                    value="Subscribe"></div>
-                            <div class="loading">Loading</div>
-                            <div class="error-message"></div>
-                            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
+                        <h4 class="text-center mb-3">Join Our Newsletter</h4>
+                        <p class="text-center mb-4">Subscribe to our newsletter and receive the latest news about our
+                            products and services!</p>
+                        <form action="{{ route('newsletter.store') }}" method="post" >
+                            @csrf
+                            <div class="newsletter-form d-flex justify-content-center gap-2">
+                                <input type="email" name="email" class="form-control rounded-pill"
+                                    placeholder="Enter your email" required style="max-width: 350px;">
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Subscribe</button>
+                            </div>
+                            @if (session('success'))
+                                <div class="alert alert-success alert-dismissible fade show mt-3 text-center"
+                                    role="alert">
+                                    {{ session('success') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                            @endif
+                            @if ($errors->any())
+                                <div class="alert alert-danger alert-dismissible fade show mt-3 text-center"
+                                    role="alert">
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            {{ $error }}
+                                        @endforeach
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                            @endif
                         </form>
                     </div>
                 </div>
@@ -511,16 +533,15 @@
                         <span class="sitename">Elevate ERP</span>
                     </a>
                     <div class="footer-contact pt-3">
-                        {{-- {!! $abouts->address !!} --}}
-                        {{-- <p class="mt-3"><strong>Phone:</strong> <span>{{ $abouts->tlp }}</span></p> --}}
-                        {{-- <p><strong>Email:</strong> <span>{{ $abouts->email }}</span></p> --}}
+                        {{ $contactUs->address }}
+                        <p class="mt-3"><strong>Phone:</strong> <span>{{ $contactUs->call }}</span></p>
+                        <p><strong>Email:</strong> <span>{{ $contactUs->email }}</span></p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-3 footer-links">
                     <h4>Useful Links</h4>
                     <ul>
-                        <li><i class="bi bi-chevron-right"></i> <a href="#">Dashboard</a></li>
                         <li><i class="bi bi-chevron-right"></i> <a href="#">Disclaimer</a></li>
                         <li><i class="bi bi-chevron-right"></i> <a href="#">Privacy Policy</a></li>
                         <li><i class="bi bi-chevron-right"></i> <a href="#">Terms of service</a></li>
@@ -530,7 +551,7 @@
                 <div class="col-lg-2 col-md-3 footer-links">
                     <h4>Our Services</h4>
                     <ul>
-                        <li><i class="bi bi-chevron-right"></i> <a href="#">ERP</a></li>
+                        <li><i class="bi bi-chevron-right"></i> <a href="{{ url('admin') }}">ERP</a></li>
                     </ul>
                 </div>
 

@@ -63,13 +63,11 @@ Route::get('/login', function () {
     return redirect('admin/login');
 })->name('login');
 
-// route guest
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', [LandingPageController::class, 'landingPage'])
+    ->name('landingPage');
 
-Route::get('/', [LandingPageController::class, 'client'])
-        ->name('client');
+Route::post('/newsletter', [LandingPageController::class, 'newsLetterStore'])
+    ->name('newsletter.store');
 
 // print candidate application
 Route::get('/apply/{recruitment}', [CandidateController::class, 'showApplicationForm'])

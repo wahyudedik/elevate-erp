@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact_devs', function (Blueprint $table) {
+        Schema::create('newsletters', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('address');
-            $table->string('call');
-            $table->string('email');
-            $table->text('location');
-            $table->softDeletes();
+            $table->string('email')->unique();
+            $table->enum('status', ['subscribed', 'unsubscribed'])->default('subscribed');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact_devs');
+        Schema::dropIfExists('newsletters');
     }
 };

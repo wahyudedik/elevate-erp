@@ -2,23 +2,21 @@
 
 namespace App\Models;
 
+use Filament\Notifications\Concerns\CanBeInline;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
-class ContactDev extends Model
+class Newsletter extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $table = 'contact_devs';
+    protected $table = 'newsletters';
 
     protected $fillable = [
-        'name',
-        'address',
-        'call',
         'email',
-        'location'
+        'status'
     ];
 
     protected $casts = [
