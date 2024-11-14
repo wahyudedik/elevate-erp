@@ -64,6 +64,20 @@ class Analytics extends Page
             'customer' => [
                 \App\Filament\Widgets\CustomerStatsOverview::class,
             ],
+            'hr' => [
+                \App\Filament\Widgets\HrStatsOverview::class,
+            ],
+            'inventory' => [
+                \App\Filament\Widgets\InventoryLineChart::class,
+                \App\Filament\Widgets\InventoryFulfillmentChart::class,
+            ],
+            'project' => [
+                \App\Filament\Widgets\ProjectStatsOverview::class,
+            ],
+            'supplier' => [
+                \App\Filament\Widgets\SupplierRadarChart::class,
+                // ... other supplier widgets
+            ],
             default => [],
         };
     }
@@ -91,6 +105,23 @@ class Analytics extends Page
             'customer' => [
                 \App\Filament\Widgets\CustomerLineChart::class,
                 \App\Filament\Widgets\CustomerDoughnutChart::class,
+            ],
+            'hr' => [
+                \App\Filament\Widgets\HrBarChart::class,
+                \App\Filament\Widgets\HrDoughnutChart::class,
+            ],
+            'inventory' => [
+                \App\Filament\Widgets\Inventory::class,
+                \App\Filament\Widgets\TopInventoryItemsTableWidget::class,
+            ],
+            'project' => [
+                \App\Filament\Widgets\ProjectBarChart::class,
+                \App\Filament\Widgets\ProjectPieChart::class,
+                \App\Filament\Widgets\ProjectTableWidget::class,
+            ],
+            'supplier' => [
+                \App\Filament\Widgets\SupplierTableWidget::class,
+                \App\Filament\Widgets\SupplierPendingPaymentTableWidget::class, 
             ],
             default => [],
         };

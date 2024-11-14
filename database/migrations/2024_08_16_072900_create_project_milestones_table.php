@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
             $table->string('milestone_name');
-            $table->text('milestone_description')->nullable(); 
+            $table->text('milestone_description')->nullable();  
             $table->date('milestone_date');
             $table->enum('status', ['pending', 'achieved'])->default('pending');
             $table->softDeletes();  // Kolom untuk soft delete

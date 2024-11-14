@@ -30,6 +30,10 @@ class SupplierTransactionsExporter extends Exporter
                 ->label('Amount'),
             ExportColumn::make('transaction_date')
                 ->label('Transaction Date'),
+            ExportColumn::make('payment_date')
+                ->label('Payment Date'),
+            ExportColumn::make('due_date')
+                ->label('Due Date'),
             ExportColumn::make('notes')
                 ->label('Notes'),
             ExportColumn::make('deleted_at')

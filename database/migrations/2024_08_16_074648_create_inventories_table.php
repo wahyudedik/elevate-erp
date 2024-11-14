@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('item_name');
-            $table->string('sku')->unique();
+            $table->string('sku')->unique(); 
             $table->integer('quantity');
             $table->decimal('purchase_price', 15, 2);
             $table->decimal('selling_price', 15, 2);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
-            $table->text('progress_report');
+            $table->text('progress_report'); 
             $table->enum('status', ['on_track', 'at_risk', 'delayed'])->default('on_track');
             $table->decimal('completion_percentage', 5, 2);
             $table->date('report_date');

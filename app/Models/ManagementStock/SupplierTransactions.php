@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
- class SupplierTransactions extends Model
+class SupplierTransactions extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -23,6 +23,8 @@ use Illuminate\Notifications\Notifiable;
         'transaction_type',
         'amount',
         'transaction_date',
+        'payment_date',
+        'due_date',
         'notes',
     ];
 
@@ -34,9 +36,11 @@ use Illuminate\Notifications\Notifiable;
         'transaction_type' => 'string',
         'amount' => 'decimal:2',
         'transaction_date' => 'date',
+        'payment_date' => 'date',
+        'due_date' => 'date',
         'notes' => 'string',
     ];
-
+    
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
