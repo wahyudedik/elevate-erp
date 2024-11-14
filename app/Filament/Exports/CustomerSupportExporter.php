@@ -30,12 +30,17 @@ class CustomerSupportExporter extends Exporter
                 ->label('Priority'),
             ExportColumn::make('status')
                 ->label('Status'),
+            ExportColumn::make('customer_rating')
+                ->label('Customer Rating'),
+            ExportColumn::make('customer_satisfaction')
+                ->label('Customer Satisfaction'),
             ExportColumn::make('deleted_at')
                 ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),        ];
+                ->label('Updated At'),
+        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

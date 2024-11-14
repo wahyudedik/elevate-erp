@@ -12,7 +12,7 @@ class SalesStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $currentMonth = Carbon::now()->month;
-        $monthlyTarget = 100000000; // Set your monthly target here
+        $monthlyTarget = 100000000; // Set your monthly target here     
 
         // Calculate current month's total sales
         $monthlySales = Sale::whereMonth('sale_date', $currentMonth)

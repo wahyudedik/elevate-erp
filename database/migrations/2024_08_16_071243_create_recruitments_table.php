@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('job_title');
             $table->text('job_description');
             $table->enum('employment_type', ['full_time', 'part_time', 'contract', 'internship']);
-            $table->string('location');
+            $table->string('location'); 
             $table->date('posted_date');
             $table->date('closing_date')->nullable(); 
             $table->string('status')->default('open');

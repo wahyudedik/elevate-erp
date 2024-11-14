@@ -25,6 +25,8 @@ class CustomerSupport extends Model
         'description',
         'status',  // open, in_progress, resolved, closed
         'priority',  // low, medium, high, urgent
+        'customer_rating',
+        'customer_satisfaction',
     ];
 
     protected $casts = [
@@ -35,8 +37,9 @@ class CustomerSupport extends Model
         'description' => 'string',
         'status' => 'string',
         'priority' => 'string',
+        'customer_rating' => 'decimal:1',
+        'customer_satisfaction' => 'string',
     ];
-
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');

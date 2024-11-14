@@ -35,7 +35,13 @@ class CustomerSupportImporter extends Importer
                 ->rules(['in:low,medium,high']),
             ImportColumn::make('status')
                 ->rules(['in:open,in_progress,resolved,closed'])
-                ->default('open'),        ];
+                ->default('open'),
+            ImportColumn::make('customer_rating')
+                ->numeric()
+                ->rules(['numeric', 'min:1', 'max:5']),
+            ImportColumn::make('customer_satisfaction')
+                ->rules(['in:satisfied,neutral,dissatisfied']),
+        ];
     }
 
     public function resolveRecord(): ?CustomerSupport

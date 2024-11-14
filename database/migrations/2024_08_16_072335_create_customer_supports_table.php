@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */ 
+     */
     public function up(): void
     {
         Schema::create('customer_supports', function (Blueprint $table) {
@@ -20,11 +20,13 @@ return new class extends Migration
             $table->text('description');
             $table->enum('priority', ['low', 'medium', 'high']);
             $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
+            $table->decimal('customer_rating', 2, 1)->nullable(); // Rating from 1.0 to 5.0
+            $table->enum('customer_satisfaction', ['satisfied', 'neutral', 'dissatisfied'])->nullable();
             $table->softDeletes();  // Kolom untuk soft delete
             $table->timestamps();
         });
 
-        Schema::create('ticket_responses', function (Blueprint $table) { 
+        Schema::create('ticket_responses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');

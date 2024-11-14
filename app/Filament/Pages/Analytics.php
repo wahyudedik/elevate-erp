@@ -61,6 +61,9 @@ class Analytics extends Page
             'sales' => [
                 \App\Filament\Widgets\SalesStatsOverview::class,
             ],
+            'customer' => [
+                \App\Filament\Widgets\CustomerStatsOverview::class,
+            ],
             default => [],
         };
     }
@@ -84,6 +87,10 @@ class Analytics extends Page
                 \App\Filament\Widgets\SalesBarChart::class,
                 \App\Filament\Widgets\SalesDoughnutChart::class,
                 \App\Filament\Widgets\SalesTableWidget::class,
+            ],
+            'customer' => [
+                \App\Filament\Widgets\CustomerLineChart::class,
+                \App\Filament\Widgets\CustomerDoughnutChart::class,
             ],
             default => [],
         };
