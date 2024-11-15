@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class BalanceSheet extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -29,6 +32,19 @@ class BalanceSheet extends Model
         'total_liabilities',
         'total_equity',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'branch_id',
+                'company_id',
+                'financial_report_id',
+                'total_assets',
+                'total_liabilities',
+                'total_equity',
+            ]);
+    }
 
     protected $casts = [
         'branch_id' => 'integer',

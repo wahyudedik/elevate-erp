@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class InventoryTracking extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     protected $table = 'inventory_trackings';
 
@@ -25,6 +28,21 @@ class InventoryTracking extends Model
         'remarks',
         'transaction_date',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'inventory_id',
+                'quantity_before',
+                'quantity_after',
+                'transaction_type',
+                'remarks',
+                'transaction_date',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

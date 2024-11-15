@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class ProjectResource extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
-    protected $table = 'project_resources'; 
+    protected $table = 'project_resources';
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
@@ -25,6 +28,19 @@ class ProjectResource extends Model
         'resource_type', // human, material, financial, equipment
         'resource_cost', // Jumlah sumber daya yang dialokasikan
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'project_id',
+                'resource_name',
+                'resource_type', // human, material, financial, equipment
+                'resource_cost', // Jumlah sumber daya yang dialokasikan
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

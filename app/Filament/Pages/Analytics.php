@@ -31,7 +31,6 @@ class Analytics extends Page
                             'inventory' => 'Inventory Overview Widget',
                             'project' => 'Project Tracking Widget',
                             'supplier' => 'Supplier Performance Widget',
-                            'kpi' => 'Key Performance Indicators (KPI) Widget',
                         ])
                         ->default($this->selectedWidget)
                 ])

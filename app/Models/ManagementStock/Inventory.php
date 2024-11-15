@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Inventory extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     protected $table = 'inventories';
 
@@ -27,6 +30,23 @@ class Inventory extends Model
         'supplier_id',
         'status',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'item_name',
+                'sku',
+                'quantity',
+                'purchase_price',
+                'selling_price',
+                'location',
+                'supplier_id',
+                'status',
+            ]);
+    }
 
 
     protected $casts = [

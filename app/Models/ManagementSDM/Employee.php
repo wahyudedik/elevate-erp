@@ -18,10 +18,13 @@ use App\Models\ManagementCRM\CustomerInteraction;
 use App\Models\ManagementStock\PurchaseTransaction;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Employee extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -58,6 +61,38 @@ class Employee extends Model
         'profile_picture',
         'contract'
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'user_id',
+                'company_id',
+                'branch_id',
+                'first_name',
+                'last_name',
+                'employee_code',
+                'email',
+                'phone',
+                'date_of_birth',
+                'gender',
+                'national_id_number',
+                'position_id',
+                'department_id',
+                'date_of_joining',
+                'salary',
+                'employment_status',
+                'manager_id',
+                'address',
+                'city',
+                'state',
+                'postal_code',
+                'country',
+                'status',
+                'profile_picture',
+                'contract'
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

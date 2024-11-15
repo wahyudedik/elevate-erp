@@ -7,11 +7,14 @@ use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory; 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class ProcurementItem extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     protected $table = 'procurement_items';
 
@@ -24,6 +27,20 @@ class ProcurementItem extends Model
         'unit_price',
         'total_price',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'procurement_id',
+                'item_name',
+                'quantity',
+                'unit_price',
+                'total_price',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

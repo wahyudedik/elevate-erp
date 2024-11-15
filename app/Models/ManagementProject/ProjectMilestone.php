@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class ProjectMilestone extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'project_milestones';
@@ -26,6 +29,18 @@ class ProjectMilestone extends Model
         'milestone_date',
         'status',  // planned, in_progress, completed, on_hold, delayed
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logOnly([
+            'name',
+            'description',
+            'company_id',
+            'branch_id',
+            'department_id',
+        ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

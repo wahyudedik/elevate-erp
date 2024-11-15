@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Payroll extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     // protected static function booted()
     // {
@@ -35,6 +38,23 @@ class Payroll extends Model
         'payment_status',  // paid, pending, failed
         'payment_method',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'employee_id',
+                'basic_salary',
+                'allowances',
+                'deductions',  // Tunjangan
+                'net_salary',  // Potongan
+                'payment_date',  // Gaji bersih setelah tunjangan dan potongan
+                'payment_status',  // paid, pending, failed
+                'payment_method',
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

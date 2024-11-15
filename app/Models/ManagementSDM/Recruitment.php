@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Recruitment extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'recruitments';
@@ -28,6 +31,22 @@ class Recruitment extends Model
         'closing_date',         // Tanggal penutupan lowongan
         'status',  // Jumlah posisi yang dibutuhkan
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'job_title',            // Judul pekerjaan
+                'job_description',      // Deskripsi pekerjaan
+                'employment_type',      // full_time, part_time, contract
+                'location',             // Lokasi kerja
+                'posted_date',          // Tanggal lowongan diposting
+                'closing_date',         // Tanggal penutupan lowongan
+                'status',  // Jumlah posisi yang dibutuhkan
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

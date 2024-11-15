@@ -11,10 +11,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Attendance extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
     // Nama tabel yang digunakan oleh model ini
 
     // protected static function booted()
@@ -45,6 +48,31 @@ class Attendance extends Model
         'status',
         'note',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'user_id',
+                'branch_id',
+                'employee_id',
+                'schedule_id',
+                'date',
+                'schedules_check_in',
+                'schedules_check_out',
+                'schedules_latitude',
+                'schedules_longitude',
+                'check_in',
+                'check_out',
+                'latitude_check_in',
+                'longitude_check_in',
+                'latitude_check_out',
+                'longitude_check_out',
+                'status',
+                'note',
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

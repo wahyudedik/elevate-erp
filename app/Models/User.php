@@ -21,10 +21,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail, HasTenants
 {
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, LogsActivity;
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -77,6 +79,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         'email_verified_at',
     ];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'image',
+                'name',
+                'email',
+                'password',
+                'usertype',
+                'email_verified_at',
+            ]);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -102,7 +117,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? url('storage/'. $this->image) : null;
+        return $this->image ? url('storage/' . $this->image) : null;
     }
 
     //relasi employee

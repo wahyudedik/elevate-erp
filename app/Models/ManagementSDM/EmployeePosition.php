@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class EmployeePosition extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes; 
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -29,8 +32,21 @@ class EmployeePosition extends Model
         'employee_id',
         'position',
         'start_date',
-        'end_date', 
+        'end_date',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'employee_id',
+                'position',
+                'start_date',
+                'end_date',
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
@@ -39,7 +55,7 @@ class EmployeePosition extends Model
         'employee_id' => 'integer',
         'position' => 'string',
         'start_date' => 'date',
-        'end_date' => 'date', 
+        'end_date' => 'date',
     ];
 
     // Relasi dengan tabel branches

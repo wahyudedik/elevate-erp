@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Accounting extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -25,18 +28,32 @@ class Accounting extends Model
     protected $fillable = [
         'company_id',
         'branch_id',
-        'account_name',  
-        'account_number', 
+        'account_name',
+        'account_number',
         'account_type', //asset, liability, equity, revenue, expense
-        'initial_balance', 
+        'initial_balance',
         'current_balance'
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'account_name',
+                'account_number',
+                'account_type', //asset, liability, equity, revenue, expense
+                'initial_balance',
+                'current_balance'
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',
         'branch_id' => 'integer',
-        'account_name' => 'string',  
-        'account_number' => 'integer', 
+        'account_name' => 'string',
+        'account_number' => 'integer',
         'account_type' => 'string', //asset, liability, equity, revenue, expense
         'initial_balance' => 'decimal:2',
         'current_balance' => 'decimal:2',
@@ -61,5 +78,4 @@ class Accounting extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
-    
 }

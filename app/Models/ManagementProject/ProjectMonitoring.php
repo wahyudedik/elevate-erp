@@ -9,10 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class ProjectMonitoring extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     protected $table = 'project_monitorings';
 
@@ -25,6 +28,20 @@ class ProjectMonitoring extends Model
         'completion_percentage',
         'report_date',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'project_id',
+                'progress_report',
+                'status',
+                'completion_percentage',
+                'report_date',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',
