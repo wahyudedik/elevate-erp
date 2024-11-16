@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Leave extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     // protected static function booted()
     // {
@@ -32,6 +35,21 @@ class Leave extends Model
         'status',
         'note',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'user_id',
+                'start_date',
+                'end_date',
+                'reason',
+                'status',
+                'note',
+            ]);
+    }
 
     protected $casts = [
         'start_date' => 'date',

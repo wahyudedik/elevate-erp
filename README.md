@@ -6,3 +6,5 @@
 <p>Run migrations php artisan migrate</p>
 <p>Start local server by executing php artisan serve</p>
 <p>Visit here http://127.0.0.1:8000/products to test the application</p>
+<p> php artisan shield:generate --all </p>
+<p>  php artisan shield:super-admin </p>

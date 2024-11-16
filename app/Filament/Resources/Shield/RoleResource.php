@@ -47,6 +47,8 @@ class RoleResource extends Resource implements HasShieldPermissions
                     ->schema([
                         Forms\Components\Section::make()
                             ->schema([
+                                Forms\Components\Hidden::make('company_id')
+                                    ->default(Filament::getTenant()->id),
                                 Forms\Components\TextInput::make('name')
                                     ->label(__('filament-shield::filament-shield.field.name'))
                                     ->unique(ignoreRecord: true)

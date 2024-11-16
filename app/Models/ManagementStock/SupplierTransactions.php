@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
- class SupplierTransactions extends Model
+
+class SupplierTransactions extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     protected $table = 'supplier_transactions';
 
@@ -25,6 +28,21 @@ use Illuminate\Notifications\Notifiable;
         'transaction_date',
         'notes',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'supplier_id',
+                'transaction_code',
+                'transaction_type',
+                'amount',
+                'transaction_date',
+                'notes',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

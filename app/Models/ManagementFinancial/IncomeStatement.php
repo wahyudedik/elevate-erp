@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class IncomeStatement extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -29,6 +32,19 @@ class IncomeStatement extends Model
         'total_expenses',
         'net_income',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'financial_report_id',
+                'total_revenue',
+                'total_expenses',
+                'net_income',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

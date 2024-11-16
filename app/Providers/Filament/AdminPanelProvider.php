@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            // ->registration()
+            ->registration()
             ->emailVerification()
             ->passwordReset()
             ->profile()
@@ -123,6 +123,7 @@ class AdminPanelProvider extends PanelProvider
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
                 \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
+                \BezhanSalleh\FilamentShield\Middleware\SyncShieldTenant::class,
             ], isPersistent: true)
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),

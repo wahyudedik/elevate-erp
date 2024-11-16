@@ -12,10 +12,13 @@ use App\Models\ManagementProject\ProjectTask;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
-class Project extends Model 
+
+class Project extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     protected $table = 'projects';
 
@@ -32,6 +35,23 @@ class Project extends Model
         'client_id',  // ID dari klien yang memesan proyek ini
         'manager_id',  // ID dari karyawan yang mengelola proyek ini
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'name',
+                'description',
+                'start_date',
+                'end_date',
+                'budget',
+                'status',  // planned, in_progress, completed, on_hold, canceled
+                'client_id',  // ID dari klien yang memesan proyek ini
+                'manager_id',  // ID dari karyawan yang mengelola proyek ini
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
@@ -85,7 +105,7 @@ class Project extends Model
         return $this->hasMany(ProjectMilestone::class, 'project_id');
     }
 
-    public function projectMonitoring():HasMany
+    public function projectMonitoring(): HasMany
     {
         return $this->hasMany(ProjectMonitoring::class);
     }

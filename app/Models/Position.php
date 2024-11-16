@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Position extends Model
 {
-    use HasFactory,  SoftDeletes, Notifiable;
+    use HasFactory,  SoftDeletes, Notifiable, LogsActivity;
 
     // protected static function booted()
     // {
@@ -27,6 +30,18 @@ class Position extends Model
         'branch_id',
         'department_id',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name',
+                'description',
+                'company_id',
+                'branch_id',
+                'department_id',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

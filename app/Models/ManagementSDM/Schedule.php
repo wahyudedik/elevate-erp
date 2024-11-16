@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Schedule extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     // protected static function booted()
     // {
@@ -33,6 +36,21 @@ class Schedule extends Model
         'is_banned',
 
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'user_id',
+                'branch_id',
+                'employee_id',
+                'shift_id',
+                'date',
+                'is_wfa',
+                'is_banned',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

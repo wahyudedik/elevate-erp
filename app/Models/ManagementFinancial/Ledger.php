@@ -10,10 +10,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\ManagementFinancial\Accounting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Ledger extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     // protected static function booted()
     // {
@@ -31,6 +34,20 @@ class Ledger extends Model
         'amount',
         'transaction_description',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'account_id',
+                'transaction_date',
+                'transaction_type',
+                'amount',
+                'transaction_description',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

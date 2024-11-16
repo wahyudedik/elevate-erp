@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('company')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('customer_interactions', function (Blueprint $table) {

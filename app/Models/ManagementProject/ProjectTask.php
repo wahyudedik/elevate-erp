@@ -9,13 +9,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class ProjectTask extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
-    protected $table = 'project_tasks'; 
+    protected $table = 'project_tasks';
 
     // Atribut yang dapat diisi secara massal
     protected $fillable = [
@@ -28,6 +31,21 @@ class ProjectTask extends Model
         'due_date',
         'status',  // not_started, in_progress, completed, on_hold, canceled
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'project_id',
+                'task_name',
+                'task_description',
+                'assigned_to',  // ID karyawan yang ditugaskan
+                'due_date',
+                'status',  // not_started, in_progress, completed, on_hold, canceled
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

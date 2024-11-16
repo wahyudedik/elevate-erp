@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Sale extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
-    protected $table = 'sales'; 
+    protected $table = 'sales';
 
     // Atribut yang dapat diisi secara massal 
     protected $fillable = [
@@ -25,6 +28,19 @@ class Sale extends Model
         'total_amount',
         'status',  // pending, completed, canceled
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'customer_id',
+                'sale_date',
+                'total_amount',
+                'status',  // pending, completed, canceled
+            ]);
+    }
 
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [

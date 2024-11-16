@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.2",
         "afatmustafa/blade-hugeicons": "^0.0.3",
-        "bezhansalleh/filament-shield": "^3.2",
+        "bezhansalleh/filament-shield": "^3.3",
         "codeat3/blade-akar-icons": "^2.0",
         "codeat3/blade-carbon-icons": "^2.28",
         "codeat3/blade-clarity-icons": "^1.9",
@@ -33,6 +33,7 @@
         "mallardduck/blade-boxicons": "^2.4",
         "mansoor/blade-lets-icons": "^1.0",
         "postare/blade-mdi": "^1.0",
+        "rmsramos/activitylog": "^1.0",
         "ryangjchandler/blade-tabler-icons": "^2.3",
         "saade/blade-iconsax": "^1.2",
         "troccoli/blade-health-icons": "^3.0"

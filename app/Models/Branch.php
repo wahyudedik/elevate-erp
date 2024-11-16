@@ -46,10 +46,13 @@ use App\Models\ManagementProject\ProjectMonitoring;
 use App\Models\ManagementStock\PurchaseTransaction;
 use App\Models\ManagementStock\SupplierTransactions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Branch extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -71,6 +74,22 @@ class Branch extends Model
         'status',
     ];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'name',
+                'address',
+                'phone',
+                'email',
+                'description',
+                'latitude',
+                'longitude',
+                'radius',
+                'status',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class CashFlow extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
@@ -30,6 +33,20 @@ class CashFlow extends Model
         'financing_cash_flow',
         'net_cash_flow',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'financial_report_id',
+                'operating_cash_flow',
+                'investing_cash_flow',
+                'financing_cash_flow',
+                'net_cash_flow',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

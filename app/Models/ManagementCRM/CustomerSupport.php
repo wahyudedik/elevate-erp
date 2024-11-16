@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class CustomerSupport extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'customer_supports';
@@ -20,12 +23,26 @@ class CustomerSupport extends Model
     protected $fillable = [
         'company_id',
         'branch_id',
-        'customer_id', 
+        'customer_id',
         'subject',
         'description',
         'status',  // open, in_progress, resolved, closed
         'priority',  // low, medium, high, urgent
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'customer_id',
+                'subject',
+                'description',
+                'status',  // open, in_progress, resolved, closed
+                'priority',  // low, medium, high, urgent
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

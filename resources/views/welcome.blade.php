@@ -445,7 +445,7 @@
                                 <i class="bi bi-geo-alt flex-shrink-0"></i>
                                 <div>
                                     <h3>Address</h3>
-                                    <p>{{ $contactUs->address }}</p>
+                                    <p>{{ $contactUs->address ?? 'No Data' }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -453,7 +453,7 @@
                                 <i class="bi bi-telephone flex-shrink-0"></i>
                                 <div>
                                     <h3>Call Us</h3>
-                                    <p>{{ $contactUs->call }}</p>
+                                    <p>{{ $contactUs->call ?? 'No Data' }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -461,7 +461,7 @@
                                 <i class="bi bi-envelope flex-shrink-0"></i>
                                 <div>
                                     <h3>Email Us</h3>
-                                    <p>{{ $contactUs->email }}</p>
+                                    <p>{{ $contactUs->email ?? 'No Data' }}</p>
                                 </div>
                             </div><!-- End Info Item -->
 
@@ -470,7 +470,7 @@
 
                     <div class="col-lg-7">
 
-                        <iframe src="{{ $contactUs->location }}" frameborder="0"
+                        <iframe src="{{ $contactUs->location ?? 'No Data' }}" frameborder="0"
                             style="border:0; width: 100%; height: 370px;" allowfullscreen="" loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade"></iframe>
 
@@ -533,9 +533,9 @@
                         <span class="sitename">Elevate ERP</span>
                     </a>
                     <div class="footer-contact pt-3">
-                        {{ $contactUs->address }}
-                        <p class="mt-3"><strong>Phone:</strong> <span>{{ $contactUs->call }}</span></p>
-                        <p><strong>Email:</strong> <span>{{ $contactUs->email }}</span></p>
+                        {{ $contactUs->address ?? 'No data' }}
+                        <p class="mt-3"><strong>Phone:</strong> <span>{{ $contactUs->call ?? 'No data' }}</span></p>
+                        <p><strong>Email:</strong> <span>{{ $contactUs->email ?? 'No data' }}</span></p>
                     </div>
                 </div>
 

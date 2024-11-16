@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('initial_balance', 15, 2)->default(0);
             $table->decimal('current_balance', 15, 2)->default(0); 
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('journal_entries', function (Blueprint $table) {

@@ -11,10 +11,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class OrderProcessing extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     protected $table = 'order_processings';
 
@@ -27,6 +30,20 @@ class OrderProcessing extends Model
         'status',
         'sales_id',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'customer_id',
+                'order_date',
+                'total_amount',
+                'status',
+                'sales_id',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

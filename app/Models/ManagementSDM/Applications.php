@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class Applications extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // Nama tabel yang digunakan oleh model ini 
     protected $table = 'applications';
@@ -25,6 +28,19 @@ class Applications extends Model
         'status',  // applied, interviewing, offered, hired, rejected
         'resume',  // File path untuk resume/CV kandidat
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'recruitment_id',
+                'candidate_id',
+                'status',  // applied, interviewing, offered, hired, rejected
+                'resume',  // File path untuk resume/CV kandidat
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

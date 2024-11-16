@@ -38,9 +38,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         }
 
         return false;
-
-        // return str_ends_with($this->email, '@gmail.com') && $this->hasVerifiedEmail();
-        // return true;
     }
 
     public function company(): BelongsToMany
@@ -102,7 +99,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? url('storage/'. $this->image) : null;
+        return $this->image ? url('storage/' . $this->image) : null;
     }
 
     //relasi employee

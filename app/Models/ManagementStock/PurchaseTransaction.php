@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class PurchaseTransaction extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     protected $table = 'purchase_transactions';
 
@@ -25,6 +28,20 @@ class PurchaseTransaction extends Model
         'status',
         'purchasing_agent_id',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'supplier_id',
+                'transaction_date',
+                'total_amount',
+                'status',
+                'purchasing_agent_id',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

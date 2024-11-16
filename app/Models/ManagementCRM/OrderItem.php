@@ -9,10 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\ManagementCRM\OrderProcessing;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class OrderItem extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable; 
+    use HasFactory, SoftDeletes, Notifiable, LogsActivity;
 
     protected $table = 'order_items';
 
@@ -25,6 +28,20 @@ class OrderItem extends Model
         'unit_price',
         'total_price',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'order_id',
+                'product_name',
+                'quantity',
+                'unit_price',
+                'total_price',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',

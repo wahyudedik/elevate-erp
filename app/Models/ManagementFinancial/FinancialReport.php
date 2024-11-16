@@ -9,19 +9,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class FinancialReport extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     // protected static function booted()
     // {
     //     static::addGlobalScope(new CompanyScope);
     // }
 
-    protected $table = 'financial_reports'; 
+    protected $table = 'financial_reports';
 
-    protected $fillable = [ 
+    protected $fillable = [
         'company_id',
         'branch_id',
         'report_name',
@@ -30,6 +33,20 @@ class FinancialReport extends Model
         'report_period_end',
         'notes',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'report_name',
+                'report_type', //'balance_sheet', 'income_statement', 'cash_flow'
+                'report_period_start',
+                'report_period_end',
+                'notes',
+            ]);
+    }
 
     protected $casts = [
         'company_id' => 'integer',
@@ -65,5 +82,4 @@ class FinancialReport extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
-
 }
