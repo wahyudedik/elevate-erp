@@ -33,7 +33,7 @@ return new class extends Migration
             $table->date('interaction_date');
             $table->json('interaction_type');
             $table->text('details')->nullable();
-            $table->softDeletes();  // Kolom untuk soft delete
+            $table->softDeletes();  // Kolom untuk soft delete 
             $table->timestamps();
         });
     }

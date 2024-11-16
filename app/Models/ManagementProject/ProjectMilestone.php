@@ -33,15 +33,13 @@ class ProjectMilestone extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly([
-                'company_id',
-                'branch_id',
-                'project_id',
-                'milestone_name',
-                'milestone_description',
-                'milestone_date',
-                'status',  // planned, in_progress, completed, on_hold, delayed
-            ]);
+        ->logOnly([
+            'name',
+            'description',
+            'company_id',
+            'branch_id',
+            'department_id',
+        ]);
     }
 
     // Atribut yang harus di-cast ke tipe data tertentu

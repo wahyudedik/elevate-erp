@@ -38,6 +38,12 @@ class SupplierTransactionsImporter extends Importer
                 ->requiredMapping()
                 ->date()
                 ->rules(['required', 'date']),
+            ImportColumn::make('payment_date')
+                ->date()
+                ->rules(['nullable', 'date']),
+            ImportColumn::make('due_date')
+                ->date()
+                ->rules(['nullable', 'date']),
             ImportColumn::make('notes')
                 ->rules(['nullable', 'string']),
         ];

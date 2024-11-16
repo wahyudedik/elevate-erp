@@ -3,7 +3,7 @@
 @endphp
 
 <x-dynamic-component :component="$getEntryWrapperView()" :entry="$entry">
-    <div 
+    <div
         {{
             $attributes
                 ->merge($getExtraAttributes(), escape: false)

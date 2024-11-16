@@ -61,6 +61,22 @@ class Analytics extends Page
             'sales' => [
                 \App\Filament\Widgets\SalesStatsOverview::class,
             ],
+            'customer' => [
+                \App\Filament\Widgets\CustomerStatsOverview::class,
+            ],
+            'hr' => [
+                \App\Filament\Widgets\HrStatsOverview::class,
+            ],
+            'inventory' => [
+                \App\Filament\Widgets\InventoryLineChart::class,
+                \App\Filament\Widgets\InventoryFulfillmentChart::class,
+            ],
+            'project' => [
+                \App\Filament\Widgets\ProjectStatsOverview::class,
+            ],
+            'supplier' => [
+                \App\Filament\Widgets\SupplierRadarChart::class,
+            ],
             default => [],
         };
     }
@@ -84,6 +100,27 @@ class Analytics extends Page
                 \App\Filament\Widgets\SalesBarChart::class,
                 \App\Filament\Widgets\SalesDoughnutChart::class,
                 \App\Filament\Widgets\SalesTableWidget::class,
+            ],
+            'customer' => [
+                \App\Filament\Widgets\CustomerLineChart::class,
+                \App\Filament\Widgets\CustomerDoughnutChart::class,
+            ],
+            'hr' => [
+                \App\Filament\Widgets\HrBarChart::class,
+                \App\Filament\Widgets\HrDoughnutChart::class,
+            ],
+            'inventory' => [
+                \App\Filament\Widgets\Inventory::class,
+                \App\Filament\Widgets\TopInventoryItemsTableWidget::class,
+            ],
+            'project' => [
+                \App\Filament\Widgets\ProjectBarChart::class,
+                \App\Filament\Widgets\ProjectPieChart::class,
+                \App\Filament\Widgets\ProjectTableWidget::class,
+            ],
+            'supplier' => [
+                \App\Filament\Widgets\SupplierTableWidget::class,
+                \App\Filament\Widgets\SupplierPendingPaymentTableWidget::class, 
             ],
             default => [],
         };

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('total_cost', 15, 2);
             $table->enum('status', ['ordered', 'received', 'cancelled'])->default('ordered');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('procurement_items', function (Blueprint $table) {

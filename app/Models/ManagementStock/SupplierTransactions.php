@@ -26,23 +26,10 @@ class SupplierTransactions extends Model
         'transaction_type',
         'amount',
         'transaction_date',
+        'payment_date',
+        'due_date',
         'notes',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly([
-                'company_id',
-                'branch_id',
-                'supplier_id',
-                'transaction_code',
-                'transaction_type',
-                'amount',
-                'transaction_date',
-                'notes',
-            ]);
-    }
 
     protected $casts = [
         'company_id' => 'integer',
@@ -52,6 +39,8 @@ class SupplierTransactions extends Model
         'transaction_type' => 'string',
         'amount' => 'decimal:2',
         'transaction_date' => 'date',
+        'payment_date' => 'date',
+        'due_date' => 'date',
         'notes' => 'string',
     ];
 

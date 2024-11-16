@@ -82,6 +82,19 @@ class CustomerSupportResource extends Resource
                             ])
                             ->default('open')
                             ->required(),
+                        Forms\Components\TextInput::make('customer_rating')
+                            ->numeric()
+                            ->minValue(1.0)
+                            ->maxValue(5.0)
+                            ->step(0.1)
+                            ->nullable(),
+                        Forms\Components\Select::make('customer_satisfaction')
+                            ->options([
+                                'satisfied' => 'Satisfied',
+                                'neutral' => 'Neutral',
+                                'dissatisfied' => 'Dissatisfied',
+                            ])
+                            ->nullable(),
                     ])
                     ->columns(2),
                 Forms\Components\Section::make('Additional Information')
@@ -144,6 +157,18 @@ class CustomerSupportResource extends Resource
                         'warning' => 'in_progress',
                         'success' => 'resolved',
                         'secondary' => 'closed',
+                    ]),
+                Tables\Columns\TextColumn::make('customer_rating')
+                    ->toggleable()
+                    ->label('Rating')
+                    ->formatStateUsing(fn($state) => $state ? number_format($state, 1) . '/5.0' : '-'),
+                Tables\Columns\TextColumn::make('customer_satisfaction')
+                    ->toggleable()
+                    ->badge()
+                    ->colors([
+                        'success' => 'satisfied',
+                        'warning' => 'neutral',
+                        'danger' => 'dissatisfied',
                     ]),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -323,6 +348,8 @@ class CustomerSupportResource extends Resource
             'description',
             'status',  // open, in_progress, resolved, closed
             'priority',  // low, medium, high, urgent
+            'customer_rating',  // Rating from 1.0 to 5.0
+            'customer_satisfaction',  // satisfied, neutral, dissatisfied
         ];
     }
 }

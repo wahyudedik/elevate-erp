@@ -79,6 +79,12 @@ class SupplierTransactionsResource extends Resource
                             ->maxValue(999999999999999.99),
                         Forms\Components\DatePicker::make('transaction_date')
                             ->required(),
+                        Forms\Components\DatePicker::make('payment_date')
+                            ->label('Payment Date')
+                            ->nullable(),
+                        Forms\Components\DatePicker::make('due_date')
+                            ->label('Due Date')
+                            ->nullable(),
                         Forms\Components\RichEditor::make('notes')
                             ->placeholder('Enter additional notes')
                             ->maxLength(65535)
@@ -140,6 +146,16 @@ class SupplierTransactionsResource extends Resource
                     ->label('Transaction Date')
                     ->date()
                     ->default(now())
+                    ->toggleable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('payment_date')
+                    ->label('Payment Date')
+                    ->date()
+                    ->toggleable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('due_date')
+                    ->label('Due Date')
+                    ->date()
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')

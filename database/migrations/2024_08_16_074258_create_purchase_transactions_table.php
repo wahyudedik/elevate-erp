@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'received', 'cancelled'])->default('pending');
             $table->foreignId('purchasing_agent_id')->constrained('employees')->onDelete('cascade');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps();
+            $table->timestamps(); 
         }); 
 
         Schema::create('purchase_items', function (Blueprint $table) {

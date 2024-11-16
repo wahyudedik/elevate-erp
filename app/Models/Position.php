@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
-
 class Position extends Model
 {
     use HasFactory,  SoftDeletes, Notifiable, LogsActivity;
@@ -34,13 +33,13 @@ class Position extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly([
-                'name',
-                'description',
-                'company_id',
-                'branch_id',
-                'department_id',
-            ]);
+        ->logOnly([
+            'name',
+            'description',
+            'company_id',
+            'branch_id',
+            'department_id',
+        ]);
     }
 
     protected $casts = [
