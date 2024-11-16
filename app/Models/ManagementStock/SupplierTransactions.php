@@ -31,6 +31,23 @@ class SupplierTransactions extends Model
         'notes',
     ];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'company_id',
+                'branch_id',
+                'supplier_id',
+                'transaction_code',
+                'transaction_type',
+                'amount',
+                'transaction_date',
+                'payment_date',
+                'due_date',
+                'notes',
+            ]);
+    }
+
     protected $casts = [
         'company_id' => 'integer',
         'branch_id' => 'integer',
