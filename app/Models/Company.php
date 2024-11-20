@@ -86,6 +86,31 @@ class Company extends Model implements HasCurrentTenantLabel
         'qna' => 'array',
     ];
 
+    public function cameras()
+    {
+        return $this->hasMany(Camera::class, 'company_id');
+    }
+
+    public function chatMessageRead()
+    {
+        return $this->hasMany(ChatMessageRead::class, 'company_id');
+    }
+
+    public function chatMessage()
+    {
+        return $this->hasMany(ChatMessage::class, 'company_id');
+    }
+
+    public function chatRoomUser()
+    {
+        return $this->hasMany(ChatRoomUser::class, 'company_id');
+    }
+
+    public function chatRoom()
+    {
+        return $this->hasMany(ChatRoom::class, 'company_id');
+    }
+
     public function applications()
     {
         return $this->hasMany(Applications::class, 'company_id');

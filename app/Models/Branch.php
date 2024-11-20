@@ -104,6 +104,11 @@ class Branch extends Model
         'status' => 'string',
     ];
 
+    public function cameras()
+    {
+        return $this->hasMany(Camera::class, 'branch_id');
+    }
+
     public function applications()
     {
         return $this->hasMany(Applications::class, 'baranch_id');

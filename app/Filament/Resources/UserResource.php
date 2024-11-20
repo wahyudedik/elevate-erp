@@ -22,6 +22,8 @@ use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
+use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class UserResource extends Resource
 {
@@ -154,6 +156,7 @@ class UserResource extends Resource
                     Tables\Actions\ViewAction::make()->color('success'),
                     Tables\Actions\EditAction::make()->color('info'),
                     Tables\Actions\DeleteAction::make()->color('danger'),
+                    ActivityLogTimelineTableAction::make('Activities'),
                 ])
             ])
             ->headerActions([
@@ -203,7 +206,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivitylogRelationManager::class,
         ];
     }
 

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('quantity_before');
             $table->integer('quantity_after');
             $table->enum('transaction_type', ['addition', 'deduction']);
-            $table->text('remarks')->nullable();
+            $table->text('remarks')->nullable(); 
             $table->date('transaction_date');
             $table->softDeletes();  // Kolom untuk soft delete
             $table->timestamps();

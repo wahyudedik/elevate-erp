@@ -138,4 +138,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     {
         return $this->hasMany(Attendance::class, 'user_id');
     }
+
+    public function chatRoomUser()
+    {
+        return $this->hasMany(ChatRoomUser::class, 'user_id');
+    }
+
+    public function chatMessage()
+    {
+        return $this->hasMany(ChatMessage::class, 'user_id');
+    }
+
+    public function chatMessageRead()
+    {
+        return $this->hasMany(ChatMessageRead::class, 'user_id');
+    }
 }

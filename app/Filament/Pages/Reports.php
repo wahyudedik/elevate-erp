@@ -7,7 +7,11 @@ use App\Filament\Clusters\Dashboard;
 
 class Reports extends Page
 {
-    protected static ?string $cluster = Dashboard::class;
+    // protected static ?string $cluster = Dashboard::class;
+
+    protected static ?string $navigationLabel = 'Reports';
+
+    protected static ?string $navigationGroup = 'Reports';
     
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 

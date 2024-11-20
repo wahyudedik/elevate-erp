@@ -28,7 +28,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->enum('role', ['admin', 'member'])->default('member');
             $table->timestamp('last_read_at')->nullable();
-            $table->softDeletes();
+            $table->softDeletes(); 
             $table->timestamps();
 
             $table->foreign('chat_room_id')->references('id')->on('chat_rooms')->onDelete('cascade');

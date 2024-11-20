@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-
+use App\Filament\Pages\cctv;
 use Filament\Panel;
 use Filament\Widgets;
 use App\Models\Company;
@@ -16,6 +16,9 @@ use Filament\Http\Middleware\Authenticate;
 use App\Filament\Pages\Tenancy\RegisterTeam;
 use Filament\Pages\Tenancy\EditTenantProfile;
 use App\Filament\Pages\Tenancy\EditTeamProfile;
+use App\Filament\Pages\Wallet;
+use App\Filament\Pages\Webchat;
+use Filament\Facades\Filament;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -55,13 +58,13 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Yellow,
             ])
             ->navigationGroups([
+                'Management Users',
                 'Master Data',
                 'Management Financial',
                 'Management SDM',
                 'Management CRM',
                 'Management Project',
                 'Management Stock',
-                'Management Users',
                 'Reports',
             ])
             ->databaseNotifications()
@@ -104,21 +107,18 @@ class AdminPanelProvider extends PanelProvider
                 // ...
             ])
             ->userMenuItems([
-                // MenuItem::make()
-                //     ->label('Webchat')
-                //     ->url(fn (): string => Settings::getUrl())
-                //     ->icon('heroicon-m-chat-bubble-left-right'),
-                // ...
-                // MenuItem::make()
-                //     ->label('Webcam')
-                //     ->url(fn (): string => Settings::getUrl())
-                //     ->icon('heroicon-m-video-camera'),
-                // ...
-                // MenuItem::make()
-                //     ->label('Wallet')
-                //     ->url(fn (): string => Settings::getUrl())
-                //     ->icon('heroicon-m-wallet'),
-                // ...
+                MenuItem::make()
+                    ->label('Webchat')
+                    ->url('webchat')
+                    ->icon('heroicon-m-chat-bubble-left-right'),
+                MenuItem::make()
+                    ->label('CCTV')
+                    ->url('cctv')
+                    ->icon('heroicon-m-video-camera'),
+                MenuItem::make()
+                    ->label('Wallet')
+                    ->url('wallet')
+                    ->icon('heroicon-m-wallet'),
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
@@ -127,8 +127,9 @@ class AdminPanelProvider extends PanelProvider
             ], isPersistent: true)
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                \Hasnayeen\Themes\ThemesPlugin::make()
+                \Hasnayeen\Themes\ThemesPlugin::make(),
                 // ->canViewThemesPage(fn () => Auth::user()->usertype === 'dev'),
+                \Rmsramos\Activitylog\ActivitylogPlugin::make(),
             ]);
     }
 }
