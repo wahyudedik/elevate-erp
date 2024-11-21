@@ -1,4 +1,8 @@
 <x-filament-panels::page>
+    @pushOnce('scripts')
+        @vite('resources/js/cctv.js')
+    @endPushOnce
+    
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">CCTV Monitoring</h2>
         <button x-data="" x-on:click="$dispatch('open-modal', { id: 'cctv-info' })"
@@ -9,15 +13,33 @@
     </div>
 
     <!-- Rest of your existing CCTV content -->
+    <div class="mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            {{-- <h2 class="text-2xl font-bold mb-4">Add New Camera</h2> --}}
+            <form wire:submit="create">
+                {{ $this->form }}
+                <br>
+                <button type="submit" class="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                    Add Camera
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="grid grid-cols-2 gap-4">
         @foreach ($cameras as $camera)
             <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-medium mb-2">{{ $camera['name'] }}</h3>
+                <div class="flex justify-between items-center mb-3 border-b pb-2">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ $camera['name'] }}</h3>
+                    <span
+                        class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">{{ $camera['location'] }}</span>
+                </div>
                 <div class="aspect-video">
-                    <video id="{{ $camera['name'] }}" class="w-full h-full" autoplay controls
+                    <video id="camera-{{ $camera['id'] }}" class="w-full h-full" autoplay controls
                         src="{{ $camera['stream_url'] }}">
                     </video>
                 </div>
+                <p class="mt-2 text-sm text-gray-600">{{ $camera['description'] }}</p>
             </div>
         @endforeach
     </div>

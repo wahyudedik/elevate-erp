@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/dev/theme.css',
+                'resources/js/cctv.js',
             ],
             refresh: true,
         }),

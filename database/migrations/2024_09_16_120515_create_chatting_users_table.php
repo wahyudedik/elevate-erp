@@ -58,6 +58,7 @@ return new class extends Migration
             $table->unsignedBigInteger('chat_message_id');
             $table->unsignedBigInteger('user_id');
             $table->timestamp('read_at');
+            $table->timestamps();
 
             $table->foreign('chat_message_id')->references('id')->on('chat_messages')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

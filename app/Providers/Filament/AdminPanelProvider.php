@@ -100,25 +100,31 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Register new Company')
                     ->visible(fn(): bool => Auth::user()->usertype === 'member' || Auth::user()->usertype === 'dev'),
                 // MenuItem::make()
-                //     ->label('Settings')
-                //     ->url(fn (): string => Settings::getUrl())
-                //     ->icon('heroicon-m-cog-8-tooth')
-                //     ->tenant(),
-                // ...
+                //     ->label('Webchat')
+                //     ->url('webchat')
+                //     ->icon('heroicon-m-chat-bubble-left-right'),
+                // MenuItem::make()
+                //     ->label('CCTV')
+                //     ->url(fn(): string => cctv::getUrl())
+                //     ->icon('heroicon-m-video-camera'),
+                // MenuItem::make()
+                //     ->label('Wallet')
+                //     ->url('wallet')
+                //     ->icon('heroicon-m-wallet'),
             ])
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Webchat')
-                    ->url('webchat')
+                    ->url(fn(): string => Webchat::getUrl())
                     ->icon('heroicon-m-chat-bubble-left-right'),
                 MenuItem::make()
                     ->label('CCTV')
-                    ->url('cctv')
+                    ->url(fn(): string => cctv::getUrl())
                     ->icon('heroicon-m-video-camera'),
-                MenuItem::make()
-                    ->label('Wallet')
-                    ->url('wallet')
-                    ->icon('heroicon-m-wallet'),
+                // MenuItem::make()
+                //     ->label('Wallet')
+                //     ->url(fn(): string => Wallet::getUrl())
+                //     ->icon('heroicon-m-wallet'),
             ])
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
