@@ -30,6 +30,12 @@ class ApplicationsResource extends Resource
 {
     protected static ?string $model = Applications::class;
 
+    protected static ?string $navigationLabel = 'Curiculum Vitae';
+
+    protected static ?string $modelLabel = 'Curiculum Vitae';
+    
+    protected static ?string $pluralModelLabel = 'Curiculum Vitae';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 11; //29

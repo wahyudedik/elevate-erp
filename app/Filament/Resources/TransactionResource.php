@@ -31,6 +31,12 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
 
+    protected static ?string $navigationLabel = 'Transaksi';
+
+    protected static ?string $modelLabel = 'Transaksi';
+    
+    protected static ?string $pluralModelLabel = 'Transaksi';
+
     protected static ?int $navigationSort = 10;
 
     protected static ?string $cluster = ledgers::class;

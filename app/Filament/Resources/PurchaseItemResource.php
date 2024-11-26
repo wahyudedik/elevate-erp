@@ -29,6 +29,12 @@ class PurchaseItemResource extends Resource
 {
     protected static ?string $model = PurchaseItem::class;
 
+    protected static ?string $navigationLabel = 'Membeli Barang';
+
+    protected static ?string $modelLabel = 'Membeli Barang';
+    
+    protected static ?string $pluralModelLabel = 'Membeli Barang';
+
     protected static ?string $cluster = Procurement::class;
 
     protected static ?int $navigationSort = 25;

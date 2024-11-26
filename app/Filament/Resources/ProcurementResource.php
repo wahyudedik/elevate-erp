@@ -32,6 +32,12 @@ class ProcurementResource extends Resource
 {
     protected static ?string $model = Procurement::class;
 
+    protected static ?string $navigationLabel = 'Pengadaan';
+
+    protected static ?string $modelLabel = 'Pengadaan';
+    
+    protected static ?string $pluralModelLabel = 'Pengadaan';
+
     protected static ?string $cluster = ClustersProcurement::class;
 
     protected static ?int $navigationSort = 1;
@@ -43,8 +49,6 @@ class ProcurementResource extends Resource
     protected static ?string $tenantRelationshipName = 'procurements';
 
     protected static ?string $navigationGroup = 'Procurements';
-
-    protected static ?string $navigationLabel = 'Procurement';
 
     protected static ?string $navigationIcon = 'gmdi-production-quantity-limits-tt';
 

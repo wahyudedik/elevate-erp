@@ -29,6 +29,12 @@ class EmployeePositionResource extends Resource
 {
     protected static ?string $model = EmployeePosition::class;
 
+    protected static ?string $navigationLabel = 'Jabatan Karyawan';
+
+    protected static ?string $modelLabel = 'Jabatan Karyawan';
+    
+    protected static ?string $pluralModelLabel = 'Jabatan Karyawan';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 2; //29

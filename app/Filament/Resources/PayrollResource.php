@@ -31,6 +31,12 @@ class PayrollResource extends Resource
 {
     protected static ?string $model = Payroll::class;
 
+    protected static ?string $navigationLabel = 'Penggajian';
+
+    protected static ?string $modelLabel = 'Penggajian';
+    
+    protected static ?string $pluralModelLabel = 'Penggajian';
+
     protected static ?int $navigationSort = 2; //29
 
     protected static bool $isScopedToTenant = true;

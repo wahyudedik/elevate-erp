@@ -29,6 +29,12 @@ class CandidateInterviewResource extends Resource
 {
     protected static ?string $model = CandidateInterview::class;
 
+    protected static ?string $navigationLabel = 'Interview';
+
+    protected static ?string $modelLabel = 'Interview';
+    
+    protected static ?string $pluralModelLabel = 'Interview';
+
     protected static ?string $cluster = cluster::class;
 
     protected static ?int $navigationSort = 9; //29

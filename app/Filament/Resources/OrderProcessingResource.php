@@ -32,6 +32,12 @@ class OrderProcessingResource extends Resource
 {
     protected static ?string $model = OrderProcessing::class;
 
+    protected static ?string $navigationLabel = 'Proses Pembelian Barang';
+
+    protected static ?string $modelLabel = 'Proses Pembelian Barang';
+    
+    protected static ?string $pluralModelLabel = 'Proses Pembelian Barang';
+
     protected static ?string $cluster = Sales::class;
 
     protected static ?int $navigationSort = 20;

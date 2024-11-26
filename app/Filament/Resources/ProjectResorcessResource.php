@@ -33,6 +33,12 @@ class ProjectResorcessResource extends Resource
 {
     protected static ?string $model = ProjectResource::class;
 
+    protected static ?string $navigationLabel = 'Sumber Daya Proyek';
+
+    protected static ?string $modelLabel = 'Sumber Daya Proyek';
+    
+    protected static ?string $pluralModelLabel = 'Sumber Daya Proyek';
+
     protected static ?string $cluster = ProjectPlanning::class;
 
     protected static ?int $navigationSort = 25;

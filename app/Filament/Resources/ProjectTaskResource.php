@@ -28,6 +28,12 @@ class ProjectTaskResource extends Resource
 {
     protected static ?string $model = ProjectTask::class;
 
+    protected static ?string $navigationLabel = 'Tugas Proyek';
+
+    protected static ?string $modelLabel = 'Tugas Proyek';
+    
+    protected static ?string $pluralModelLabel = 'Tugas Proyek';
+
     protected static ?string $cluster = ProjectPlanning::class;
 
     protected static ?int $navigationSort = 23;

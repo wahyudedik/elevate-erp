@@ -32,6 +32,12 @@ class CustomerInteractionResource extends Resource
 {
     protected static ?string $model = CustomerInteraction::class;
 
+    protected static ?string $navigationLabel = 'Interaksi Pelanggan';
+
+    protected static ?string $modelLabel = 'Interaksi Pelanggan';
+    
+    protected static ?string $pluralModelLabel = 'Interaksi Pelanggan';
+
     protected static ?string $cluster = CustomerRelations::class;
 
     protected static ?int $navigationSort = 18;

@@ -26,6 +26,12 @@ class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
+    protected static ?string $navigationLabel = 'Departemen';
+
+    protected static ?string $modelLabel = 'Departemen';
+    
+    protected static ?string $pluralModelLabel = 'Departemen';
+
     protected static ?int $navigationSort = 5;
 
     protected static bool $isScopedToTenant = true;

@@ -28,6 +28,12 @@ class ShiftResource extends Resource
 {
     protected static ?string $model = Shift::class;
 
+    protected static ?string $navigationLabel = 'Shift';
+
+    protected static ?string $modelLabel = 'Shift';
+    
+    protected static ?string $pluralModelLabel = 'Shift';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 3; //29

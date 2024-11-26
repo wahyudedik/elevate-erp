@@ -33,6 +33,12 @@ class LedgerResource extends Resource
 {
     protected static ?string $model = Ledger::class;
 
+    protected static ?string $navigationLabel = 'Buku Besar';
+
+    protected static ?string $modelLabel = 'Buku Besar';
+    
+    protected static ?string $pluralModelLabel = 'Buku Besar';
+
     protected static ?string $cluster = ledgers::class;
 
     protected static ?int $navigationSort = 9;

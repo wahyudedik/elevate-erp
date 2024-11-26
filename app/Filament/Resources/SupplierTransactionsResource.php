@@ -30,6 +30,12 @@ class SupplierTransactionsResource extends Resource
 {
     protected static ?string $model = SupplierTransactions::class;
 
+    protected static ?string $navigationLabel = 'Transaksi Pemasok';
+
+    protected static ?string $modelLabel = 'Transaksi Pemasok';
+    
+    protected static ?string $pluralModelLabel = 'Transaksi Pemasok';
+
     protected static ?string $cluster = Procurement::class;
 
     protected static ?int $navigationSort = 23;

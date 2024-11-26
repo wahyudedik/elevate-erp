@@ -29,6 +29,12 @@ class OrderItemResource extends Resource
 {
     protected static ?string $model = OrderItem::class;
 
+    protected static ?string $navigationLabel = 'Pembelian Barang';
+
+    protected static ?string $modelLabel = 'Pembelian Barang';
+    
+    protected static ?string $pluralModelLabel = 'Pembelian Barang';
+
     protected static ?string $cluster = Sales::class;
 
     protected static ?int $navigationSort = 21;

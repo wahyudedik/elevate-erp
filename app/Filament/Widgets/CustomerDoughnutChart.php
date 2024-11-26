@@ -18,7 +18,7 @@ class CustomerDoughnutChart extends ChartWidget
         // Get customers with multiple interactions
         $returningCustomers = CustomerInteraction::where('company_id', Auth::user()->company_id)
             ->select('customer_id')
-            ->groupBy('customer_id')
+            ->groupBy('customer_id') 
             ->havingRaw('COUNT(*) > 1')
             ->count();
 

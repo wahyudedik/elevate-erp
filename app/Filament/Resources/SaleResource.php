@@ -30,7 +30,11 @@ class SaleResource extends Resource
 {
     protected static ?string $model = Sale::class;
 
-    protected static ?string $navigationLabel = 'Sales';
+    protected static ?string $navigationLabel = 'Penjualan';
+
+    protected static ?string $modelLabel = 'Penjualan';
+    
+    protected static ?string $pluralModelLabel = 'Penjualan';
 
     protected static ?string $cluster = Sales::class;
 

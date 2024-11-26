@@ -27,6 +27,12 @@ class LeaveResource extends Resource
 {
     protected static ?string $model = Leave::class;
 
+    protected static ?string $navigationLabel = 'Ijin/Keluar';
+
+    protected static ?string $modelLabel = 'Ijin/Keluar';
+    
+    protected static ?string $pluralModelLabel = 'Ijin/Keluar';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 6;

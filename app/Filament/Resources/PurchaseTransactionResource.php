@@ -29,6 +29,12 @@ class PurchaseTransactionResource extends Resource
 {
     protected static ?string $model = PurchaseTransaction::class;
 
+    protected static ?string $navigationLabel = 'Transaksi Pembelian';
+
+    protected static ?string $modelLabel = 'Transaksi Pembelian';   
+    
+    protected static ?string $pluralModelLabel = 'Transaksi Pembelian';
+
     protected static ?string $cluster = Procurement::class;
 
     protected static ?int $navigationSort = 24;

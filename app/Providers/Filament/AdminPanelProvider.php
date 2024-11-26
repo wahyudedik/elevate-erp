@@ -58,14 +58,14 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Yellow,
             ])
             ->navigationGroups([
-                'Management Users',
+                'Manajemen Pengguna',
                 'Master Data',
-                'Management Financial',
-                'Management SDM',
-                'Management CRM',
-                'Management Project',
-                'Management Stock',
-                'Reports',
+                'Manajemen Keuangan',
+                'Manajemen SDM',
+                'Manajemen CRM',
+                'Manajemen Projek',
+                'Manajemen Stok',
+                'Laporan',
             ])
             ->databaseNotifications()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -88,7 +88,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->spa()
             ->tenant(Company::class, ownershipRelationship: 'company', slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
             ->tenantProfile(EditTeamProfile::class)
@@ -115,11 +114,11 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Webchat')
-                    ->url(fn(): string => Webchat::getUrl())
+                    ->url('/webchat')
                     ->icon('heroicon-m-chat-bubble-left-right'),
                 MenuItem::make()
                     ->label('CCTV')
-                    ->url(fn(): string => cctv::getUrl())
+                    ->url('/cctv')
                     ->icon('heroicon-m-video-camera'),
                 // MenuItem::make()
                 //     ->label('Wallet')

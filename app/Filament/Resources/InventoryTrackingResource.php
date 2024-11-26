@@ -32,6 +32,12 @@ class InventoryTrackingResource extends Resource
 {
     protected static ?string $model = InventoryTracking::class;
 
+    protected static ?string $navigationLabel = 'Tracking Inventory';
+
+    protected static ?string $modelLabel = 'Tracking Inventory';
+    
+    protected static ?string $pluralModelLabel = 'Tracking Inventory';
+
     protected static ?int $navigationSort = 28;
 
     protected static bool $isScopedToTenant = true;

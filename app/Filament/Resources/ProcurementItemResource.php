@@ -29,6 +29,12 @@ class ProcurementItemResource extends Resource
 {
     protected static ?string $model = ProcurementItem::class;
 
+    protected static ?string $navigationLabel = 'Pengadaan Barang';
+
+    protected static ?string $modelLabel = 'Pengadaan Barang';
+    
+    protected static ?string $pluralModelLabel = 'Pengadaan Barang';
+
     protected static ?string $cluster = Procurement::class;
 
     protected static ?int $navigationSort = 2;
@@ -40,8 +46,6 @@ class ProcurementItemResource extends Resource
     protected static ?string $tenantRelationshipName = 'procurementItems';
 
     protected static ?string $navigationGroup = 'Procurements';
-
-    protected static ?string $navigationLabel = 'Procurement Item';
 
     protected static ?string $navigationIcon = 'hugeicons-group-items';
 

@@ -30,6 +30,12 @@ class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
 
+    protected static ?string $navigationLabel = 'Absensi';
+
+    protected static ?string $modelLabel = 'Absensi';
+    
+    protected static ?string $pluralModelLabel = 'Absensi';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 5;

@@ -28,6 +28,12 @@ class InventoryResource extends Resource
 {
     protected static ?string $model = Inventory::class;
 
+    protected static ?string $navigationLabel = 'Inventory';
+
+    protected static ?string $modelLabel = 'Inventory';
+    
+    protected static ?string $pluralModelLabel = 'Inventory';
+
     protected static ?int $navigationSort = 27;
 
     protected static bool $isScopedToTenant = true;

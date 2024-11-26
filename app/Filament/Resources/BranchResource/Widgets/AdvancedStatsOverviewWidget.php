@@ -3,11 +3,16 @@
 namespace App\Filament\Resources\BranchResource\Widgets;
 
 use App\Models\Branch;
+use App\HasTenantScope;
+use Illuminate\Support\Facades\Auth;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
 use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 
 class AdvancedStatsOverviewWidget extends BaseWidget
-{
+{    
+
+    // use HasTenantScope;
+
     protected static ?string $pollingInterval = null;
 
     protected function getStats(): array

@@ -28,6 +28,12 @@ class JournalEntryResource extends Resource
 {
     protected static ?string $model = JournalEntry::class;
 
+    protected static ?string $navigationLabel = 'Journal Entry';
+
+    protected static ?string $modelLabel = 'Journal Entry';
+    
+    protected static ?string $pluralModelLabel = 'Journal Entry';
+
     protected static ?int $navigationSort = 8;
 
     protected static bool $isScopedToTenant = true;

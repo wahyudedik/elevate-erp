@@ -28,6 +28,12 @@ class BranchResource extends Resource
 {
     protected static ?string $model = Branch::class;
 
+    protected static ?string $navigationLabel = 'Cabang';
+
+    protected static ?string $modelLabel = 'Cabang';
+
+    protected static ?string $pluralModelLabel = 'Cabang';
+
     protected static ?int $navigationSort = 4;
 
     protected static bool $isScopedToTenant = true;
@@ -248,6 +254,7 @@ class BranchResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Cabang Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(BranchExporter::class)

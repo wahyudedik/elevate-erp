@@ -30,6 +30,12 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
+    protected static ?string $navigationLabel = 'Pemasok';
+
+    protected static ?string $modelLabel = 'Pemasok';
+    
+    protected static ?string $pluralModelLabel = 'Pemasok';
+
     protected static ?string $cluster = Procurement::class;
 
     protected static ?int $navigationSort = 22;

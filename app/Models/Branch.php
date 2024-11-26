@@ -50,7 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Branch extends Model
+class Branch extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 

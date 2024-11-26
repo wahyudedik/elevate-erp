@@ -36,6 +36,12 @@ class AccountingResource extends Resource
 {
     protected static ?string $model = Accounting::class;
 
+    protected static ?string $navigationLabel = 'Akuntansi';
+
+    protected static ?string $modelLabel = 'Akuntansi';
+    
+    protected static ?string $pluralModelLabel = 'Akuntansi';
+
     protected static ?int $navigationSort = 7;
 
     protected static bool $isScopedToTenant = true;

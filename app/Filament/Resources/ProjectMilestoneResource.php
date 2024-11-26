@@ -32,6 +32,12 @@ class ProjectMilestoneResource extends Resource
 {
     protected static ?string $model = ProjectMilestone::class;
 
+    protected static ?string $navigationLabel = 'Tolak Ukur Proyek';
+
+    protected static ?string $modelLabel = 'Tolak Ukur Proyek';
+    
+    protected static ?string $pluralModelLabel = 'Tolak Ukur Proyek';
+
     protected static ?string $cluster = ProjectPlanning::class;
 
     protected static ?int $navigationSort = 24;

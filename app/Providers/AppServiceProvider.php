@@ -30,6 +30,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->usertype === 'dev';
         });
 
-        // Gate::policy(Activity::class, ActivityPolicy::class);
+        Gate::policy(Activity::class, ActivityPolicy::class);
     }
 }

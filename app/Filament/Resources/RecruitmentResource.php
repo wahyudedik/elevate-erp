@@ -30,6 +30,12 @@ class RecruitmentResource extends Resource
 {
     protected static ?string $model = Recruitment::class;
 
+    protected static ?string $navigationLabel = 'Rekrutmen';
+
+    protected static ?string $modelLabel = 'Rekrutmen';
+    
+    protected static ?string $pluralModelLabel = 'Rekrutmen';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 10; //29

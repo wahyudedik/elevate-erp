@@ -9,3 +9,10 @@
 <p> php artisan shield:generate --all </p>
 <p>  php artisan shield:super-admin </p>
 <p>  apakah perlu menjalankan php artisan reverb:start </p>
+<p>  php artisan composer run dev </p>
+
+Perbaikan :
+- [x] bug dan bahasa indonesia => branch/cabang
+
+Fitur :
+- [x] fitur pencarian

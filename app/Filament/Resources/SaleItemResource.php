@@ -31,6 +31,12 @@ class SaleItemResource extends Resource
 {
     protected static ?string $model = SaleItem::class;
 
+    protected static ?string $navigationLabel = 'Penjualan Barang';
+
+    protected static ?string $modelLabel = 'Penjualan Barang';
+    
+    protected static ?string $pluralModelLabel = 'Penjualan Barang';
+
     protected static ?string $cluster = Sales::class;
 
     protected static ?int $navigationSort = 20;

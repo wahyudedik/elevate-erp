@@ -15,7 +15,7 @@ class BranchPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_branch');
+        return $user->can('view_any_branch'); 
     }
 
     /**

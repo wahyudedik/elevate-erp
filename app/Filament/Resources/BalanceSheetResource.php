@@ -32,6 +32,12 @@ class BalanceSheetResource extends Resource
 {
     protected static ?string $model = BalanceSheet::class;
 
+    protected static ?string $navigationLabel = 'Laporan Neraca';
+
+    protected static ?string $modelLabel = 'Laporan Neraca';
+    
+    protected static ?string $pluralModelLabel = 'Laporan Neraca';
+
     protected static ?string $cluster = FinancialReporting::class;
 
     protected static ?int $navigationSort = 13;

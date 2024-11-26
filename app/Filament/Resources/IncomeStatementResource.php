@@ -31,6 +31,12 @@ class IncomeStatementResource extends Resource
 {
     protected static ?string $model = IncomeStatement::class;
 
+    protected static ?string $navigationLabel = 'Laporan Laba Rugi';
+
+    protected static ?string $modelLabel = 'Laporan Laba Rugi';
+    
+    protected static ?string $pluralModelLabel = 'Laporan Laba Rugi';
+
     protected static ?string $cluster = FinancialReporting::class;
 
     protected static ?int $navigationSort = 15;

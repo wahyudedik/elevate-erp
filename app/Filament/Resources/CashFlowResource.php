@@ -32,6 +32,12 @@ class CashFlowResource extends Resource
 {
     protected static ?string $model = CashFlow::class;
 
+    protected static ?string $navigationLabel = 'Laporan Arus Kas';
+
+    protected static ?string $modelLabel = 'Laporan Arus Kas';
+    
+    protected static ?string $pluralModelLabel = 'Laporan Arus Kas';
+
     protected static ?string $cluster = FinancialReporting::class;
 
     protected static ?int $navigationSort = 14;

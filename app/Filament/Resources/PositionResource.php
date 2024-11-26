@@ -27,6 +27,12 @@ class PositionResource extends Resource
 {
     protected static ?string $model = Position::class;
 
+    protected static ?string $navigationLabel = 'Jabatan';
+
+    protected static ?string $modelLabel = 'Jabatan';
+    
+    protected static ?string $pluralModelLabel = 'Jabatan';
+
     protected static ?int $navigationSort = 6;
 
     protected static bool $isScopedToTenant = true;

@@ -29,6 +29,12 @@ class TicketResponseResource extends Resource
 {
     protected static ?string $model = TicketResponse::class;
 
+    protected static ?string $navigationLabel = 'Respons Tiket';
+
+    protected static ?string $modelLabel = 'Respons Tiket';
+    
+    protected static ?string $pluralModelLabel = 'Respons Tiket';
+
     protected static ?string $cluster = CustomerSupport::class;
 
     protected static ?int $navigationSort = 21;

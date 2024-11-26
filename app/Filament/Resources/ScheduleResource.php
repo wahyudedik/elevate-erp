@@ -26,6 +26,12 @@ class ScheduleResource extends Resource
 {
     protected static ?string $model = Schedule::class;
 
+    protected static ?string $navigationLabel = 'Jadwal';
+
+    protected static ?string $modelLabel = 'Jadwal';
+    
+    protected static ?string $pluralModelLabel = 'Jadwal';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 4; //29

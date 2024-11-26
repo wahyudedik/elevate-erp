@@ -35,6 +35,12 @@ class CandidateResource extends Resource
 {
     protected static ?string $model = Candidate::class;
 
+    protected static ?string $navigationLabel = 'Kandidat';
+
+    protected static ?string $modelLabel = 'Kandidat';
+    
+    protected static ?string $pluralModelLabel = 'Kandidat';
+
     protected static ?string $cluster = Employee::class;
 
     protected static ?int $navigationSort = 8; //29

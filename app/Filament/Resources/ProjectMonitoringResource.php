@@ -32,6 +32,12 @@ class ProjectMonitoringResource extends Resource
 {
     protected static ?string $model = ProjectMonitoring::class;
 
+    protected static ?string $navigationLabel = 'Monitoring Proyek';
+
+    protected static ?string $modelLabel = 'Monitoring Proyek';
+    
+    protected static ?string $pluralModelLabel = 'Monitoring Proyek';
+
     protected static ?int $navigationSort = 26;
 
     protected static bool $isScopedToTenant = true;

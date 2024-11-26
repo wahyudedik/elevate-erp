@@ -33,6 +33,12 @@ class FinancialReportResource extends Resource
 {
     protected static ?string $model = FinancialReport::class;
 
+    protected static ?string $navigationLabel = 'Laporan Keuangan';
+
+    protected static ?string $modelLabel = 'Laporan Keuangan';
+    
+    protected static ?string $pluralModelLabel = 'Laporan Keuangan';
+
     protected static ?string $cluster = FinancialReporting::class;
 
     protected static ?int $navigationSort = 12;
