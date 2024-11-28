@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Branch;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,14 +26,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\Transaction;
+use App\Models\ManagementFinancial\JournalEntry;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AccountingResource\Pages;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Filament\Resources\AccountingResource\RelationManagers;
 use App\Filament\Resources\AccountingResource\RelationManagers\LedgerRelationManager;
 use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRelationManager;
-use App\Models\Branch;
-use Filament\Tables\Actions\CreateAction;
 
 class AccountingResource extends Resource
 {
@@ -112,14 +113,14 @@ class AccountingResource extends Resource
                             }),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -345,6 +346,27 @@ class AccountingResource extends Resource
                                     'amount' => $data['amount'],
                                     'notes' => 'Transfer from ' . $record->account_name . ' to ' . $toAccount->account_name,
                                 ]);
+
+                                // Create journal entry
+                                // $journalEntry = JournalEntry::create([
+                                //     'company_id' => $tenant,
+                                //     'branch_id' => $branch,
+                                //     'entry_date' => now(),
+                                //     'description' => $data['description'] ?? 'Transfer between accounts',
+                                //     'entry_type' => 'credit',
+                                //     'amount' => $data['amount'],
+                                //     'account_id' => $record->id,
+                                // ]);
+
+                                // $journalEntry = JournalEntry::create([
+                                //     'company_id' => $tenant,
+                                //     'branch_id' => $branch,
+                                //     'entry_date' => now(),
+                                //     'description' => $data['description'] ?? 'Transfer between accounts',
+                                //     'entry_type' => 'debit',
+                                //     'amount' => $data['amount'],
+                                //     'account_id' => $toAccount->id,
+                                // ]);
                             });
                             Notification::make()
                                 ->title('Transfer successful')
@@ -389,16 +411,16 @@ class AccountingResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateBalances')
-                        ->label('Update Balances')
+                        ->label('Perbarui Saldo')
                         ->icon('heroicon-o-currency-dollar')
                         ->color('warning')
                         ->form([
                             Forms\Components\Select::make('action')
                                 ->label('Action')
                                 ->options([
-                                    'add' => 'Add to Balance',
-                                    'subtract' => 'Subtract from Balance',
-                                    'set' => 'Set Balance',
+                                    'add' => 'Tambah ke Saldo',
+                                    'subtract' => 'Kurangi dari Saldo',
+                                    'set' => 'Atur Saldo',
                                 ])
                                 ->required(),
                             Forms\Components\TextInput::make('amount')
@@ -425,23 +447,24 @@ class AccountingResource extends Resource
                             });
 
                             Notification::make()
-                                ->title('Balances updated successfully')
+                                ->title('Saldo berhasil diperbarui')
+                                ->body('Saldo berhasil diperbarui pada ' . now()->toDateTimeString())
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\BulkAction::make('changeAccountType')
-                        ->label('Change Account Type')
+                        ->label('Ubah Tipe Akun')
                         ->icon('heroicon-o-tag')
                         ->color('info')
                         ->form([
                             Forms\Components\Select::make('account_type')
                                 ->label('New Account Type')
                                 ->options([
-                                    'asset' => 'Asset',
-                                    'liability' => 'Liability',
-                                    'equity' => 'Equity',
-                                    'revenue' => 'Revenue',
-                                    'expense' => 'Expense',
+                                    'asset' => 'Asset / Aset',
+                                    'liability' => 'Liability / Kewajiban',
+                                    'equity' => 'Equity / Modal',
+                                    'revenue' => 'Revenue / Pendapatan',
+                                    'expense' => 'Expense / Beban',
                                 ])
                                 ->required(),
                         ])

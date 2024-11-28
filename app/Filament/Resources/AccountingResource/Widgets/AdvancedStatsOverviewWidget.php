@@ -13,27 +13,24 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Accounts', Accounting::count())->icon('heroicon-o-calculator')
-                // ->progress(Accounting::count())
-                // ->progressBarColor('primary')
+            Stat::make('Total Akun', Accounting::count())->icon('heroicon-o-calculator')
                 ->chartColor('primary')
                 ->iconPosition('end')
-                ->description('Total number of accounts')
+                ->description('Jumlah total akun')
                 ->descriptionIcon('heroicon-o-chart-bar', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Total Assets', $this->formatNumber(Accounting::where('account_type', 'asset')->sum('current_balance')))->icon('heroicon-o-banknotes')
-                ->description('Total value of asset accounts')
+            Stat::make('Total Aset', $this->formatNumber(Accounting::where('account_type', 'asset')->sum('current_balance')))->icon('heroicon-o-banknotes')
+                ->description('Total nilai akun aset')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Total Liabilities', $this->formatNumber(Accounting::where('account_type', 'liability')->sum('current_balance')))->icon('heroicon-o-scale')
-                ->description("Total value of liability accounts")
+            Stat::make('Total Kewajiban', $this->formatNumber(Accounting::where('account_type', 'liability')->sum('current_balance')))->icon('heroicon-o-scale')
+                ->description("Total nilai akun kewajiban")
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
-
-          ];
+        ];
     }
 
     protected function formatNumber($number)

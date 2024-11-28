@@ -14,7 +14,8 @@
 Perbaikan :
 - [x] bug dan bahasa indonesia => branch/cabang
 - [x] bug dan bahasa indonesia => Departemen
-- [x] bug dan bahasa indonesia => Jabatan -> kurang form departemen yang tampil berdasarkan cabang yang dipilih
+- [x] bug dan bahasa indonesia => Jabatan
+- [x] bug dan bahasa indonesia => Akuntansi
 
 Fitur Admin :
 - [x] fitur login
@@ -29,3 +30,5 @@ Fitur Admin :
 - [x] fitur cabang
 - [x] fitur departemen
 - [x] fitur jabatan
+- [x] fitur Akun Transfer ke akun lain
+- [x] fitur akutansi

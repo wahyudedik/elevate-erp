@@ -13,10 +13,10 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Entries', function () {
+            Stat::make('Total Entri', function () {
                 return JournalEntry::count();
             })->icon('heroicon-o-document-text')
-                ->description('Total journal entries')
+                ->description('Total entri jurnal')
                 ->descriptionIcon('heroicon-o-information-circle', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
@@ -25,25 +25,25 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 $amount = JournalEntry::where('entry_type', 'debit')->sum('amount');
                 return $this->formatNumber($amount);
             })->icon('heroicon-o-arrow-trending-down')
-                ->description('Total debit amount')
+                ->description('Total jumlah debit')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
 
-            Stat::make('Total Credit', function () {
+            Stat::make('Total Kredit', function () {
                 $amount = JournalEntry::where('entry_type', 'credit')->sum('amount');
                 return $this->formatNumber($amount);
             })->icon('heroicon-o-arrow-trending-up')
-                ->description('Total credit amount')
+                ->description('Total jumlah kredit')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
 
-            Stat::make('Latest Entry Date', function () {
-                return JournalEntry::latest('entry_date')->value('entry_date')?->format('Y-m-d') ?? 'No data available';
+            Stat::make('Tanggal Entri Terbaru', function () {
+                return JournalEntry::latest('entry_date')->value('entry_date')?->format('Y-m-d') ?? 'Data tidak tersedia';
             })
                 ->icon('heroicon-o-calendar')
-                ->description('Most recent journal entry date')
+                ->description('Tanggal entri jurnal terbaru')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),

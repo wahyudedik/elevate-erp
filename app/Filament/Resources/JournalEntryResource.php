@@ -42,7 +42,7 @@ class JournalEntryResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'journalEntry';
 
-    protected static ?string $navigationGroup = 'Management Financial';
+    protected static ?string $navigationGroup = 'Manajemen Keuangan';
 
     protected static ?string $navigationIcon = 'bi-journal-bookmark-fill';
 

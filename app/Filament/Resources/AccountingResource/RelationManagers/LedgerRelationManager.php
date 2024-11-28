@@ -56,12 +56,14 @@ class LedgerRelationManager extends RelationManager
                             ])
                             ->required(),
                         Forms\Components\TextInput::make('amount')
-                            ->label('Jumlah')
                             ->numeric()
-                            ->step(2)
-                            ->mask('999999999999999.99')
+                            ->default(0)
+                            ->required()
+                            ->label('Jumlah')
                             ->prefix('IDR')
-                            ->required(),
+                            ->maxValue(429496976772.95)
+                            ->minValue(0)
+                            ->step(0.01),
                         Forms\Components\Textarea::make('transaction_description')
                             ->label('Deskripsi Transaksi')
                             ->maxLength(65535)
@@ -155,7 +157,7 @@ class LedgerRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable()
                     ->size('sm'),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\Filter::make('transaction_date')
                     ->label('Tanggal Transaksi')
