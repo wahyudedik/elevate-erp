@@ -30,7 +30,7 @@ class PositionResource extends Resource
     protected static ?string $navigationLabel = 'Jabatan';
 
     protected static ?string $modelLabel = 'Jabatan';
-    
+
     protected static ?string $pluralModelLabel = 'Jabatan';
 
     protected static ?int $navigationSort = 6;
@@ -54,11 +54,18 @@ class PositionResource extends Resource
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->live(),
                         Forms\Components\Select::make('department_id')
-                            ->relationship('department', 'name')
+                            ->relationship(
+                                'department',
+                                'name',
+                                fn(Builder $query, Forms\Get $get) =>
+                                $query->where('branch_id', $get('branch_id'))
+                            )
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->disabled(fn(Forms\Get $get): bool => ! $get('branch_id')),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
@@ -88,35 +95,45 @@ class PositionResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('department.name')
                     ->searchable()
                     ->icon('heroicon-o-building-office-2')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->icon('heroicon-o-briefcase')
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('description')
                     ->limit(50)
                     ->html()
                     ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('xs'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+                    ->size('xs')
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
@@ -145,6 +162,7 @@ class PositionResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Jabatan Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(PositionExporter::class)
@@ -152,7 +170,7 @@ class PositionResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Export Position completed' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -161,7 +179,7 @@ class PositionResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import department completed' . ' ' . now())
+                                ->title('Import Position completed' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -194,7 +212,7 @@ class PositionResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Export Position completed' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -202,6 +220,7 @@ class PositionResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
+                    ->label('Buat Jabatan Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

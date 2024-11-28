@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void 
     {
-        Schema::create('accounts', function (Blueprint $table) {
+        Schema::create('accounts', function (Blueprint $table) { 
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
             $table->string('account_name'); 
             $table->string('account_number')->unique();
             $table->enum('account_type', ['asset', 'liability', 'equity', 'revenue', 'expense']);

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
-class Position extends Model
+class Position extends BaseModel
 {
     use HasFactory,  SoftDeletes, Notifiable, LogsActivity;
 

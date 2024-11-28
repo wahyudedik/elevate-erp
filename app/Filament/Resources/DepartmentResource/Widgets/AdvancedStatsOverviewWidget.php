@@ -13,20 +13,20 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Departments', $this->formatNumber(Department::count()))->icon('heroicon-o-building-office-2')
+            Stat::make('Total Departemen', $this->formatNumber(Department::count()))->icon('heroicon-o-building-office-2')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Total number of departments')
+                ->description('Total Departemen Pada Sistem')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Departments with Branches', $this->formatNumber(Department::whereNotNull('branch_id')->count()))->icon('heroicon-o-building-storefront')
-                ->description('Departments associated with branches')
+            Stat::make('Departemen Dengan Cabang', $this->formatNumber(Department::whereNotNull('branch_id')->count()))->icon('heroicon-o-building-storefront')
+                ->description('Departemen yang terkait dengan cabang')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('warning'),
-            Stat::make('Recently Added', $this->formatNumber(Department::where('created_at', '>=', now()->subDays(30))->count()))->icon('heroicon-o-clock')
-                ->description("Departments added in the last 30 days")
+            Stat::make('Baru Ditambahkan', $this->formatNumber(Department::where('created_at', '>=', now()->subDays(30))->count()))->icon('heroicon-o-clock')
+                ->description("Departemen yang ditambahkan dalam 30 hari terakhir")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('primary')

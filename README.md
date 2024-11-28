@@ -13,6 +13,19 @@
 
 Perbaikan :
 - [x] bug dan bahasa indonesia => branch/cabang
+- [x] bug dan bahasa indonesia => Departemen
+- [x] bug dan bahasa indonesia => Jabatan -> kurang form departemen yang tampil berdasarkan cabang yang dipilih
 
-Fitur :
-- [x] fitur pencarian
+Fitur Admin :
+- [x] fitur login
+- [x] fitur register
+- [x] fitur forgot password
+- [x] fitur reset password
+- [x] fitur profile
+- [x] fitur logout
+- [x] fitur dashboard
+- [x] fitur company/tenant
+- [x] fitur global pencarian
+- [x] fitur cabang
+- [x] fitur departemen
+- [x] fitur jabatan

@@ -29,7 +29,7 @@ class DepartmentResource extends Resource
     protected static ?string $navigationLabel = 'Departemen';
 
     protected static ?string $modelLabel = 'Departemen';
-    
+
     protected static ?string $pluralModelLabel = 'Departemen';
 
     protected static ?int $navigationSort = 5;
@@ -53,6 +53,7 @@ class DepartmentResource extends Resource
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
+                            ->required()
                             ->preload()
                             ->nullable(),
                         Forms\Components\TextInput::make('name')
@@ -86,33 +87,43 @@ class DepartmentResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->searchable()
                     ->icon('heroicon-o-building-storefront')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->weight('medium')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->weight('medium')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('description')
                     ->searchable()
                     ->sortable()
                     ->html()
                     ->limit(50)
                     ->toggleable()
-                    ->wrap(),
+                    ->wrap()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->since(),
+                    ->since()
+                    ->color('gray')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->since(),
+                    ->since()
+                    ->color('gray')
+                    ->size('sm'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -148,6 +159,7 @@ class DepartmentResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Departemen Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(DepartmentExporter::class)
@@ -188,6 +200,7 @@ class DepartmentResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
+                    ->label('Buat Departemen Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

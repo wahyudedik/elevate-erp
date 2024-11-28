@@ -18,25 +18,25 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Branches', $this->formatNumber(Branch::count()))->icon('heroicon-o-building-storefront')
+            Stat::make('Total Cabang', $this->formatNumber(Branch::count()))->icon('heroicon-o-building-storefront')
                 ->chartColor('primary')
                 ->iconPosition('start')
-                ->description('All branches')
+                ->description('Semua Cabang')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Active Branches', $this->formatNumber(Branch::where('status', 'active')->count()))->icon('heroicon-o-building-storefront')
-                ->description('Active branches')
+            Stat::make('Cabang Aktif', $this->formatNumber(Branch::where('status', 'active')->count()))->icon('heroicon-o-building-storefront')
+                ->description('Cabang Aktif')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Inactive Branches', $this->formatNumber(Branch::where('status', 'inactive')->count()))->icon('heroicon-o-building-storefront')
-                ->description('Inactive branches')
+            Stat::make('Cabang Nonaktif', $this->formatNumber(Branch::where('status', 'inactive')->count()))->icon('heroicon-o-building-storefront')
+                ->description('Cabang Nonaktif')
                 ->descriptionIcon('heroicon-o-chevron-down', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
-            Stat::make('Average Radius', $this->formatNumber(Branch::avg('radius')) . ' m')->icon('heroicon-o-map-pin')
-                ->description("Average coverage radius")
+            Stat::make('Rata-rata Radius', $this->formatNumber(Branch::avg('radius')) . ' m')->icon('heroicon-o-map-pin')
+                ->description("Rata-rata Radius Cabang")
                 ->descriptionIcon('heroicon-o-arrow-path', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary')

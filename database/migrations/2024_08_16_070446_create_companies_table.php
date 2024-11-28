@@ -57,7 +57,7 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->softDeletes();
@@ -67,8 +67,8 @@ return new class extends Migration
         Schema::create('positions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
-            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->softDeletes();

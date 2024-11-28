@@ -11,13 +11,19 @@ use Illuminate\Support\Carbon;
 use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementFinancial\Ledger;
-use Illuminate\Database\Eloquent\Collection; 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
 class LedgerRelationManager extends RelationManager
 {
     protected static string $relationship = 'ledger';
+
+    protected static ?string $title = 'Buku Besar';
+
+    protected static ?string $label = 'Buku Besar';
+
+    protected static ?string $pluralLabel = 'Buku Besar';
 
     public function form(Form $form): Form
     {
@@ -28,12 +34,14 @@ class LedgerRelationManager extends RelationManager
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
                             ->relationship('branch', 'name')
                             ->searchable()
                             ->preload()
                             ->columnSpanFull()
                             ->required(),
                         Forms\Components\DatePicker::make('transaction_date')
+                            ->label('Tanggal Transaksi')
                             ->required()
                             ->format('Y-m-d')
                             ->default(now())
@@ -41,28 +49,32 @@ class LedgerRelationManager extends RelationManager
                             ->columnSpanFull()
                             ->native(false),
                         Forms\Components\Select::make('transaction_type')
+                            ->label('Jenis Transaksi')
                             ->options([
                                 'debit' => 'Debit',
                                 'credit' => 'Credit',
                             ])
                             ->required(),
                         Forms\Components\TextInput::make('amount')
+                            ->label('Jumlah')
                             ->numeric()
+                            ->step(2)
                             ->mask('999999999999999.99')
                             ->prefix('IDR')
                             ->required(),
                         Forms\Components\Textarea::make('transaction_description')
+                            ->label('Deskripsi Transaksi')
                             ->maxLength(65535)
                             ->columnSpanFull(),
                     ])->columns(2),
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created At')
+                            ->label('Dibuat Pada')
                             ->default('-')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last Modified At')
+                            ->label('Terakhir Diperbarui')
                             ->default('-')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])->columns(2)
@@ -78,23 +90,27 @@ class LedgerRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->sortable()
                     ->searchable()
                     ->icon('heroicon-s-building-storefront')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('transaction_date')
-                    ->label('Date')
+                    ->label('Tanggal')
                     ->date('d/m/Y')
                     ->sortable()
                     ->icon('heroicon-o-calendar')
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_type')
                     ->badge()
-                    ->label('Type')
+                    ->label('Tipe')
                     ->icon(fn(string $state): string => match ($state) {
                         'credit' => 'heroicon-o-arrow-up-circle',
                         'debit' => 'heroicon-o-arrow-down-circle',
@@ -106,50 +122,48 @@ class LedgerRelationManager extends RelationManager
                     ])
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->alignment('right')
+                    ->weight('bold')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_description')
-                    ->label('Description')
+                    ->label('Deskripsi')
                     ->limit(50)
                     ->wrap()
                     ->searchable()
                     ->toggleable()
-                    ->tooltip(fn($record) => $record->transaction_description),
+                    ->tooltip(fn($record) => $record->transaction_description)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Diperbarui Pada')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->label('Branch')
-                    ->indicator('Branch'),
-                Tables\Filters\SelectFilter::make('account')
-                    ->relationship('account', 'account_name')
-                    ->searchable()
-                    ->preload()
-                    ->label('Account'),
                 Tables\Filters\Filter::make('transaction_date')
+                    ->label('Tanggal Transaksi')
                     ->form([
                         Forms\Components\DatePicker::make('from')
-                            ->label('From Date'),
+                            ->label('Dari Tanggal'),
                         Forms\Components\DatePicker::make('until')
-                            ->label('Until Date'),
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -177,104 +191,10 @@ class LedgerRelationManager extends RelationManager
                         'debit' => 'Debit',
                         'credit' => 'Credit',
                     ])
-                    ->label('Transaction Type'),
-                Tables\Filters\Filter::make('amount')
-                    ->form([
-                        Forms\Components\TextInput::make('min')
-                            ->label('Minimum Amount')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max')
-                            ->label('Maximum Amount')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min'],
-                                fn(Builder $query, $min): Builder => $query->where('amount', '>=', $min),
-                            )
-                            ->when(
-                                $data['max'],
-                                fn(Builder $query, $max): Builder => $query->where('amount', '<=', $max),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['min'] ?? null) {
-                            $indicators['min'] = 'Min: $' . number_format($data['min'], 2);
-                        }
-                        if ($data['max'] ?? null) {
-                            $indicators['max'] = 'Max: $' . number_format($data['max'], 2);
-                        }
-                        return $indicators;
-                    })->columns(2),
-                Tables\Filters\TernaryFilter::make('transaction_description')
-                    ->label('Has Description')
-                    ->nullable(),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->label('Tipe Transaksi'),
             ])
             ->actions([
-                ActionGroup::make([
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\Action::make('print')
-                        ->label('Print')
-                        ->icon('heroicon-o-printer')
-                        ->color('success')
-                        ->url(fn(Ledger $record): string => route('ledger.print', $record))
-                        ->openUrlInNewTab(),
-                ]),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('updateTransactionType')
-                        ->label('Update Transaction Type')
-                        ->icon('heroicon-o-arrow-path')
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\Select::make('transaction_type')
-                                ->label('Transaction Type')
-                                ->options([
-                                    'debit' => 'Debit',
-                                    'credit' => 'Credit',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                $record->update([
-                                    'transaction_type' => $data['transaction_type'],
-                                ]);
-                            });
-                        })
-                        ->deselectRecordsAfterCompletion(),
-                    Tables\Actions\BulkAction::make('updateTransactionDate')
-                        ->label('Update Transaction Date')
-                        ->icon('heroicon-o-calendar')
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\DatePicker::make('transaction_date')
-                                ->label('Transaction Date')
-                                ->required(),
-                        ])
-                        ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                $record->update([
-                                    'transaction_date' => $data['transaction_date'],
-                                ]);
-                            });
-                        })
-                        ->deselectRecordsAfterCompletion(),
-                ])->label('Bulk Actions'),
+                Tables\Actions\ViewAction::make(),
             ]);
     }
 

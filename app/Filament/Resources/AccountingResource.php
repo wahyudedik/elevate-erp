@@ -30,6 +30,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Filament\Resources\AccountingResource\RelationManagers;
 use App\Filament\Resources\AccountingResource\RelationManagers\LedgerRelationManager;
 use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRelationManager;
+use App\Models\Branch;
 use Filament\Tables\Actions\CreateAction;
 
 class AccountingResource extends Resource
@@ -39,7 +40,7 @@ class AccountingResource extends Resource
     protected static ?string $navigationLabel = 'Akuntansi';
 
     protected static ?string $modelLabel = 'Akuntansi';
-    
+
     protected static ?string $pluralModelLabel = 'Akuntansi';
 
     protected static ?int $navigationSort = 7;
@@ -50,7 +51,7 @@ class AccountingResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'accounting';
 
-    protected static ?string $navigationGroup = 'Management Financial';
+    protected static ?string $navigationGroup = 'Manajemen Keuangan';
 
     protected static ?string $navigationIcon = 'mdi-finance';
 
@@ -61,27 +62,33 @@ class AccountingResource extends Resource
                 Forms\Components\Section::make('Account Information')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
+                            ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\TextInput::make('account_name')
+                            ->label('Nama Akun')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('account_number')
+                            ->label('Nomor Akun')
                             ->required()
                             ->unique(ignorable: fn($record) => $record)
                             ->maxLength(255),
                         Forms\Components\Select::make('account_type')
+                            ->label('Tipe Akun')
                             ->required()
                             ->options([
-                                'asset' => 'Asset',
-                                'liability' => 'Liability',
-                                'equity' => 'Equity',
-                                'revenue' => 'Revenue',
-                                'expense' => 'Expense',
+                                'asset' => 'Asset / Aset',
+                                'liability' => 'Liability / Kewajiban',
+                                'equity' => 'Equity / Modal',
+                                'revenue' => 'Revenue / Pendapatan',
+                                'expense' => 'Expense / Beban',
                             ]),
                         Forms\Components\TextInput::make('initial_balance')
+                            ->label('Saldo Awal')
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
@@ -93,6 +100,7 @@ class AccountingResource extends Resource
                                 $set('current_balance', $state);
                             }),
                         Forms\Components\TextInput::make('current_balance')
+                            ->label('Saldo Akhir')
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
@@ -128,22 +136,28 @@ class AccountingResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Cabang')
                     ->searchable()
                     ->toggleable()
                     ->icon('heroicon-o-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('account_name')
                     ->searchable()
+                    ->label('Nama Akun')
+                    ->limit(50)
+                    ->wrap()
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('account_number')
                     ->searchable()
+                    ->label('Nomor Akun')
                     ->toggleable()
                     ->sortable()
                     ->icon('heroicon-o-hashtag'),
                 Tables\Columns\TextColumn::make('account_type')
                     ->icon('heroicon-o-currency-dollar')
                     ->badge()
+                    ->label('Tipe Akun')
                     ->toggleable()
                     ->colors([
                         'primary' => 'asset',
@@ -157,20 +171,24 @@ class AccountingResource extends Resource
                 Tables\Columns\TextColumn::make('initial_balance')
                     ->money('IDR')
                     ->toggleable()
+                    ->label('Saldo Awal')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_balance')
                     ->money('IDR')
                     ->toggleable()
+                    ->label('Saldo Akhir')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->label('Dibuat pada')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('Terakhir diubah pada')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
@@ -260,17 +278,17 @@ class AccountingResource extends Resource
                         ->color('success')
                         ->form([
                             Forms\Components\Select::make('to_account_id')
-                                ->label('To Account')
+                                ->label('Akun Penerima')
                                 ->options(fn() => Accounting::pluck('account_name', 'id'))
                                 ->required(),
                             Forms\Components\TextInput::make('amount')
                                 ->numeric()
+                                ->label('Jumlah')
                                 ->required()
                                 ->minValue(0.01)
-                                ->prefix('IDR')
-                                ->label('Amount'),
+                                ->prefix('IDR'),
                             Forms\Components\Textarea::make('description')
-                                ->label('Description')
+                                ->label('Deskripsi')
                                 ->rows(3),
                         ])
                         ->action(function (Accounting $record, array $data): void {
@@ -283,10 +301,12 @@ class AccountingResource extends Resource
                                 $toAccount->save();
 
                                 $tenant = Filament::getTenant()->id;
+                                $branch = Branch::where('company_id', $tenant)->first()->id;
 
                                 // Create ledger record for the 'from' account
                                 $fromLedger = Ledger::create([
                                     'company_id' => $tenant,
+                                    'branch_id' => $branch,
                                     'account_id' => $record->id,
                                     'transaction_date' => now(),
                                     'transaction_type' => 'credit',
@@ -297,6 +317,7 @@ class AccountingResource extends Resource
                                 // Create ledger record for the 'to' account
                                 $toLedger = Ledger::create([
                                     'company_id' => $tenant,
+                                    'branch_id' => $branch,
                                     'account_id' => $toAccount->id,
                                     'transaction_date' => now(),
                                     'transaction_type' => 'debit',
@@ -307,6 +328,7 @@ class AccountingResource extends Resource
                                 // Create transaction record
                                 Transaction::create([
                                     'company_id' => $tenant,
+                                    'branch_id' => $branch,
                                     'ledger_id' => $fromLedger->id,
                                     'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
                                     'status' => 'completed',
@@ -316,6 +338,7 @@ class AccountingResource extends Resource
 
                                 Transaction::create([
                                     'company_id' => $tenant,
+                                    'branch_id' => $branch,
                                     'ledger_id' => $toLedger->id,
                                     'transaction_number' => 'TRF' . now()->format('YmdHis') . rand(1000, 9999),
                                     'status' => 'completed',
@@ -323,10 +346,9 @@ class AccountingResource extends Resource
                                     'notes' => 'Transfer from ' . $record->account_name . ' to ' . $toAccount->account_name,
                                 ]);
                             });
-
                             Notification::make()
                                 ->title('Transfer successful')
-                                ->body(('Your transfer has been completed successfully.' . ' ' . now()->toDateTimeString()))
+                                ->body('Transfer from ' . $record->account_name . ' to ' . $data['to_account_id'] . ' for amount ' . number_format($data['amount']) . ' completed successfully at ' . now()->toDateTimeString())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -334,6 +356,7 @@ class AccountingResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Akun Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
@@ -448,7 +471,7 @@ class AccountingResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Account')
+                    ->label('Buat Akun Baru')
                     ->icon('heroicon-o-plus')
                     ->color('primary'),
             ]);

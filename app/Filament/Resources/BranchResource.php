@@ -141,12 +141,14 @@ class BranchResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Branch Name')
                     ->icon('heroicon-o-building-storefront')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('address')
                     ->label('Address')
                     ->sortable()
@@ -155,38 +157,47 @@ class BranchResource extends Resource
                     ->wrap()
                     ->limit(50)
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Phone')
                     ->sortable()
                     ->icon('heroicon-o-phone')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->color('primary')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->sortable()
                     ->searchable()
                     ->icon('heroicon-o-envelope')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->color('primary')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Description')
                     ->limit(50)
                     ->html()
                     ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('latitude')
                     ->label('Latitude')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('longitude')
                     ->label('Longitude')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('radius')
                     ->label('Radius')
                     ->sortable()
                     ->suffix(' meters')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->sortable()
@@ -208,12 +219,14 @@ class BranchResource extends Resource
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Updated At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -295,6 +308,7 @@ class BranchResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
+                    ->label('Buat Cabang Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

@@ -17,12 +17,18 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementFinancial\JournalEntry;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Resources\RelationManagers\RelationManager; 
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\ActionGroup;
 
 class JournalEntriesRelationManager extends RelationManager
 {
     protected static string $relationship = 'journalEntries';
+
+    protected static ?string $title = 'Jurnal Umum';
+
+    protected static ?string $label = 'Jurnal Umum';
+
+    protected static ?string $pluralLabel = 'Jurnal Umum';
 
     public function form(Form $form): Form
     {
@@ -33,7 +39,7 @@ class JournalEntriesRelationManager extends RelationManager
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
-                            ->label('Branch')
+                            ->label('Cabang')
                             ->relationship('branch', 'name')
                             ->required()
                             ->searchable()
@@ -41,24 +47,24 @@ class JournalEntriesRelationManager extends RelationManager
                             ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
-                            ->label('Entry Date')
+                            ->label('Tanggal Entri')
                             ->default(now())
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('description')
-                            ->label('Description')
+                            ->label('Deskripsi')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('entry_type')
                             ->options([
                                 'debit' => 'Debit',
-                                'credit' => 'Credit',
+                                'credit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Entry Type'),
+                            ->label('Jenis Entri'),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
                             ->default(0)
                             ->required()
-                            ->label('Amount')
+                            ->label('Jumlah')
                             ->prefix('IDR')
                             ->maxValue(429496976772.95)
                             ->minValue(0)
@@ -68,11 +74,11 @@ class JournalEntriesRelationManager extends RelationManager
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created At')
+                            ->label('Di Buat Pada')
                             ->default('-')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last Modified At')
+                            ->label('Di Ubah Pada')
                             ->default('-')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])->columns(2)

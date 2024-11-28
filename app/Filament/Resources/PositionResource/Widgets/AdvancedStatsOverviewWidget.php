@@ -14,20 +14,20 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Positions', $this->formatNumber(Position::count()))->icon('heroicon-o-briefcase')
+            Stat::make('Total Jabatan', $this->formatNumber(Position::count()))->icon('heroicon-o-briefcase')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Total positions in the system')
+                ->description('Total posisi dalam sistem')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Positions by Company', $this->formatNumber(Company::has('positions')->count()))->icon('heroicon-o-building-office')
-                ->description('Companies with positions')
+            Stat::make('Jabatan Berdasarkan Perusahaan', $this->formatNumber(Company::has('positions')->count()))->icon('heroicon-o-building-office')
+                ->description('Jabatan berdasarkan perusahaan')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('warning'),
-            Stat::make('Positions with Departments', $this->formatNumber(Position::whereNotNull('department_id')->count()))->icon('heroicon-o-building-office-2')
-                ->description("Positions linked to departments")
+            Stat::make('Jabatan Berdasarkan Departemen', $this->formatNumber(Position::whereNotNull('department_id')->count()))->icon('heroicon-o-building-office-2')
+                ->description("Posisi yang terkait dengan departemen")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('primary')

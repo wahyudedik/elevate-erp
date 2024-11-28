@@ -12,7 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Department extends Model
+class Department extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
