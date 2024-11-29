@@ -17,4 +17,9 @@ class Roles extends Model
         'name',
         'guard_name',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 }
