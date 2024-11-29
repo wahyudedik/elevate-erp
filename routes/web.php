@@ -59,9 +59,9 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 // route redirect admin
-Route::get('/login', function () {
-    return redirect('admin/login');
-})->name('login');
+// Route::get('/login', function () {
+//     return redirect('admin/login');
+// })->name('login-page');
 
 Route::get('/', [LandingPageController::class, 'landingPage'])
     ->name('landingPage');
