@@ -31,7 +31,7 @@ class JournalEntryResource extends Resource
     protected static ?string $navigationLabel = 'Journal Entry';
 
     protected static ?string $modelLabel = 'Journal Entry';
-    
+
     protected static ?string $pluralModelLabel = 'Journal Entry';
 
     protected static ?int $navigationSort = 8;
@@ -50,59 +50,58 @@ class JournalEntryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Journal Entry')
+                Forms\Components\Section::make('Entri Jurnal')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
-                            ->label('Branch')
+                            ->label('Cabang')
                             ->searchable()
                             ->preload()
                             ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
                             ->default(now())
-                            ->label('Entry Date')
+                            ->label('Tanggal Entri')
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('description')
                             ->nullable()
-                            ->label('Description')
+                            ->label('Deskripsi')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('entry_type')
                             ->options([
                                 'debit' => 'Debit',
-                                'credit' => 'Credit',
+                                'credit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Entry Type'),
+                            ->label('Tipe Entri'),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
                             ->required()
-                            ->label('Amount')
+                            ->label('Jumlah')
                             ->prefix('IDR')
                             ->maxValue(429494324672.95),
                         Forms\Components\Select::make('account_id')
                             ->relationship('account', 'account_name')
                             ->required()
-                            ->label('Account')
+                            ->label('Akun')
                             ->searchable()
                             ->preload()
                             ->columnSpanFull(),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
                     ->collapsible(),
-            ])
-            ->columns(1);
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -112,26 +111,31 @@ class JournalEntryResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->sortable()
                     ->icon('heroicon-s-building-storefront')
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('entry_date')
-                    ->label('Entry Date')
-                    ->date('Y-m-d')
+                    ->label('Tanggal Entri')
+                    ->date('d M Y')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Description')
+                    ->label('Deskripsi')
                     ->limit(50)
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('entry_type')
-                    ->label('Entry Type')
+                    ->label('Tipe Entri')
                     ->toggleable()
                     ->badge()
                     ->icon(fn(string $state): string => match ($state) {
@@ -144,30 +148,37 @@ class JournalEntryResource extends Resource
                         'danger' => 'credit',
                     ])
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->alignment('right')
+                    ->size('sm')
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('account.account_name')
-                    ->label('Account')
+                    ->label('Akun')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-            ])
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
@@ -344,7 +355,7 @@ class JournalEntryResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Account exported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Akun berhasil diekspor' .  ' ' . now()->format('d-m-Y H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
@@ -353,7 +364,7 @@ class JournalEntryResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Journal Entry')
+                    ->label('Buat Jurnal Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\JournalEntryResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class AccountRelationManager extends RelationManager
 {
@@ -18,25 +19,38 @@ class AccountRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Account Information')
+                Forms\Components\Section::make('Infomasi Akun')
                     ->schema([
+                        Forms\Components\Hidden::make('company_id')
+                            ->default(Filament::getTenant()->id),
+                        Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
+                            ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->nullable()
+                            ->required()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('account_name')
+                            ->label('Nama Akun')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('account_number')
+                            ->label('Nomor Akun')
                             ->required()
                             ->unique(ignorable: fn($record) => $record)
                             ->maxLength(255),
                         Forms\Components\Select::make('account_type')
+                            ->label('Tipe Akun')
                             ->required()
                             ->options([
-                                'asset' => 'Asset',
-                                'liability' => 'Liability',
-                                'equity' => 'Equity',
-                                'revenue' => 'Revenue',
-                                'expense' => 'Expense',
+                                'asset' => 'Asset / Aset',
+                                'liability' => 'Liability / Kewajiban',
+                                'equity' => 'Equity / Modal',
+                                'revenue' => 'Revenue / Pendapatan',
+                                'expense' => 'Expense / Pengeluaran',
                             ]),
                         Forms\Components\TextInput::make('initial_balance')
+                            ->label('Saldo Awal')
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
@@ -48,6 +62,7 @@ class AccountRelationManager extends RelationManager
                                 $set('current_balance', $state);
                             }),
                         Forms\Components\TextInput::make('current_balance')
+                            ->label('Saldo Saat Ini')
                             ->required()
                             ->numeric()
                             ->prefix('IDR')
@@ -59,14 +74,14 @@ class AccountRelationManager extends RelationManager
                             }),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -83,13 +98,27 @@ class AccountRelationManager extends RelationManager
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Cabang')
+                    ->searchable()
+                    ->toggleable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->sortable()
+                    ->alignLeft(),
                 Tables\Columns\TextColumn::make('account_name')
+                    ->label('Nama Akun')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable()
+                    ->alignLeft(),
                 Tables\Columns\TextColumn::make('account_number')
+                    ->label('Nomor Akun')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable()
+                    ->alignLeft(),
                 Tables\Columns\TextColumn::make('account_type')
+                    ->label('Tipe Akun')
                     ->badge()
                     ->toggleable()
                     ->colors([
@@ -99,23 +128,39 @@ class AccountRelationManager extends RelationManager
                         'success' => 'revenue',
                         'info' => 'expense',
                     ])
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('initial_balance')
-                    ->money('IDR')
-                    ->toggleable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('current_balance')
-                    ->money('IDR')
-                    ->toggleable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'asset' => 'Aset',
+                        'liability' => 'Kewajiban',
+                        'equity' => 'Modal',
+                        'revenue' => 'Pendapatan',
+                        'expense' => 'Beban',
+                    })
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('initial_balance')
+                    ->label('Saldo Awal')
+                    ->money('IDR')
+                    ->toggleable()
+                    ->sortable()
+                    ->alignRight(),
+                Tables\Columns\TextColumn::make('current_balance')
+                    ->label('Saldo Saat Ini')
+                    ->money('IDR')
+                    ->toggleable()
+                    ->sortable()
+                    ->alignRight(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui Pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignCenter()
             ])
             ->filters([
                 //
@@ -126,6 +171,7 @@ class AccountRelationManager extends RelationManager
             ->actions([
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([
