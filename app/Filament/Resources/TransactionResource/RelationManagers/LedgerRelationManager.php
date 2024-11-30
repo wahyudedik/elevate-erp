@@ -18,9 +18,7 @@ class LedgerRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('account_id')
-                    ->required()
-                    ->maxLength(255),
+                //
             ]);
     }
 
@@ -32,23 +30,26 @@ class LedgerRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
-                    Tables\Columns\TextColumn::make('account.account_name')
-                    ->label('Account')
+                    ->alignCenter()
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('account.account_name')
+                    ->label('Akun')
                     ->sortable()
                     ->toggleable()
                     ->wrap()
-                    ->searchable(),
+                    ->searchable()
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('transaction_date')
-                    ->label('Transaction Date')
-                    ->date()
+                    ->label('Tanggal Transaksi')
+                    ->date('d M Y')
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_type')
                     ->badge()
                     ->toggleable()
-                    ->label('Transaction Type')
+                    ->label('Tipe Transaksi')
                     ->icon(fn(string $state): string => match ($state) {
                         'credit' => 'heroicon-o-arrow-up-circle',
                         'debit' => 'heroicon-o-arrow-down-circle',
@@ -61,28 +62,33 @@ class LedgerRelationManager extends RelationManager
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Amount')
-                    ->money('IDR')
+                    ->label('Jumlah')
+                    ->money('IDR', true)
+                    ->alignment('right')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('transaction_description')
-                    ->label('Description')
+                    ->label('Deskripsi')
                     ->limit(50)
                     ->wrap()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

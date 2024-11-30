@@ -14,35 +14,34 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Transactions', Transaction::count())
+            Stat::make('Total Transaksi', Transaction::count())
                 ->icon('heroicon-o-currency-dollar')
-                ->description('Total number of transactions')
+                ->description('Jumlah total transaksi')
                 ->descriptionIcon('heroicon-o-chart-bar', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('success'),
-            Stat::make('Completed Transactions', Transaction::where('status', 'completed')->count())
+            Stat::make('Transaksi Selesai', Transaction::where('status', 'completed')->count())
                 ->icon('heroicon-o-check-circle')
-                ->description('Number of completed transactions')
+                ->description('Jumlah transaksi yang selesai')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Total Amount', function () {
+            Stat::make('Total Nominal', function () {
                 return $this->formatNumber(Transaction::sum('amount'));
             })
                 ->icon('heroicon-o-banknotes')
-                ->description('Total transaction amount')
+                ->description('Total nominal transaksi')
                 ->descriptionIcon('heroicon-o-chart-bar', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Average Transaction Amount', function () {
+            Stat::make('Rata-rata Nominal Transaksi', function () {
                 return $this->formatNumber(Transaction::avg('amount'));
             })
                 ->icon('heroicon-o-calculator')
-                ->description('Average amount per transaction')
+                ->description('Rata-rata nominal per transaksi')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('warning'),
-
         ];
     }
 

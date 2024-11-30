@@ -13,10 +13,10 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Transactions', function () {
+            Stat::make('Total Transaksi', function () {
                 return $this->formatNumber(Ledger::count());
             })->icon('heroicon-o-document-text')
-                ->description('Total number of ledger entries')
+                ->description('Jumlah total entri buku besar')
                 ->descriptionIcon('heroicon-o-information-circle', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
@@ -24,23 +24,23 @@ class AdvancedStatsOverviewWidget extends BaseWidget
             Stat::make('Total Debit', function () {
                 return $this->formatNumber(Ledger::where('transaction_type', 'debit')->sum('amount'));
             })->icon('heroicon-o-arrow-trending-down')
-                ->description('Total debit amount')
+                ->description('Jumlah total debit')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
 
-            Stat::make('Total Credit', function () {
+            Stat::make('Total Kredit', function () {
                 return $this->formatNumber(Ledger::where('transaction_type', 'credit')->sum('amount'));
             })->icon('heroicon-o-arrow-trending-up')
-                ->description('Total credit amount')
+                ->description('Jumlah total kredit')
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
 
-            Stat::make('Latest Transaction Date', function () {
+            Stat::make('Tanggal Transaksi Terakhir', function () {
                 return $this->formatDate(Ledger::latest('transaction_date')->value('transaction_date'));
             })->icon('heroicon-o-calendar')
-                ->description('Most recent transaction')
+                ->description('Transaksi terbaru')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),

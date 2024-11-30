@@ -29,18 +29,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
         ->name('supplier-transactions.print');
 
-    // print journal entry
-    Route::get('journal-entries/{journalEntry}/print', [JournalEntryController::class, 'print'])
-        ->name('journal-entries.print');
-
-    // print ledger
-    Route::get('/ledger/{ledger}/print', [LedgerController::class, 'print'])
-        ->name('ledger.print');
-
-    // print transaction
-    Route::get('/transaction/{transaction}/print', [TransactionController::class, 'print'])
-        ->name('transaction.print-receipt');
-
     // print balance sheet
     Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::class, 'report'])
         ->name('balance-sheet.report');

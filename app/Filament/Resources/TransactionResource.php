@@ -34,7 +34,7 @@ class TransactionResource extends Resource
     protected static ?string $navigationLabel = 'Transaksi';
 
     protected static ?string $modelLabel = 'Transaksi';
-    
+
     protected static ?string $pluralModelLabel = 'Transaksi';
 
     protected static ?int $navigationSort = 10;
@@ -47,7 +47,7 @@ class TransactionResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'transaction';
 
-    protected static ?string $navigationGroup = 'Book Keeping';
+    protected static ?string $navigationGroup = 'Buku Besar';
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
@@ -55,14 +55,14 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Transaction Details')
+                Forms\Components\Section::make('Detail Transaksi')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'Active'))
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->label('Branch'),
+                            ->label('Cabang'),
                         Forms\Components\Select::make('ledger_id')
                             ->relationship('ledger', 'transaction_date')
                             ->searchable()
@@ -75,34 +75,34 @@ class TransactionResource extends Resource
                                     ->required()
                                     ->searchable()
                                     ->preload()
-                                    ->label('Branch'),
+                                    ->label('Cabang'),
                                 Forms\Components\Select::make('account_id')
                                     ->relationship('account', 'account_name')
                                     ->required()
                                     ->searchable()
                                     ->preload()
-                                    ->label('Account'),
+                                    ->label('Akun'),
                                 Forms\Components\DatePicker::make('transaction_date')
                                     ->required()
-                                    ->label('Transaction Date'),
+                                    ->label('Tanggal Transaksi'),
                                 Forms\Components\Select::make('transaction_type')
                                     ->options([
                                         'debit' => 'Debit',
-                                        'credit' => 'Credit',
+                                        'credit' => 'Kredit',
                                     ])
                                     ->required()
-                                    ->label('Transaction Type'),
+                                    ->label('Tipe Transaksi'),
                                 Forms\Components\TextInput::make('amount')
                                     ->numeric()
                                     ->required()
                                     ->rule('decimal:0,2')
-                                    ->label('Amount'),
+                                    ->label('Jumlah'),
                                 Forms\Components\Textarea::make('transaction_description')
                                     ->nullable()
                                     ->columnSpanFull()
-                                    ->label('Transaction Description'),
+                                    ->label('Deskripsi Transaksi'),
                             ])
-                            ->label('Ledger'),
+                            ->label('Buku Besar'),
                         Forms\Components\TextInput::make('transaction_number')
                             ->required()
                             ->readOnly()
@@ -129,14 +129,14 @@ class TransactionResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -151,37 +151,59 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
-                    ->searchable(),
+                    ->iconColor('primary')
+                    ->searchable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('ledger.transaction_date')
-                    ->label('Ledger')
+                    ->label('Buku Besar')
                     ->sortable()
+                    ->date()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->icon('heroicon-o-calendar')
+                    ->iconColor('success'),
                 Tables\Columns\TextColumn::make('transaction_number')
-                    ->label('Transaction Number')
+                    ->label('Nomor Transaksi')
                     ->searchable()
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm')
+                    ->icon('heroicon-o-hashtag')
+                    ->iconColor('warning')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
                     ->toggleable()
+                    ->size('sm')
                     ->colors([
                         'danger' => 'failed',
                         'warning' => 'pending',
                         'success' => 'completed',
                     ]),
                 Tables\Columns\TextColumn::make('amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->iconColor('danger')
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('notes')
+                    ->label('Catatan')
                     ->limit(50)
                     ->toggleable()
+                    ->size('sm')
+                    ->icon('heroicon-o-document-text')
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         if (strlen($state) <= 50) {
@@ -190,20 +212,23 @@ class TransactionResource extends Resource
                         return $state;
                     }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
+                    ->size('sm')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui Pada')
                     ->dateTime()
                     ->sortable()
+                    ->size('sm')
                     ->toggleable(isToggledHiddenByDefault: true)
-
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
-                    ->label('Branch')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                    ->label('Cabang')
                     ->multiple()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('status')
@@ -223,9 +248,9 @@ class TransactionResource extends Resource
                 Tables\Filters\Filter::make('created_range')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Created From'),
+                            ->label('Dibuat Dari'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Created Until'),
+                            ->label('Dibuat Sampai'),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -247,7 +272,7 @@ class TransactionResource extends Resource
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\Action::make('changeStatus')
-                        ->label('Change Status')
+                        ->label('Ubah Status')
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')
                         ->form([
@@ -262,12 +287,12 @@ class TransactionResource extends Resource
                         ->action(function (Transaction $record, array $data) {
                             $record->update(['status' => $data['status']]);
                             Notification::make()
-                                ->title('Status updated successfully')
+                                ->title('Status berhasil diperbarui')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('addNote')
-                        ->label('Add Note')
+                        ->label('Tambah Catatan')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')
                         ->form([
                             Forms\Components\Textarea::make('notes')
@@ -277,19 +302,25 @@ class TransactionResource extends Resource
                         ->action(function (Transaction $record, array $data) {
                             $record->update(['notes' => $data['notes']]);
                             Notification::make()
-                                ->title('Note added successfully')
+                                ->title('Catatan berhasil ditambahkan')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('printReceipt')
-                        ->label('Print Receipt')
+                        ->label('Cetak Kwitansi')
                         ->icon('heroicon-o-printer')
-                        ->url(fn(Transaction $record) => route('transaction.print-receipt', $record))
-                        ->openUrlInNewTab()
+                        ->color('success')
+                        ->action(function (Transaction $record) {
+                            $pdf = app('dompdf.wrapper')->loadView('pdf.receipt', ['transaction' => $record]);
+                            return response()->streamDownload(function () use ($pdf) {
+                                echo $pdf->output();
+                            }, 'receipt-' . $record->id . '.pdf');
+                        })
                 ])
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Transaksi Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
@@ -298,8 +329,7 @@ class TransactionResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Transactions exported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
+                                ->title('Transaksi berhasil diekspor' . ' ' . now()->toDateTimeString())->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -309,8 +339,7 @@ class TransactionResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Transactions imported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
+                                ->title('Transaksi berhasil diimpor' . ' ' . now()->toDateTimeString())->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -322,7 +351,7 @@ class TransactionResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('changeStatus')
-                        ->label('Change Status')
+                        ->label('Ubah Status')
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')
                         ->form([
@@ -344,7 +373,7 @@ class TransactionResource extends Resource
                                 ->send();
                         }),
                     Tables\Actions\BulkAction::make('addNote')
-                        ->label('Add Note')
+                        ->label('Tambah Catatan')
                         ->icon('heroicon-o-chat-bubble-left-ellipsis')
                         ->form([
                             Forms\Components\Textarea::make('notes')
@@ -366,7 +395,7 @@ class TransactionResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Transactions exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Transaksi berhasil diekspor' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
@@ -375,7 +404,7 @@ class TransactionResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Transaction')
+                    ->label('Buat Transaksi Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

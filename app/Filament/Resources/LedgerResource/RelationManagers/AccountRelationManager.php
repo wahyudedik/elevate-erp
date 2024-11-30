@@ -14,13 +14,13 @@ class AccountRelationManager extends RelationManager
 {
     protected static string $relationship = 'account';
 
+    protected static ?string $title = 'Akun';
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('account_id')
-                    ->required()
-                    ->maxLength(255),
+                //
             ]);
     }
 
@@ -32,14 +32,30 @@ class AccountRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Cabang')
+                    ->sortable()
+                    ->toggleable()
+                    ->icon('heroicon-o-building-storefront')
+                    ->iconColor('primary')
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('account_name')
+                    ->label('Nama Akun')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('medium')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('account_number')
+                    ->label('Nomor Akun')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->fontFamily('mono')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('account_type')
+                    ->label('Tipe Akun')
                     ->badge()
                     ->toggleable()
                     ->colors([
@@ -49,23 +65,42 @@ class AccountRelationManager extends RelationManager
                         'success' => 'revenue',
                         'info' => 'expense',
                     ])
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('initial_balance')
-                    ->money('IDR')
-                    ->toggleable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('current_balance')
-                    ->money('IDR')
-                    ->toggleable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'asset' => 'Aset',
+                        'liability' => 'Kewajiban',
+                        'equity' => 'Modal',
+                        'revenue' => 'Pendapatan',
+                        'expense' => 'Beban',
+                    })
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('initial_balance')
+                    ->label('Saldo Awal')
+                    ->money('IDR')
+                    ->toggleable()
+                    ->sortable()
+                    ->alignment('right')
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('current_balance')
+                    ->label('Saldo Saat Ini')
+                    ->money('IDR')
+                    ->toggleable()
+                    ->sortable()
+                    ->alignment('right')
+                    ->weight('bold')
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui Pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
             ])
             ->filters([
                 //

@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
@@ -14,14 +15,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Ledger extends Model
+class Ledger extends BaseModel
 {
     use HasFactory, SoftDeletes, Notifiable, LogsActivity;
-
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
 
     protected $table = 'ledgers';
 

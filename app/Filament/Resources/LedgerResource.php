@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Barryvdh\DomPDF\PDF;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
@@ -36,7 +37,7 @@ class LedgerResource extends Resource
     protected static ?string $navigationLabel = 'Buku Besar';
 
     protected static ?string $modelLabel = 'Buku Besar';
-    
+
     protected static ?string $pluralModelLabel = 'Buku Besar';
 
     protected static ?string $cluster = ledgers::class;
@@ -49,7 +50,7 @@ class LedgerResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'ledger';
 
-    protected static ?string $navigationGroup = 'Book Keeping';
+    protected static ?string $navigationGroup = 'Buku Besar';
 
     protected static ?string $navigationIcon = 'tabler-report-analytics';
 
@@ -57,49 +58,65 @@ class LedgerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Ledger Details')
+                Forms\Components\Section::make('Buku Besar Data')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->label('Branch'),
+                            ->live()
+                            ->native(false)
+                            ->placeholder('Pilih Cabang')
+                            ->label('Cabang'),
                         Forms\Components\Select::make('account_id')
-                            ->relationship('account', 'account_name')
+                            ->relationship(
+                                'account',
+                                'account_name',
+                                fn(Builder $query, $get) =>
+                                $query->when(
+                                    $get('branch_id'),
+                                    fn($query, $branch_id) =>
+                                    $query->where('branch_id', $branch_id)
+                                )
+                            )
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->label('Account'),
+                            ->native(false)
+                            ->placeholder('Pilih Akun')
+                            ->label('Akun')
+                            ->disabled(fn($get) => ! $get('branch_id')),
                         Forms\Components\DatePicker::make('transaction_date')
                             ->required()
                             ->default(now())
-                            ->label('Transaction Date'),
+                            ->label('Tanggal Transaksi'),
                         Forms\Components\Select::make('transaction_type')
                             ->options([
                                 'debit' => 'Debit',
-                                'credit' => 'Credit',
+                                'credit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Transaction Type'),
+                            ->label('Jenis Transaksi'),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
                             ->default(0)
+                            ->required()
                             ->rule('decimal:0,2')
-                            ->label('Amount'),
-                        Forms\Components\Textarea::make('transaction_description')
+                            ->label('Jumlah'),
+                        Forms\Components\RichEditor::make('transaction_description')
                             ->nullable()
                             ->columnSpanFull()
-                            ->label('Transaction Description'),
+                            ->label('Deskripsi Transaksi'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -114,29 +131,34 @@ class LedgerResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->sortable()
                     ->toggleable()
                     ->icon('heroicon-o-building-storefront')
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('account.account_name')
-                    ->label('Account')
+                    ->label('Akun')
                     ->sortable()
                     ->toggleable()
                     ->wrap()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_date')
-                    ->label('Transaction Date')
+                    ->label('Tanggal Transaksi')
                     ->date()
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_type')
                     ->badge()
                     ->toggleable()
-                    ->label('Transaction Type')
+                    ->label('Jenis Transaksi')
                     ->icon(fn(string $state): string => match ($state) {
                         'credit' => 'heroicon-o-arrow-up-circle',
                         'debit' => 'heroicon-o-arrow-down-circle',
@@ -147,49 +169,59 @@ class LedgerResource extends Resource
                         'danger' => 'credit',
                     ])
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->alignment('right')
+                    ->weight('bold')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('transaction_description')
-                    ->label('Description')
+                    ->label('Deskripsi')
                     ->limit(50)
                     ->wrap()
+                    ->html()
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Diperbarui Pada')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
             ])
             ->defaultSort('transaction_date', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', ['active', 'inactive']))
                     ->searchable()
+                    ->label('Cabang')
                     ->preload()
                     ->label('Branch'),
                 Tables\Filters\SelectFilter::make('account')
                     ->relationship('account', 'account_name')
                     ->searchable()
+                    ->label('Akun')
                     ->preload()
                     ->label('Account'),
                 Tables\Filters\Filter::make('transaction_date')
                     ->form([
                         Forms\Components\DatePicker::make('from')
-                            ->label('From Date'),
+                            ->label('Dari Tanggal'),
                         Forms\Components\DatePicker::make('until')
-                            ->label('Until Date'),
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -218,36 +250,6 @@ class LedgerResource extends Resource
                         'credit' => 'Credit',
                     ])
                     ->label('Transaction Type'),
-                Tables\Filters\Filter::make('amount')
-                    ->form([
-                        Forms\Components\TextInput::make('min')
-                            ->label('Minimum Amount')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('max')
-                            ->label('Maximum Amount')
-                            ->numeric(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min'],
-                                fn(Builder $query, $min): Builder => $query->where('amount', '>=', $min),
-                            )
-                            ->when(
-                                $data['max'],
-                                fn(Builder $query, $max): Builder => $query->where('amount', '<=', $max),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['min'] ?? null) {
-                            $indicators['min'] = 'Min: $' . number_format($data['min'], 2);
-                        }
-                        if ($data['max'] ?? null) {
-                            $indicators['max'] = 'Max: $' . number_format($data['max'], 2);
-                        }
-                        return $indicators;
-                    })->columns(2),
                 Tables\Filters\TernaryFilter::make('transaction_description')
                     ->label('Has Description')
                     ->nullable(),
@@ -263,12 +265,37 @@ class LedgerResource extends Resource
                         ->label('Print')
                         ->icon('heroicon-o-printer')
                         ->color('success')
-                        ->url(fn(Ledger $record): string => route('ledger.print', $record))
-                        ->openUrlInNewTab(),
+                        ->action(function (Ledger $record) {
+                            $data = [
+                                'ledger' => $record,
+                                'transactions' => $record->transactions()
+                                    ->with(['company', 'branch'])
+                                    ->orderBy('created_at', 'desc')
+                                    ->get(),
+                                'totalPending' => $record->transactions()
+                                    ->where('status', 'pending')
+                                    ->sum('amount'),
+                                'totalCompleted' => $record->transactions()
+                                    ->where('status', 'completed')
+                                    ->sum('amount'),
+                                'totalFailed' => $record->transactions()
+                                    ->where('status', 'failed')
+                                    ->sum('amount'),
+                                'totalAmount' => $record->transactions()
+                                    ->where('status', 'completed')
+                                    ->sum('amount')
+                            ];
+
+                            $pdf = app('dompdf.wrapper')->loadView('pdf.ledger', $data);
+                            return response()->streamDownload(function () use ($pdf) {
+                                echo $pdf->output();
+                            }, 'ledger-' . $record->id . '.pdf');
+                        })
                 ]),
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Buku Besar Baru')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
@@ -277,8 +304,7 @@ class LedgerResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Ledger exported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
+                                ->title('Buku Besar berhasil diekspor' . ' ' . now()->toDateTimeString())->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -288,8 +314,7 @@ class LedgerResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Ledger imported successfully' . ' ' . now()->toDateTimeString())
-                                ->icon('heroicon-o-check-circle')
+                                ->title('Buku Besar berhasil diimpor' . ' ' . now()->toDateTimeString())->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -301,7 +326,7 @@ class LedgerResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateTransactionType')
-                        ->label('Update Transaction Type')
+                        ->label('Ubah Tipe Transaksi')
                         ->icon('heroicon-o-arrow-path')
                         ->requiresConfirmation()
                         ->form([
@@ -322,7 +347,7 @@ class LedgerResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('updateTransactionDate')
-                        ->label('Update Transaction Date')
+                        ->label('Ubah Tanggal Transaksi')
                         ->icon('heroicon-o-calendar')
                         ->requiresConfirmation()
                         ->form([
@@ -344,15 +369,16 @@ class LedgerResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Ledger exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Buku Besar berhasil diekspor' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ])->label('Bulk Actions'),
+                    ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
+                    ->label('Buat Buku Besar Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

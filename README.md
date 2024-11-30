@@ -16,6 +16,8 @@ Perbaikan :
 - [x] bug dan bahasa indonesia => Departemen
 - [x] bug dan bahasa indonesia => Jabatan
 - [x] bug dan bahasa indonesia => Akuntansi
+- [x] bug dan bahasa indonesia => Jurnal
+- [x] bug dan bahasa indonesia => Buku Besar
 
 Fitur Admin :
 - [x] fitur login
@@ -32,3 +34,11 @@ Fitur Admin :
 - [x] fitur jabatan
 - [x] fitur Akun Transfer ke akun lain
 - [x] fitur akutansi
+- [x] fitur jurnal
+- [x] fitur bukuu besar dan transaksi
+
+
+bug : 
+- [] Deployment error fitur permission super-admin dan register/login
+- [] Actifyti log error belum setting per company
+- [x] Email Verification port .env dan .env.example

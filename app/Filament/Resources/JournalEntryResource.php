@@ -4,11 +4,14 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use Barryvdh\DomPDF\PDF;
+use Doctrine\DBAL\Query;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,8 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\JournalEntryResource\Pages;
 use App\Filament\Resources\JournalEntryResource\RelationManagers;
 use App\Filament\Resources\JournalEntryResource\RelationManagers\AccountRelationManager;
-use Doctrine\DBAL\Query;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 
 class JournalEntryResource extends Resource
 {
@@ -64,7 +66,7 @@ class JournalEntryResource extends Resource
                             ->default(now())
                             ->label('Tanggal Entri')
                             ->columnSpanFull(),
-                        Forms\Components\Textarea::make('description')
+                        Forms\Components\RichEditor::make('description')
                             ->nullable()
                             ->label('Deskripsi')
                             ->columnSpanFull(),
@@ -131,6 +133,7 @@ class JournalEntryResource extends Resource
                 Tables\Columns\TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(50)
+                    ->html()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('sm'),
@@ -183,7 +186,7 @@ class JournalEntryResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
                     ->relationship('branch', 'name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->multiple()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('entry_type')
@@ -191,59 +194,13 @@ class JournalEntryResource extends Resource
                         'debit' => 'Debit',
                         'credit' => 'Credit',
                     ])
-                    ->label('Entry Type')
+                    ->label('Tipe Entri')
                     ->indicator('Entry Type'),
-
-                Tables\Filters\Filter::make('amount')
-                    ->form([
-                        Forms\Components\TextInput::make('amount_from')
-                            ->label('From')
-                            ->numeric()
-                            ->prefix('IDR'),
-                        Forms\Components\TextInput::make('amount_to')
-                            ->label('To')
-                            ->numeric()
-                            ->prefix('IDR'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['amount_from'],
-                                fn(Builder $query, $amount): Builder => $query->where('amount', '>=', $amount),
-                            )
-                            ->when(
-                                $data['amount_to'],
-                                fn(Builder $query, $amount): Builder => $query->where('amount', '<=', $amount),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['amount_from'] ?? null) {
-                            $indicators['amount_from'] = 'Amount from: IDR ' . number_format($data['amount_from'], 2);
-                        }
-                        if ($data['amount_to'] ?? null) {
-                            $indicators['amount_to'] = 'Amount to: IDR ' . number_format($data['amount_to'], 2);
-                        }
-                        return $indicators;
-                    })->columns(2),
 
                 Tables\Filters\SelectFilter::make('account_id')
                     ->relationship('account', 'account_name')
-                    ->label('Account')
+                    ->label('Akun')
                     ->indicator('Account'),
-
-                Tables\Filters\TernaryFilter::make('description')
-                    ->label('Has Description')
-                    ->nullable()
-                    ->placeholder('All entries')
-                    ->trueLabel('With description')
-                    ->falseLabel('Without description')
-                    ->queries(
-                        true: fn(Builder $query) => $query->whereNotNull('description'),
-                        false: fn(Builder $query) => $query->whereNull('description'),
-                    )
-                    ->indicator('Description Status'),
-
             ])
             ->actions([
                 ActionGroup::make([
@@ -253,14 +210,21 @@ class JournalEntryResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('print')
-                        ->label('Print')
+                        ->label('Print Journal Entry')
                         ->icon('heroicon-o-printer')
                         ->color('success')
-                        ->url(fn(JournalEntry $record): string => route('journal-entries.print', $record))
-                        ->openUrlInNewTab(),
+                        ->action(function (JournalEntry $record) {
+                            $pdf = app('dompdf.wrapper')->loadView('pdf.journal-entry', ['journalEntry' => $record]);
+                            return response()->streamDownload(function () use ($pdf) {
+                                echo $pdf->output();
+                            }, 'journal-entry-' . $record->id . '.pdf');
+                        })
                 ])
             ])
             ->headerActions([
+                CreateAction::make()
+                ->label('Buat Jurnal Baru')
+                ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(JournalEntryExporter::class)
@@ -268,7 +232,7 @@ class JournalEntryResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Journal Entry exported successfully' . ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Jurnal berhasil diekspor' . ' ' . now()->format('d-m-Y H:i:s'))
                                 ->success()
                                 ->icon('heroicon-o-check-circle')
                                 ->sendToDatabase(Auth::user());
@@ -279,20 +243,19 @@ class JournalEntryResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Journal Entry imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Jurnal berhasil diimpor' .  ' ' . now()->format('d-m-Y H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
                 ])->icon('heroicon-o-cog-6-tooth'),
-            ])
-            ->bulkActions([
+            ])->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateEntryType')
-                        ->label('Update Entry Type')
+                        ->label('Ubah Tipe Entri')
                         ->icon('heroicon-o-pencil-square')
                         ->color('primary')
                         ->form([
@@ -313,7 +276,7 @@ class JournalEntryResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('updateAmount')
-                        ->label('Update Amount')
+                        ->label('Ubah Jumlah')
                         ->icon('heroicon-o-currency-dollar')
                         ->color('success')
                         ->form([
@@ -332,7 +295,7 @@ class JournalEntryResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('updateAccount')
-                        ->label('Update Account')
+                        ->label('Ubah Akun')
                         ->icon('heroicon-o-building-office')
                         ->color('warning')
                         ->form([

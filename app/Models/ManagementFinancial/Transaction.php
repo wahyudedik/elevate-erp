@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
@@ -15,14 +16,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Transaction extends Model
+class Transaction extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
-
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
 
     protected $table = 'transactions';
 

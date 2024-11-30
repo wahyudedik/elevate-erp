@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Pages\Tenancy\RegisterTenant;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Spatie\Permission\Models\Role;
 
 class RegisterTeam extends RegisterTenant
 {
@@ -36,7 +37,7 @@ class RegisterTeam extends RegisterTenant
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255)
-                    ->live(onBlur:true)
+                    ->live(onBlur: true)
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
                 TextInput::make('slug')
                     ->required()
@@ -56,5 +57,21 @@ class RegisterTeam extends RegisterTenant
         $company->members()->attach(Auth::user());
 
         return $company;
+    }
+
+    protected function afterCreate(): void
+    {
+        $user = Auth::user();
+        $company = $this->tenant;
+
+        // Assign superadmin role to the user for the new tenant
+        $role = Role::firstOrCreate([
+            'name' => 'super_admin',
+            'guard_name' => 'web',
+            'company_id' => $company->id
+        ]);
+        // $user->assignRole($role);
+
+        parent::afterCreate();
     }
 }

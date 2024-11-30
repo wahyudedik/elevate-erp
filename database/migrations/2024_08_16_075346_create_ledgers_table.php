@@ -4,18 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration  
+return new class extends Migration
 {
     /** 
      * Run the migrations. 
-     */ 
-    public function up(): void  
+     */
+    public function up(): void
     {
         Schema::create('ledgers', function (Blueprint $table) {
-            $table->id(); 
+            $table->id();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
-            $table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
             $table->date('transaction_date');
             $table->enum('transaction_type', ['debit', 'credit']);
             $table->decimal('amount', 15, 2);
@@ -27,8 +27,8 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
-            $table->foreignId('ledger_id')->nullable()->constrained('ledgers')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->foreignId('ledger_id')->constrained('ledgers')->onDelete('cascade');
             $table->string('transaction_number')->unique();
             $table->enum('status', ['pending', 'completed', 'failed']);
             $table->decimal('amount', 15, 2);
