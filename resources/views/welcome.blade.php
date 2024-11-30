@@ -361,7 +361,7 @@
                             Anda lebih cerdas dan lebih cepat!"</p>
                     </div>
                     <div class="col-xl-3 cta-btn-container text-center">
-                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/081654932383">Register
+                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/6281654932383">Register
                             Now</a>
                     </div>
                 </div>
