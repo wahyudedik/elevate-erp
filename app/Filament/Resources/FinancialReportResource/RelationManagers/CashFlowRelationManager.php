@@ -24,6 +24,10 @@ class CashFlowRelationManager extends RelationManager
 {
     protected static string $relationship = 'cashFlow';
 
+    protected static ?string $title = 'Arus Kas';
+
+    protected static ?string $label = 'Arus Kas';
+
     public function form(Form $form): Form
     {
         return $form

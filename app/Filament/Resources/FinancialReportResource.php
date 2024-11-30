@@ -36,7 +36,7 @@ class FinancialReportResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Keuangan';
 
     protected static ?string $modelLabel = 'Laporan Keuangan';
-    
+
     protected static ?string $pluralModelLabel = 'Laporan Keuangan';
 
     protected static ?string $cluster = FinancialReporting::class;
@@ -49,7 +49,7 @@ class FinancialReportResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'financialReport';
 
-    protected static ?string $navigationGroup = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Laporan Keuangan';
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
@@ -57,42 +57,48 @@ class FinancialReportResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Financial Report')
+                Forms\Components\Section::make('Laporan Keuangan')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->searchable()
                             ->preload()
+                            ->label('Cabang')
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('report_name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->label('Nama Laporan'),
                         Forms\Components\Select::make('report_type')
                             ->options([
-                                'balance_sheet' => 'Balance Sheet',
-                                'income_statement' => 'Income Statement',
-                                'cash_flow' => 'Cash Flow',
+                                'balance_sheet' => 'Neraca',
+                                'income_statement' => 'Laporan Laba Rugi',
+                                'cash_flow' => 'Arus Kas',
                             ])
+                            ->label('Jenis Laporan')
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_start')
                             ->default(now())
-                            ->required(),
+                            ->required()
+                            ->label('Periode Awal'),
                         Forms\Components\DatePicker::make('report_period_end')
-                            ->required(),
+                            ->required()
+                            ->label('Periode Akhir'),
                         Forms\Components\RichEditor::make('notes')
                             ->columnSpanFull()
-                            ->nullable(),
+                            ->nullable()
+                            ->label('Catatan'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)

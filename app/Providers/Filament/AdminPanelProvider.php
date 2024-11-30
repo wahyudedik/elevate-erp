@@ -103,11 +103,11 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Webchat')
-                    ->url(fn(): string => Webchat::getUrl())
+                    ->url(fn(): string => Webchat::getUrl(tenant: Filament::getTenant()))
                     ->icon('heroicon-m-chat-bubble-left-right'),
                 MenuItem::make()
                     ->label('CCTV')
-                    ->url(fn(): string => cctv::getUrl())
+                    ->url(fn(): string => cctv::getUrl(tenant: Filament::getTenant()))
                     ->icon('heroicon-m-video-camera'),
                 // MenuItem::make()
                 //     ->label('Wallet')
