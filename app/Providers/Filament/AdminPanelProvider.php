@@ -103,11 +103,13 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Webchat')
-                    ->url(fn(): string => Webchat::getUrl(['tenant' => Filament::getTenant()->slug]))
+                    ->url(fn(): string => Filament::getTenant() ? Webchat::getUrl(['tenant' => Filament::getTenant()->slug]) : '#')
+                    ->visible(fn(): bool => Filament::getTenant() !== null)
                     ->icon('heroicon-m-chat-bubble-left-right'),
                 MenuItem::make()
                     ->label('CCTV')
-                    ->url(fn(): string => cctv::getUrl(['tenant' => Filament::getTenant()->slug]))
+                    ->url(fn(): string => Filament::getTenant() ? cctv::getUrl(['tenant' => Filament::getTenant()->slug]) : '#')
+                    ->visible(fn(): bool => Filament::getTenant() !== null)
                     ->icon('heroicon-m-video-camera'),
                 // MenuItem::make()
                 //     ->label('Wallet')
