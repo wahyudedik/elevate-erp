@@ -49,7 +49,7 @@ class AdvancedStatsOverviewWidget extends BaseWidget
 
     protected function formatDate($date)
     {
-        return $date->format('d M Y');
+        return $date ? $date->format('d M Y') : 'No date';
     }
 
     protected function formatNumber($number)
