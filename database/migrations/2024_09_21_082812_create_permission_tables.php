@@ -46,7 +46,7 @@ return new class extends Migration
             $table->string('guard_name'); // For MyISAM use string('guard_name', 25);
             $table->timestamps();
             if ($teams || config('permission.testing')) {
-                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
+                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']); 
             } else {
                 $table->unique(['name', 'guard_name']);
             }
