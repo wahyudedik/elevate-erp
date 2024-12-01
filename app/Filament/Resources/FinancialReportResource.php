@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Clusters\FinancialReporting;
 use Filament\Forms;
 use Filament\Tables;
+use Barryvdh\DomPDF\PDF;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Mail\SendEmailFinancialReportMail;
 use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Clusters\FinancialReporting;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Exports\FinancialReportExporter;
 use App\Filament\Imports\FinancialReportImporter;
@@ -27,7 +29,6 @@ use App\Filament\Resources\FinancialReportResource\RelationManagers;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\CashFlowRelationManager;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\BalanceSheetRelationManager;
 use App\Filament\Resources\FinancialReportResource\RelationManagers\IncomeStatementRelationManager;
-use Filament\Tables\Actions\CreateAction;
 
 class FinancialReportResource extends Resource
 {
@@ -113,23 +114,32 @@ class FinancialReportResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->iconColor('primary')
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('report_name')
+                    ->label('Nama Laporan')
                     ->searchable()
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->grow(false),
                 Tables\Columns\TextColumn::make('report_type')
+                    ->label('Jenis Laporan')
                     ->badge()
-                    ->colors([
-                        'primary' => 'balance_sheet',
-                        'success' => 'income_statement',
-                        'danger' => 'cash_flow',
-                    ])
+                    ->color(fn(string $state): string => match ($state) {
+                        'balance_sheet' => 'info',
+                        'income_statement' => 'success',
+                        'cash_flow' => 'danger',
+                    })
                     ->icons([
                         'balance_sheet' => 'heroicon-o-scale',
                         'income_statement' => 'heroicon-o-currency-dollar',
@@ -138,50 +148,60 @@ class FinancialReportResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_start')
-                    ->date()
+                    ->label('Periode Awal')
+                    ->date('d M Y')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('report_period_end')
-                    ->date()
+                    ->label('Periode Akhir')
+                    ->date('d M Y')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('notes')
+                    ->label('Catatan')
                     ->searchable()
                     ->limit(50)
                     ->tooltip(fn(string $state): string => $state)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diubah')
+                    ->since()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
-                    ->relationship('branch', 'name')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('report_type')
                     ->options([
-                        'balance_sheet' => 'Balance Sheet',
-                        'income_statement' => 'Income Statement',
-                        'cash_flow' => 'Cash Flow',
+                        'balance_sheet' => 'Neraca',
+                        'income_statement' => 'Laporan Laba Rugi',
+                        'cash_flow' => 'Arus Kas',
                     ])
-                    ->label('Report Type')
+                    ->label('Tipe Laporan')
                     ->multiple()
                     ->preload(),
 
                 Tables\Filters\Filter::make('report_period')
                     ->form([
                         Forms\Components\DatePicker::make('report_period_start')
-                            ->label('Start Date'),
+                            ->label('Tanggal Mulai'),
                         Forms\Components\DatePicker::make('report_period_end')
-                            ->label('End Date'),
+                            ->label('Tanggal Selesai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -196,10 +216,10 @@ class FinancialReportResource extends Resource
                     })->columns(2),
 
                 Tables\Filters\TernaryFilter::make('has_notes')
-                    ->label('Has Notes')
-                    ->placeholder('All Reports')
-                    ->trueLabel('With Notes')
-                    ->falseLabel('Without Notes')
+                    ->label('Memiliki Catatan')
+                    ->placeholder('Semua Laporan')
+                    ->trueLabel('Dengan Catatan')
+                    ->falseLabel('Tanpa Catatan')
                     ->queries(
                         true: fn(Builder $query) => $query->whereNotNull('notes'),
                         false: fn(Builder $query) => $query->whereNull('notes'),
@@ -212,12 +232,43 @@ class FinancialReportResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\Action::make('print_report')
-                        ->label('Print Report')
-                        ->icon('heroicon-o-printer')
-                        ->color('success')
-                        ->url(fn(FinancialReport $record): string => route('financial-report.print', $record))
-                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('generate_pdf')
+                        ->label('Cetak PDF')
+                        ->icon('heroicon-o-document')
+                        ->color('warning')
+                        ->action(function (FinancialReport $record) {
+                            $pdf = null;
+
+                            switch ($record->report_type) {
+                                case 'balance_sheet':
+                                    $balanceSheet = $record->balanceSheet;
+                                    $pdf = app('dompdf.wrapper')->loadView('pdf.balance-sheet', [
+                                        'report' => $record,
+                                        'balanceSheet' => $balanceSheet
+                                    ]);
+                                    break;
+
+                                case 'income_statement':
+                                    $incomeStatement = $record->incomeStatement;
+                                    $pdf = app('dompdf.wrapper')->loadView('pdf.income-statement', [
+                                        'report' => $record,
+                                        'incomeStatement' => $incomeStatement
+                                    ]);
+                                    break;
+
+                                case 'cash_flow':
+                                    $cashFlow = $record->cashFlow;
+                                    $pdf = app('dompdf.wrapper')->loadView('pdf.cash-flow', [
+                                        'report' => $record,
+                                        'cashFlow' => $cashFlow
+                                    ]);
+                                    break;
+                            }
+
+                            return response()->streamDownload(function () use ($pdf) {
+                                echo $pdf->output();
+                            }, $record->report_name . '.pdf');
+                        }),
                     Tables\Actions\Action::make('send_email')
                         ->label('Send Email')
                         ->icon('heroicon-o-envelope')
@@ -251,25 +302,28 @@ class FinancialReportResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Laporan Keuangan')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
+                        ->label('Ekspor Laporan Keuangan')
                         ->exporter(FinancialReportExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Finance Report exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Laporan Keuangan berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()
+                        ->label('Impor Laporan Keuangan')
                         ->importer(FinancialReportImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Finance Report imported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Laporan Keuangan berhasil diimpor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -281,16 +335,16 @@ class FinancialReportResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateReportType')
-                        ->label('Update Report Type')
+                        ->label('Perbarui Tipe Laporan')
                         ->icon('heroicon-o-document-text')
                         ->color('primary')
                         ->form([
                             Forms\Components\Select::make('report_type')
-                                ->label('Report Type')
+                                ->label('Tipe Laporan')
                                 ->options([
-                                    'balance_sheet' => 'Balance Sheet',
-                                    'income_statement' => 'Income Statement',
-                                    'cash_flow' => 'Cash Flow',
+                                    'balance_sheet' => 'Neraca',
+                                    'income_statement' => 'Laporan Laba Rugi',
+                                    'cash_flow' => 'Arus Kas',
                                 ])
                                 ->required(),
                         ])
@@ -298,15 +352,15 @@ class FinancialReportResource extends Resource
                             $records->each->update(['report_type' => $data['report_type']]);
                         }),
                     Tables\Actions\BulkAction::make('updateReportPeriod')
-                        ->label('Update Report Period')
+                        ->label('Perbarui Periode Laporan')
                         ->icon('heroicon-o-calendar')
                         ->color('success')
                         ->form([
                             Forms\Components\DatePicker::make('report_period_start')
-                                ->label('Start Date')
+                                ->label('Tanggal Mulai')
                                 ->required(),
                             Forms\Components\DatePicker::make('report_period_end')
-                                ->label('End Date')
+                                ->label('Tanggal Selesai')
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
@@ -321,7 +375,7 @@ class FinancialReportResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Finance Report exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Laporan Keuangan berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->icon('heroicon-o-check')
                                 ->sendToDatabase(Auth::user());
@@ -330,7 +384,7 @@ class FinancialReportResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Financial Report')
+                    ->label('Buat Laporan Keuangan')
                     ->icon('heroicon-o-plus'),
             ]);
     }

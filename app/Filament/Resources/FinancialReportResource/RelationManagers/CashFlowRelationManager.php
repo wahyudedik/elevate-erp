@@ -223,10 +223,8 @@ class CashFlowRelationManager extends RelationManager
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('calculateTotals')
-                        ->label('Calculate Totals')
+                        ->label('Hitung Total')
                         ->icon('heroicon-o-calculator')
                         ->action(function (Collection $records) {
                             $records->each(function (CashFlow $record) {
@@ -235,24 +233,24 @@ class CashFlowRelationManager extends RelationManager
                             });
 
                             Notification::make()
-                                ->title('Total Equity Calculated')
+                                ->title('Total Ekuitas Telah Dihitung')
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
-                        ->tooltip('Update net income for selected records')
+                        ->tooltip('Perbarui pendapatan bersih untuk catatan yang dipilih')
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation()
-                        ->modalHeading('Update Total Equity')
-                        ->modalDescription('This action will update the total equity for all selected balance sheets based on their total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Update')
+                        ->modalHeading('Perbarui Total Ekuitas')
+                        ->modalDescription('Tindakan ini akan memperbarui total ekuitas untuk semua neraca yang dipilih berdasarkan total aset dan total kewajiban mereka.')
+                        ->modalSubmitActionLabel('Perbarui')
                         ->color('warning'),
                     Tables\Actions\BulkAction::make('assignToFinancialReport')
-                        ->label('Assign to Financial Report')
+                        ->label('Tetapkan ke Laporan Keuangan')
                         ->icon('heroicon-o-document-duplicate')
                         ->form([
                             Forms\Components\Select::make('financial_report_id')
-                                ->label('Financial Report')
+                                ->label('Laporan Keuangan')
                                 ->options(FinancialReport::pluck('report_name', 'id'))
                                 ->required(),
                         ])
@@ -262,21 +260,10 @@ class CashFlowRelationManager extends RelationManager
                             });
                         })
                         ->deselectRecordsAfterCompletion()
-                        ->modalHeading('Assign to Financial Report')
-                        ->modalDescription('This action will assign the selected balance sheets to the chosen financial report.')
-                        ->modalSubmitActionLabel('Assign')
+                        ->modalHeading('Tetapkan ke Laporan Keuangan')
+                        ->modalDescription('Tindakan ini akan menetapkan neraca yang dipilih ke laporan keuangan yang dipilih.')
+                        ->modalSubmitActionLabel('Tetapkan')
                         ->color('primary'),
-                    ExportBulkAction::make()
-                        ->exporter(CashFlowExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
-                        ->after(function () {
-                            Notification::make()
-                                ->title('Chas Flow exported successfully' . ' ' . date('Y-m-d'))
-                                ->success()
-                                ->icon('heroicon-o-check')
-                                ->sendToDatabase(Auth::user());
-                        }),
                 ])
             ]);
     }

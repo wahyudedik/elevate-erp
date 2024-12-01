@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementFinancial;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
@@ -13,16 +14,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class BalanceSheet extends Model
+class BalanceSheet extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
-
-    protected $table = 'balance_sheets';
+    protected $table = 'balance_sheets'; 
 
     protected $fillable = [
         'branch_id',

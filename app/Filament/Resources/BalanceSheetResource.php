@@ -35,7 +35,7 @@ class BalanceSheetResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Neraca';
 
     protected static ?string $modelLabel = 'Laporan Neraca';
-    
+
     protected static ?string $pluralModelLabel = 'Laporan Neraca';
 
     protected static ?string $cluster = FinancialReporting::class;
@@ -50,19 +50,20 @@ class BalanceSheetResource extends Resource
 
     protected static ?string $navigationGroup = 'Financial Reporting';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-long-right';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Balance Sheet Details')
+                Forms\Components\Section::make('Detail Laporan Neraca')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->label('Cabang'),
                         Forms\Components\Select::make('financial_report_id')
                             ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'balance_sheet'))
                             ->searchable()
@@ -75,26 +76,32 @@ class BalanceSheetResource extends Resource
                                     ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->label('Cabang'),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->label('Nama Laporan'),
                                 Forms\Components\Select::make('report_type')
                                     ->options([
-                                        'balance_sheet' => 'Balance Sheet',
-                                        'income_statement' => 'Income Statement',
-                                        'cash_flow' => 'Cash Flow',
+                                        'balance_sheet' => 'Laporan Neraca',
+                                        'income_statement' => 'Laporan Laba Rugi',
+                                        'cash_flow' => 'Arus Kas',
                                     ])
-                                    ->required(),
+                                    ->required()
+                                    ->label('Jenis Laporan'),
                                 Forms\Components\DatePicker::make('report_period_start')
                                     ->default(now())
-                                    ->required(),
+                                    ->required()
+                                    ->label('Periode Awal'),
                                 Forms\Components\DatePicker::make('report_period_end')
-                                    ->required(),
+                                    ->required()
+                                    ->label('Periode Akhir'),
                                 Forms\Components\Textarea::make('notes')
-                                    ->nullable(),
-                            ])
-                            ->label('Financial Report'),
+                                    ->nullable()
+                                    ->label('Catatan'),
+                            ])->columns(2)
+                            ->label('Laporan Keuangan'),
                         Forms\Components\TextInput::make('total_assets')
                             ->required()
                             ->numeric()
@@ -102,7 +109,7 @@ class BalanceSheetResource extends Resource
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
                             ->default(0)
-                            ->label('Total Assets'),
+                            ->label('Total Aset'),
                         Forms\Components\TextInput::make('total_liabilities')
                             ->required()
                             ->numeric()
@@ -110,7 +117,7 @@ class BalanceSheetResource extends Resource
                             ->default(0)
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
-                            ->label('Total Liabilities'),
+                            ->label('Total Kewajiban'),
                         Forms\Components\TextInput::make('total_equity')
                             ->required()
                             ->numeric()
@@ -118,17 +125,17 @@ class BalanceSheetResource extends Resource
                             ->default(0)
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
-                            ->label('Total Equity'),
+                            ->label('Total Ekuitas'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -143,63 +150,75 @@ class BalanceSheetResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->weight('lg'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->toggleable()
                     ->icon('heroicon-o-building-storefront')
+                    ->iconColor('primary')
+                    ->color('primary')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('financialReport.report_name')
-                    ->label('Financial Report')
+                    ->label('Laporan Keuangan')
                     ->searchable()
                     ->toggleable()
+                    ->icon('heroicon-o-document-text')
+                    ->iconColor('success')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_assets')
-                    ->label('Total Assets')
+                    ->label('Total Aset')
                     ->money('IDR')
                     ->toggleable()
+                    ->color('success')
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_liabilities')
-                    ->label('Total Liabilities')
+                    ->label('Total Kewajiban')
                     ->money('IDR')
                     ->toggleable()
+                    ->color('danger')
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_equity')
-                    ->label('Total Equity')
+                    ->label('Total Ekuitas')
                     ->money('IDR')
                     ->toggleable()
+                    ->color('warning')
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
+                    ->icon('heroicon-o-clock')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
+                    ->icon('heroicon-o-arrow-path')
                     ->toggleable(isToggledHiddenByDefault: true),
-
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('financial_report')
-                    ->relationship('financialReport', 'report_name')
+                    ->relationship('financialReport', 'report_name', fn($query) => $query->where('report_type', 'balance_sheet'))
                     ->searchable()
                     ->preload()
-                    ->label('Financial Report'),
+                    ->label('Laporan Keuangan'),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Created From'),
+                            ->label('Dibuat Dari'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Created Until'),
+                            ->label('Dibuat Sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -215,10 +234,10 @@ class BalanceSheetResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators['created_from'] = 'Dibuat dari ' . Carbon::parse($data['created_from'])->toFormattedDateString();
                         }
                         if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators['created_until'] = 'Dibuat sampai ' . Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
                         return $indicators;
                     })->columns(2),
@@ -230,38 +249,33 @@ class BalanceSheetResource extends Resource
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('calculateTotals')
-                        ->label('Calculate Totals')
+                        ->label('Hitung Total')
                         ->icon('heroicon-o-calculator')
                         ->action(function (BalanceSheet $record) {
                             $record->total_equity = $record->total_assets - $record->total_liabilities;
                             $record->save();
 
                             Notification::make()
-                                ->title('Total Equity Calculated')
+                                ->title('Total Ekuitas Terhitung')
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
                         ->requiresConfirmation()
-                        ->modalHeading('Calculate Totals')
-                        ->modalDescription('This action will calculate and update the total equity based on total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Calculate')
+                        ->modalHeading('Hitung Total')
+                        ->modalDescription('Tindakan ini akan menghitung dan memperbarui total ekuitas berdasarkan total aset dan total kewajiban.')
+                        ->modalSubmitActionLabel('Hitung')
                         ->color('warning'),
-                    Tables\Actions\Action::make('generateReport')
-                        ->label('Generate Report')
-                        ->icon('heroicon-o-document-text')
-                        ->url(fn(BalanceSheet $record): string => route('balance-sheet.report', $record))
-                        ->openUrlInNewTab()
-                        ->color('success'),
                     Tables\Actions\DeleteAction::make()
-                        ->modalDescription('Are you sure you want to delete this balance sheet? This action cannot be undone.')
-                        ->modalHeading('Delete Balance Sheet')
-                        ->modalSubmitActionLabel('Delete')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus neraca ini? Tindakan ini tidak dapat dibatalkan.')
+                        ->modalHeading('Hapus Neraca')
+                        ->modalSubmitActionLabel('Hapus')
                         ->color('danger'),
                 ])
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Laporan Neraca')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
@@ -270,7 +284,7 @@ class BalanceSheetResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Balance Sheet exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Neraca berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -280,7 +294,7 @@ class BalanceSheetResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Balance Sheet imported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Neraca berhasil diimpor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -292,7 +306,7 @@ class BalanceSheetResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('updateTotalEquity')
-                        ->label('Update Total Equity')
+                        ->label('Perbarui Total Ekuitas')
                         ->icon('heroicon-o-calculator')
                         ->action(function (Collection $records) {
                             $records->each(function (BalanceSheet $record) {
@@ -300,19 +314,19 @@ class BalanceSheetResource extends Resource
                                 $record->save();
                             });
                         })
-                        ->tooltip('Update net income for selected records')
+                        ->tooltip('Perbarui total ekuitas untuk data terpilih')
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation()
-                        ->modalHeading('Update Total Equity')
-                        ->modalDescription('This action will update the total equity for all selected balance sheets based on their total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Update')
+                        ->modalHeading('Perbarui Total Ekuitas')
+                        ->modalDescription('Tindakan ini akan memperbarui total ekuitas untuk semua neraca yang dipilih berdasarkan total aset dan total kewajiban mereka.')
+                        ->modalSubmitActionLabel('Perbarui')
                         ->color('warning'),
                     Tables\Actions\BulkAction::make('assignToFinancialReport')
-                        ->label('Assign to Financial Report')
+                        ->label('Tetapkan ke Laporan Keuangan')
                         ->icon('heroicon-o-document-duplicate')
                         ->form([
                             Forms\Components\Select::make('financial_report_id')
-                                ->label('Financial Report')
+                                ->label('Laporan Keuangan')
                                 ->options(FinancialReport::pluck('report_name', 'id'))
                                 ->required(),
                         ])
@@ -322,9 +336,9 @@ class BalanceSheetResource extends Resource
                             });
                         })
                         ->deselectRecordsAfterCompletion()
-                        ->modalHeading('Assign to Financial Report')
-                        ->modalDescription('This action will assign the selected balance sheets to the chosen financial report.')
-                        ->modalSubmitActionLabel('Assign')
+                        ->modalHeading('Tetapkan ke Laporan Keuangan')
+                        ->modalDescription('Tindakan ini akan menetapkan neraca yang dipilih ke laporan keuangan yang dipilih.')
+                        ->modalSubmitActionLabel('Tetapkan')
                         ->color('primary'),
                     ExportBulkAction::make()
                         ->exporter(BalanceSheetExporter::class)
@@ -332,7 +346,7 @@ class BalanceSheetResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Balance Sheet exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Neraca berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->icon('heroicon-o-check')
                                 ->sendToDatabase(Auth::user());
@@ -341,6 +355,7 @@ class BalanceSheetResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
+                    ->label('Buat Laporan Neraca')
                     ->icon('heroicon-o-plus'),
             ]);
     }

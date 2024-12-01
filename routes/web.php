@@ -29,10 +29,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
         ->name('supplier-transactions.print');
 
-    // print balance sheet
-    Route::get('/balance-sheet/{balanceSheet}/report', [BalanceSheetController::class, 'report'])
-        ->name('balance-sheet.report');
-
     // print income statement
     Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
         ->name('income-statement.report');
@@ -40,10 +36,6 @@ Route::group(['middleware' => 'auth'], function () {
     // print cash flow
     Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
         ->name('Cash-flow.report');
-
-    // print financial report
-    Route::get('/financial-report/{financialReport}/report', [FinancialReportController::class, 'report'])
-        ->name('financial-report.print');
 });
 
 // route redirect admin

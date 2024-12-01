@@ -14,26 +14,26 @@ class BalanceSheetStatWidget extends BaseWidget
     {
         return [
 
-            Stat::make('Total Assets', function () {
+            Stat::make('Total Aset', function () {
                 return $this->formatNumber(BalanceSheet::sum('total_assets'));
             })->icon('heroicon-o-currency-dollar')
                 ->progressBarColor('success')
                 ->chartColor('success')
-                ->description('Total assets in this period')
+                ->description('Total aset dalam periode ini')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Total Liabilities', function () {
+            Stat::make('Total Kewajiban', function () {
                 return $this->formatNumber(BalanceSheet::sum('total_liabilities'));
             })->icon('heroicon-o-scale')
-                ->description('Total liabilities in this period')
+                ->description('Total kewajiban dalam periode ini')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('warning'),
-            Stat::make('Total Equity', function () {
+            Stat::make('Total Ekuitas', function () {
                 return $this->formatNumber(BalanceSheet::sum('total_equity'));
             })->icon('heroicon-o-banknotes')
-                ->description("Total equity in this period")
+                ->description("Total ekuitas dalam periode ini")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success')
