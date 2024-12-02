@@ -8,7 +8,7 @@ class Employee extends Cluster
 {
     protected static ?string $navigationLabel = 'Employee';
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $navigationGroup = 'Manajemen SDM';
 
     protected static ?int $navigationSort = 1; //29
 

@@ -45,7 +45,7 @@ class PayrollResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'payroll';
 
-    protected static ?string $navigationGroup = 'Management SDM';
+    protected static ?string $navigationGroup = 'Manajemen SDM';
 
     protected static ?string $navigationIcon = 'hugeicons-pay-by-check';
 

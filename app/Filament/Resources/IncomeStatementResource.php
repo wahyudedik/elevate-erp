@@ -34,7 +34,7 @@ class IncomeStatementResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Laba Rugi';
 
     protected static ?string $modelLabel = 'Laporan Laba Rugi';
-    
+
     protected static ?string $pluralModelLabel = 'Laporan Laba Rugi';
 
     protected static ?string $cluster = FinancialReporting::class;
@@ -47,30 +47,30 @@ class IncomeStatementResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'incomeStatement';
 
-    protected static ?string $navigationGroup = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Laporan';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-long-right';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Income Statement Details')
+                Forms\Components\Section::make('Detail Laporan Laba Rugi')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
-                            ->label('Branch')
-                            ->placeholder('Select a Branch')
+                            ->label('Cabang')
+                            ->placeholder('Pilih Cabang')
                             ->nullable()
                             ->columnSpan(2),
                         Forms\Components\Select::make('financial_report_id')
                             ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'income_statement'))
                             ->searchable()
                             ->preload()
-                            ->label('Financial Report')
-                            ->placeholder('Select a Financial Report')
+                            ->label('Laporan Keuangan')
+                            ->placeholder('Pilih Laporan Keuangan')
                             ->nullable()
                             ->createOptionForm([
                                 Forms\Components\Hidden::make('company_id')
@@ -79,17 +79,17 @@ class IncomeStatementResource extends Resource
                                     ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                                     ->searchable()
                                     ->preload()
-                                    ->label('Branch')
-                                    ->placeholder('Select a Branch')
+                                    ->label('Cabang')
+                                    ->placeholder('Pilih Cabang')
                                     ->required(),
                                 Forms\Components\TextInput::make('report_name')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\Select::make('report_type')
                                     ->options([
-                                        'balance_sheet' => 'Balance Sheet',
-                                        'income_statement' => 'Income Statement',
-                                        'cash_flow' => 'Cash Flow',
+                                        'balance_sheet' => 'Neraca',
+                                        'income_statement' => 'Laporan Laba Rugi',
+                                        'cash_flow' => 'Arus Kas',
                                     ])
                                     ->required(),
                                 Forms\Components\DatePicker::make('report_period_start')
@@ -108,7 +108,7 @@ class IncomeStatementResource extends Resource
                             ->prefix('IDR')
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
-                            ->label('Total Revenue'),
+                            ->label('Total Pendapatan'),
                         Forms\Components\TextInput::make('total_expenses')
                             ->required()
                             ->default(0)
@@ -116,7 +116,7 @@ class IncomeStatementResource extends Resource
                             ->prefix('IDR')
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
-                            ->label('Total Expenses'),
+                            ->label('Total Pengeluaran'),
                         Forms\Components\TextInput::make('net_income')
                             ->required()
                             ->numeric()
@@ -124,18 +124,18 @@ class IncomeStatementResource extends Resource
                             ->prefix('IDR')
                             ->maxValue(999999999999999.99)
                             ->step(0.01)
-                            ->label('Net Income'),
+                            ->label('Laba Bersih'),
                     ])
                     ->columns(2)
                     ->collapsible(),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -150,64 +150,86 @@ class IncomeStatementResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm')
+                    ->badge(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
-                    ->toggleable(),
+                    ->iconColor('primary')
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('financialReport.report_name')
-                    ->label('Financial Report')
+                    ->label('Laporan Keuangan')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-o-document-text')
+                    ->iconColor('success'),
                 Tables\Columns\TextColumn::make('total_revenue')
-                    ->label('Total Revenue')
+                    ->label('Total Pendapatan')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('bold')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('total_expenses')
-                    ->label('Total Expenses')
+                    ->label('Total Pengeluaran')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('bold')
+                    ->color('danger'),
                 Tables\Columns\TextColumn::make('net_income')
-                    ->label('Net Income')
+                    ->label('Laba Bersih')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('bold')
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
+                    ->toggledHiddenByDefault()
+                    ->size('sm')
+                    ->icon('heroicon-o-clock'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
-            ])
+                    ->toggledHiddenByDefault()
+                    ->size('sm')
+                    ->icon('heroicon-o-arrow-path'),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
-                    ->label('Branch')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                    ->label('Cabang')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('financial_report')
-                    ->relationship('financialReport', 'report_name')
-                    ->label('Financial Report')
+                    ->relationship('financialReport', 'report_name', fn($query) => $query->where('report_type', 'income_statement'))
+                    ->label('Laporan Keuangan')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\Filter::make('Date Picked')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Created From'),
+                            ->label('Dibuat Dari'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Created Until'),
+                            ->label('Dibuat Sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -228,15 +250,8 @@ class IncomeStatementResource extends Resource
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('generate_report')
-                        ->label('Generate Report')
-                        ->icon('heroicon-o-document-text')
-                        ->color('info')
-                        ->url(fn(IncomeStatement $record): string => route('income-statement.report', $record))
-                        ->openUrlInNewTab()
-                        ->tooltip('Generate a detailed income statement report'),
                     Tables\Actions\Action::make('calculate_net_income')
-                        ->label('Calculate Totals')
+                        ->label('Hitung Total')
                         ->icon('heroicon-o-calculator')
                         ->color('success')
                         ->action(function ($record) {
@@ -253,15 +268,16 @@ class IncomeStatementResource extends Resource
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Laporan Laba Rugi'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(IncomeStatementExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
+                        ->label('Ekspor')
                         ->after(function () {
                             Notification::make()
-                                ->title('Income Statment exported successfully' . ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Laporan Laba Rugi berhasil diekspor' . ' ' . now()->format('d-m-Y H:i:s'))
                                 ->success()
                                 ->icon('heroicon-o-check-circle')
                                 ->sendToDatabase(Auth::user());
@@ -270,9 +286,10 @@ class IncomeStatementResource extends Resource
                         ->importer(IncomeStatementImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
                         ->color('info')
+                        ->label('Impor')
                         ->after(function () {
                             Notification::make()
-                                ->title('Income Statment imported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Laporan Laba Rugi berhasil diimpor' .  ' ' . now()->format('d-m-Y H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
@@ -284,33 +301,34 @@ class IncomeStatementResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\Action::make('update_net_income')
-                        ->label('Update Net Income')
+                    Tables\Actions\BulkAction::make('update_net_income')
+                        ->label('Perbarui Laba Bersih')
                         ->icon('heroicon-o-currency-dollar')
                         ->color('success')
                         ->action(function (Collection $records) {
-                            $records->each(function ($record) {
-                                $record->net_income = $record->total_revenue - $record->total_expenses;
-                                $record->save();
-                            });
+                            foreach ($records as $record) {
+                                $record->update([
+                                    'net_income' => $record->total_revenue - $record->total_expenses
+                                ]);
+                            }
                             Notification::make()
-                                ->title('Net income updated successfully')
+                                ->title('Laba bersih berhasil diperbarui')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
-                        ->tooltip('Update net income for selected records')
+                        ->tooltip('Perbarui laba bersih untuk data yang dipilih')
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation()
-                        ->modalHeading('Update Total Equity')
-                        ->modalDescription('This action will update the total equity for all selected balance sheets based on their total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Update')
+                        ->modalHeading('Perbarui Laba Bersih')
+                        ->modalDescription('Tindakan ini akan memperbarui laba bersih untuk semua laporan laba rugi yang dipilih berdasarkan total pendapatan dan total beban.')
+                        ->modalSubmitActionLabel('Perbarui')
                         ->color('warning'),
                     Tables\Actions\BulkAction::make('assignToFinancialReport')
-                        ->label('Assign to Financial Report')
+                        ->label('Tetapkan ke Laporan Keuangan')
                         ->icon('heroicon-o-document-duplicate')
                         ->form([
                             Forms\Components\Select::make('financial_report_id')
-                                ->label('Financial Report')
+                                ->label('Laporan Keuangan')
                                 ->options(FinancialReport::pluck('report_name', 'id'))
                                 ->required(),
                         ])
@@ -320,9 +338,9 @@ class IncomeStatementResource extends Resource
                             });
                         })
                         ->deselectRecordsAfterCompletion()
-                        ->modalHeading('Assign to Financial Report')
-                        ->modalDescription('This action will assign the selected income statements to the chosen financial report.')
-                        ->modalSubmitActionLabel('Assign')
+                        ->modalHeading('Tetapkan ke Laporan Keuangan')
+                        ->modalDescription('Tindakan ini akan menetapkan laporan laba rugi yang dipilih ke laporan keuangan yang dipilih.')
+                        ->modalSubmitActionLabel('Tetapkan')
                         ->color('primary'),
                     ExportBulkAction::make()
                         ->exporter(IncomeStatementExporter::class)
@@ -330,7 +348,7 @@ class IncomeStatementResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Income Statment exported successfully' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Laporan Laba Rugi berhasil diekspor' .  ' ' . now()->format('d-m-Y H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
@@ -339,7 +357,7 @@ class IncomeStatementResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Income Statement')
+                    ->label('Buat Laporan Laba Rugi')
                     ->icon('heroicon-o-plus'),
             ]);
     }

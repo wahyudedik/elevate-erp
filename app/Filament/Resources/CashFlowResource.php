@@ -35,7 +35,7 @@ class CashFlowResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Arus Kas';
 
     protected static ?string $modelLabel = 'Laporan Arus Kas';
-    
+
     protected static ?string $pluralModelLabel = 'Laporan Arus Kas';
 
     protected static ?string $cluster = FinancialReporting::class;
@@ -48,23 +48,25 @@ class CashFlowResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'cashFlow';
 
-    protected static ?string $navigationGroup = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Laporan';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-long-right';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Cash Flow Details')
+                Forms\Components\Section::make('Detail Arus Kas')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->searchable()
                             ->preload()
                             ->required(),
                         Forms\Components\Select::make('financial_report_id')
                             ->relationship('financialReport', 'report_name', fn(Builder $query) => $query->where('report_type', 'cash_flow'))
+                            ->label('Laporan Keuangan')
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
@@ -73,29 +75,36 @@ class CashFlowResource extends Resource
                                     ->default(Filament::getTenant()->id),
                                 Forms\Components\Select::make('branch_id')
                                     ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                                    ->label('Cabang')
                                     ->searchable()
                                     ->preload()
                                     ->required(),
                                 Forms\Components\TextInput::make('report_name')
+                                    ->label('Nama Laporan')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\Select::make('report_type')
+                                    ->label('Jenis Laporan')
                                     ->options([
-                                        'balance_sheet' => 'Balance Sheet',
-                                        'income_statement' => 'Income Statement',
-                                        'cash_flow' => 'Cash Flow',
+                                        'balance_sheet' => 'Neraca',
+                                        'income_statement' => 'Laporan Laba Rugi',
+                                        'cash_flow' => 'Arus Kas',
                                     ])
                                     ->required(),
                                 Forms\Components\DatePicker::make('report_period_start')
+                                    ->label('Periode Awal')
                                     ->default(now())
                                     ->required(),
                                 Forms\Components\DatePicker::make('report_period_end')
+                                    ->label('Periode Akhir')
                                     ->required(),
                                 Forms\Components\Textarea::make('notes')
+                                    ->label('Catatan')
                                     ->nullable(),
                             ])
                             ->nullable(),
                         Forms\Components\TextInput::make('operating_cash_flow')
+                            ->label('Arus Kas Operasi')
                             ->required()
                             ->numeric()
                             ->default(0)
@@ -104,6 +113,7 @@ class CashFlowResource extends Resource
                             ->minValue(-42949672.95)
                             ->step(0.01),
                         Forms\Components\TextInput::make('investing_cash_flow')
+                            ->label('Arus Kas Investasi')
                             ->required()
                             ->numeric()
                             ->default(0)
@@ -112,6 +122,7 @@ class CashFlowResource extends Resource
                             ->minValue(-42949672.95)
                             ->step(0.01),
                         Forms\Components\TextInput::make('financing_cash_flow')
+                            ->label('Arus Kas Pendanaan')
                             ->required()
                             ->numeric()
                             ->default(0)
@@ -120,6 +131,7 @@ class CashFlowResource extends Resource
                             ->minValue(-42949672.95)
                             ->step(0.01),
                         Forms\Components\TextInput::make('net_cash_flow')
+                            ->label('Arus Kas Bersih')
                             ->required()
                             ->numeric()
                             ->default(0)
@@ -129,14 +141,14 @@ class CashFlowResource extends Resource
                             ->step(0.01),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -151,72 +163,96 @@ class CashFlowResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
-                    ->toggleable(),
+                    ->iconColor('primary')
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('financialReport.report_name')
-                    ->label('Financial Report')
+                    ->label('Laporan Keuangan')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-o-document-text')
+                    ->iconColor('success'),
                 Tables\Columns\TextColumn::make('operating_cash_flow')
-                    ->label('Operating Cash Flow')
+                    ->label('Arus Kas Operasi')
                     ->money('IDR')
                     ->toggleable()
                     ->sortable()
-                    ->toggleable(),
+                    ->color('primary')
+                    ->size('sm')
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('investing_cash_flow')
-                    ->label('Investing Cash Flow')
+                    ->label('Arus Kas Investasi')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('warning')
+                    ->size('sm')
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('financing_cash_flow')
-                    ->label('Financing Cash Flow')
+                    ->label('Arus Kas Pendanaan')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success')
+                    ->size('sm')
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('net_cash_flow')
-                    ->label('Net Cash Flow')
+                    ->label('Arus Kas Bersih')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('danger')
+                    ->size('sm')
+                    ->weight('bold')
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
+                    ->toggledHiddenByDefault()
+                    ->size('sm')
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
-            ])
+                    ->toggledHiddenByDefault()
+                    ->size('sm')
+                    ->color('gray'),
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->label('Branch')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                    ->label('Cabang')
                     ->searchable()
                     ->preload()
                     ->multiple(),
                 Tables\Filters\SelectFilter::make('financial_report_id')
-                    ->relationship('financialReport', 'report_name')
-                    ->label('Financial Report')
+                    ->relationship('financialReport', 'report_name', fn($query) => $query->where('report_type', 'cash_flow'))
+                    ->label('Laporan Keuangan')
                     ->searchable()
                     ->preload()
                     ->multiple(),
                 Tables\Filters\Filter::make('Select Date Range')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Created from'),
+                            ->label('Dari'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Created until'),
+                            ->label('Sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -237,40 +273,37 @@ class CashFlowResource extends Resource
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('calculateTotals')
-                        ->label('Calculate Totals')
+                        ->label('Hitung Total')
                         ->icon('heroicon-o-calculator')
-                        ->action(function (Collection $records) {
-                            $records->each(function (CashFlow $record) {
-                                $record->net_cash_flow = $record->operating_cash_flow + $record->investing_cash_flow + $record->financing_cash_flow;
-                                $record->save();
-                            });
+                        ->action(function (CashFlow $record) {
+                            $operating = $record->operating_cash_flow ? floatval($record->operating_cash_flow) : 0;
+                            $investing = $record->investing_cash_flow ? floatval($record->investing_cash_flow) : 0;
+                            $financing = $record->financing_cash_flow ? floatval($record->financing_cash_flow) : 0;
+
+                            $record->net_cash_flow = $operating + $investing + $financing;
+                            $record->save();
 
                             Notification::make()
-                                ->title('Total Equity Calculated')
+                                ->title('Arus Kas Telah Dihitung')
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
-                                ->sendToDatabase(Auth::user());
+                                ->send();
                         })
                         ->requiresConfirmation()
-                        ->modalHeading('Calculate Totals')
-                        ->modalDescription('This action will calculate and update the total equity based on total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Calculate')
+                        ->modalHeading('Hitung Total')
+                        ->modalDescription('Tindakan ini akan menghitung dan memperbarui total arus kas berdasarkan arus kas operasi, investasi, dan pendanaan.')
+                        ->modalSubmitActionLabel('Hitung')
                         ->color('warning'),
-                    Tables\Actions\Action::make('generateReport')
-                        ->label('Generate Report')
-                        ->icon('heroicon-o-document-text')
-                        ->url(fn(CashFlow $record): string => route('Cash-flow.report', $record))
-                        ->openUrlInNewTab()
-                        ->color('success'),
                     Tables\Actions\DeleteAction::make()
-                        ->modalDescription('Are you sure you want to delete this balance sheet? This action cannot be undone.')
-                        ->modalHeading('Delete Balance Sheet')
-                        ->modalSubmitActionLabel('Delete')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus laporan arus kas ini? Tindakan ini tidak dapat dibatalkan.')
+                        ->modalHeading('Hapus Laporan Arus Kas')
+                        ->modalSubmitActionLabel('Hapus')
                         ->color('danger'),
                 ])
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Buat Laporan Arus Kas')
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
@@ -279,7 +312,7 @@ class CashFlowResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Cash Flow exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Arus Kas berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -289,7 +322,7 @@ class CashFlowResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Cash Flow imported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Arus Kas berhasil diimpor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -301,7 +334,7 @@ class CashFlowResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\BulkAction::make('calculateTotals')
-                        ->label('Calculate Totals')
+                        ->label('Hitung Total')
                         ->icon('heroicon-o-calculator')
                         ->action(function (Collection $records) {
                             $records->each(function (CashFlow $record) {
@@ -310,24 +343,24 @@ class CashFlowResource extends Resource
                             });
 
                             Notification::make()
-                                ->title('Total Equity Calculated')
+                                ->title('Total Arus Kas Telah Dihitung')
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
-                        ->tooltip('Update net income for selected records')
+                        ->tooltip('Perbarui arus kas bersih untuk catatan yang dipilih')
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation()
-                        ->modalHeading('Update Total Equity')
-                        ->modalDescription('This action will update the total equity for all selected balance sheets based on their total assets and total liabilities.')
-                        ->modalSubmitActionLabel('Update')
+                        ->modalHeading('Perbarui Total Arus Kas')
+                        ->modalDescription('Tindakan ini akan memperbarui total arus kas untuk semua laporan yang dipilih berdasarkan arus kas operasi, investasi, dan pendanaan.')
+                        ->modalSubmitActionLabel('Perbarui')
                         ->color('warning'),
                     Tables\Actions\BulkAction::make('assignToFinancialReport')
-                        ->label('Assign to Financial Report')
+                        ->label('Tetapkan ke Laporan Keuangan')
                         ->icon('heroicon-o-document-duplicate')
                         ->form([
                             Forms\Components\Select::make('financial_report_id')
-                                ->label('Financial Report')
+                                ->label('Laporan Keuangan')
                                 ->options(FinancialReport::pluck('report_name', 'id'))
                                 ->required(),
                         ])
@@ -337,9 +370,9 @@ class CashFlowResource extends Resource
                             });
                         })
                         ->deselectRecordsAfterCompletion()
-                        ->modalHeading('Assign to Financial Report')
-                        ->modalDescription('This action will assign the selected balance sheets to the chosen financial report.')
-                        ->modalSubmitActionLabel('Assign')
+                        ->modalHeading('Tetapkan ke Laporan Keuangan')
+                        ->modalDescription('Tindakan ini akan menetapkan laporan yang dipilih ke laporan keuangan yang dipilih.')
+                        ->modalSubmitActionLabel('Tetapkan')
                         ->color('primary'),
                     ExportBulkAction::make()
                         ->exporter(CashFlowExporter::class)
@@ -347,7 +380,7 @@ class CashFlowResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Chas Flow exported successfully' . ' ' . date('Y-m-d'))
+                                ->title('Arus Kas berhasil diekspor' . ' ' . date('Y-m-d'))
                                 ->success()
                                 ->icon('heroicon-o-check')
                                 ->sendToDatabase(Auth::user());
@@ -356,6 +389,7 @@ class CashFlowResource extends Resource
             ])
             ->emptyStateActions([
                 CreateAction::make()
+                    ->label('Buat Laporan Arus Kas')
                     ->icon('heroicon-o-plus')
             ]);
     }

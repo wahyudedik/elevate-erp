@@ -6,7 +6,7 @@ use Filament\Clusters\Cluster;
 
 class FinancialReporting extends Cluster
 {
-    protected static ?string $navigationLabel = 'Arus Kas';
+    protected static ?string $navigationLabel = 'Laporan Keuangan';
 
     protected static ?string $navigationGroup = 'Manajemen Keuangan';
 

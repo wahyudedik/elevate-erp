@@ -9,7 +9,7 @@ class Sales extends Cluster
 {
     protected static ?string $navigationLabel = 'Sales';
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?string $navigationGroup = 'Manajemen CRM';
 
     protected static ?int $navigationSort = 18; //20
 

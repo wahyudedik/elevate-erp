@@ -42,7 +42,7 @@ class InventoryResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'inventories';
 
-    protected static ?string $navigationGroup = 'Management Stock';
+    protected static ?string $navigationGroup = 'Manajemen Stok';
 
     protected static ?string $navigationIcon = 'polaris-inventory-icon';
 

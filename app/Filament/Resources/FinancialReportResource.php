@@ -52,7 +52,7 @@ class FinancialReportResource extends Resource
 
     protected static ?string $navigationGroup = 'Laporan Keuangan';
 
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
+    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
 
     public static function form(Form $form): Form
     {

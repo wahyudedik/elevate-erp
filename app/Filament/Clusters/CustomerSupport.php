@@ -9,7 +9,7 @@ class CustomerSupport extends Cluster
 {
     protected static ?string $navigationLabel = 'Customer Support';
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?string $navigationGroup = 'Manajemen CRM';
 
     protected static ?int $navigationSort = 20; //22
 

@@ -46,7 +46,7 @@ class ProjectMonitoringResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'projectMonitoring';
 
-    protected static ?string $navigationGroup = 'Management Project';
+    protected static ?string $navigationGroup = 'Manajemen Projek';
 
     protected static ?string $navigationIcon = 'carbon-container-runtime-monitor';
 

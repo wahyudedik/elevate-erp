@@ -46,7 +46,7 @@ class InventoryTrackingResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'inventoryTracking';
 
-    protected static ?string $navigationGroup = 'Management Stock';
+    protected static ?string $navigationGroup = 'Manajemen Stok';
 
     protected static ?string $navigationIcon = 'hugeicons-shipment-tracking';
 

@@ -47,7 +47,7 @@ class CustomerResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'customer';
 
-    protected static ?string $navigationGroup = 'Management CRM';
+    protected static ?string $navigationGroup = 'Manajemen CRM';
 
     protected static ?string $navigationIcon = 'carbon-customer';
 

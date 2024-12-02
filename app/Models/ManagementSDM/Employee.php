@@ -26,11 +26,6 @@ class Employee extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
-
     protected $table = 'employees';
 
     // Atribut yang dapat diisi secara massal

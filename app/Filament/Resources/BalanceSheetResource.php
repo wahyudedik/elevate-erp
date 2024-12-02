@@ -48,7 +48,7 @@ class BalanceSheetResource extends Resource
 
     protected static ?string $tenantRelationshipName = 'balanceSheet';
 
-    protected static ?string $navigationGroup = 'Financial Reporting';
+    protected static ?string $navigationGroup = 'Laporan';
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-long-right';
 

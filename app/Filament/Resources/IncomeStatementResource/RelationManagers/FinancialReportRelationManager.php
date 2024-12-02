@@ -18,38 +18,44 @@ class FinancialReportRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Financial Report')
+                Forms\Components\Section::make('Laporan Keuangan')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name')
+                            ->label('Cabang')
                             ->required(),
                         Forms\Components\TextInput::make('report_name')
+                            ->label('Nama Laporan')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Select::make('report_type')
+                            ->label('Jenis Laporan')
                             ->options([
-                                'balance_sheet' => 'Balance Sheet',
-                                'income_statement' => 'Income Statement',
-                                'cash_flow' => 'Cash Flow',
+                                'balance_sheet' => 'Neraca',
+                                'income_statement' => 'Laporan Laba Rugi',
+                                'cash_flow' => 'Arus Kas',
                             ])
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_start')
+                            ->label('Periode Awal')
                             ->default(now())
                             ->required(),
                         Forms\Components\DatePicker::make('report_period_end')
+                            ->label('Periode Akhir')
                             ->required(),
                         Forms\Components\Textarea::make('notes')
+                            ->label('Catatan')
                             ->nullable()->columnSpan(2),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -65,70 +71,91 @@ class FinancialReportRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
-                    ->toggleable(),
+                    ->iconColor('primary')
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('report_name')
+                    ->label('Nama Laporan')
                     ->searchable()
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('report_type')
+                    ->label('Jenis Laporan')
                     ->badge()
                     ->colors([
                         'primary' => 'balance_sheet',
                         'success' => 'income_statement',
-                        'danger' => 'cash_flow',
+                        'warning' => 'cash_flow',
                     ])
                     ->icons([
-                        'balance_sheet' => 'heroicon-o-scale',
-                        'income_statement' => 'heroicon-o-currency-dollar',
-                        'cash_flow' => 'heroicon-o-arrow-path',
+                        'balance_sheet' => 'heroicon-m-scale',
+                        'income_statement' => 'heroicon-m-currency-dollar',
+                        'cash_flow' => 'heroicon-m-arrow-path',
                     ])
+                    ->formatStateUsing(function ($state) {
+                        return match ($state) {
+                            'balance_sheet' => 'Neraca',
+                            'income_statement' => 'Laba Rugi',
+                            'cash_flow' => 'Arus Kas',
+                            default => $state,
+                        };
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('report_period_start')
-                    ->icon('heroicon-o-calendar')
-                    ->date()
+                    ->label('Periode Awal')
+                    ->icon('heroicon-m-calendar')
+                    ->iconColor('success')
+                    ->date('d M Y')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('report_period_end')
-                    ->date()
+                    ->label('Periode Akhir')
+                    ->date('d M Y')
                     ->toggleable()
-                    ->icon('heroicon-o-calendar')
-                    ->sortable(),
+                    ->icon('heroicon-m-calendar')
+                    ->iconColor('success')
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('notes')
+                    ->label('Catatan')
                     ->searchable()
                     ->limit(50)
                     ->tooltip(fn(string $state): string => $state)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Dibuat pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir diubah')
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('report_type')
-                    ->options([
-                        'balance_sheet' => 'Balance Sheet',
-                        'income_statement' => 'Income Statement',
-                        'cash_flow' => 'Cash Flow',
-                    ])
-                    ->label('Report Type')
-                    ->multiple(),
                 Tables\Filters\Filter::make('report_period')
                     ->form([
                         Forms\Components\DatePicker::make('report_period_start')
-                            ->label('Start Date'),
+                            ->label('Tanggal Mulai'),
                         Forms\Components\DatePicker::make('report_period_end')
-                            ->label('End Date'),
+                            ->label('Tanggal Selesai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -141,11 +168,6 @@ class FinancialReportRelationManager extends RelationManager
                                 fn(Builder $query, $date): Builder => $query->whereDate('report_period_end', '<=', $date),
                             );
                     })->columns(2),
-                Tables\Filters\SelectFilter::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->label('Branch')
-                    ->multiple(),
-
             ])
             ->headerActions([
                 // Tables\Actions\CreateAction::make(),

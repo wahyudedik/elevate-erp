@@ -14,29 +14,29 @@ class CashFlowStatWidget extends BaseWidget
     {
         return [
 
-            Stat::make('Operating Cash Flow', $this->formatNumber(CashFlow::sum('operating_cash_flow')))
+            Stat::make('Arus Kas Operasi', $this->formatNumber(CashFlow::sum('operating_cash_flow')))
                 ->icon('heroicon-o-currency-dollar')
                 ->progressBarColor('success')
                 ->chartColor('success')
-                ->description('Total operating cash flow')
+                ->description('Total arus kas operasi')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Investing Cash Flow', $this->formatNumber(CashFlow::sum('investing_cash_flow')))
+            Stat::make('Arus Kas Investasi', $this->formatNumber(CashFlow::sum('investing_cash_flow')))
                 ->icon('heroicon-o-building-library')
-                ->description('Total investing cash flow')
+                ->description('Total arus kas investasi')
                 ->descriptionIcon('heroicon-o-arrow-trending-down', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('warning'),
-            Stat::make('Financing Cash Flow', $this->formatNumber(CashFlow::sum('financing_cash_flow')))
+            Stat::make('Arus Kas Pendanaan', $this->formatNumber(CashFlow::sum('financing_cash_flow')))
                 ->icon('heroicon-o-banknotes')
-                ->description('Total financing cash flow')
+                ->description('Total arus kas pendanaan')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('primary'),
-            Stat::make('Net Cash Flow', $this->formatNumber(CashFlow::sum('net_cash_flow')))
+            Stat::make('Arus Kas Bersih', $this->formatNumber(CashFlow::sum('net_cash_flow')))
                 ->icon('heroicon-o-calculator')
-                ->description('Total net cash flow')
+                ->description('Total arus kas bersih')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success')
@@ -45,6 +45,9 @@ class CashFlowStatWidget extends BaseWidget
 
     protected function formatNumber($number)
     {
+        $isNegative = $number < 0;
+        $number = abs($number);
+
         $suffixes = ['', 'K', 'M', 'B', 'T'];
         $suffixIndex = 0;
 
@@ -54,6 +57,6 @@ class CashFlowStatWidget extends BaseWidget
         }
 
         $formattedNumber = number_format($number, $suffixIndex > 0 ? 1 : 0, '.', ',');
-        return $formattedNumber . $suffixes[$suffixIndex];
+        return ($isNegative ? '-' : '') . $formattedNumber . $suffixes[$suffixIndex];
     }
 }

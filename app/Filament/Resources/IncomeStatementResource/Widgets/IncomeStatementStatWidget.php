@@ -14,30 +14,30 @@ class IncomeStatementStatWidget extends BaseWidget
     {
         return [
 
-            Stat::make('Total Revenue', function () {
+            Stat::make('Total Pendapatan', function () {
                 return '' . $this->formatNumber(IncomeStatement::sum('total_revenue'));
             })
                 ->icon('heroicon-o-currency-dollar')
                 ->iconColor('success')
-                ->description('Total revenue from all income statements')
+                ->description('Total pendapatan dari semua laporan laba rugi')
                 ->descriptionIcon('heroicon-o-presentation-chart-line', 'before')
                 ->descriptioncolor('success'),
 
-            Stat::make('Total Expenses', function () {
+            Stat::make('Total Pengeluaran', function () {
                 return '' . $this->formatNumber(IncomeStatement::sum('total_expenses'));
             })
                 ->icon('heroicon-o-banknotes')
                 ->iconColor('danger')
-                ->description('Total expenses from all income statements')
+                ->description('Total pengeluaran dari semua laporan laba rugi')
                 ->descriptionIcon('heroicon-o-presentation-chart-line', 'before')
                 ->descriptioncolor('danger'),
 
-            Stat::make('Net Income', function () {
+            Stat::make('Laba Bersih', function () {
                 return '' . $this->formatNumber(IncomeStatement::sum('net_income'));
             })
                 ->icon('heroicon-o-scale')
                 ->iconColor('primary')
-                ->description('Total net income from all income statements')
+                ->description('Total laba bersih dari semua laporan laba rugi')
                 ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptioncolor('primary'),
         ];

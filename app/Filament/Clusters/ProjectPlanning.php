@@ -9,7 +9,7 @@ class ProjectPlanning extends Cluster
 {
     protected static ?string $navigationLabel = 'Project Planning';
 
-    protected static ?string $navigationGroup = 'Management Project';
+    protected static ?string $navigationGroup = 'Manajemen Projek';
 
     protected static ?int $navigationSort = 22; //26
 

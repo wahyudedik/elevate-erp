@@ -28,14 +28,6 @@ Route::group(['middleware' => 'auth'], function () {
     // print supplier transaction
     Route::get('/supplier-transactions/{supplierTransaction}/print', [SupplierTransactionController::class, 'print'])
         ->name('supplier-transactions.print');
-
-    // print income statement
-    Route::get('/income-statement/{incomeStatement}/report', [IncomeStatementController::class, 'report'])
-        ->name('income-statement.report');
-
-    // print cash flow
-    Route::get('/cash-flow/{cashFlow}/report', [CashFlowController::class, 'report'])
-        ->name('Cash-flow.report');
 });
 
 // route redirect admin

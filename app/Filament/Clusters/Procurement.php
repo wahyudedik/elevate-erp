@@ -8,7 +8,7 @@ class Procurement extends Cluster
 {
     protected static ?string $navigationLabel = 'Procurement';
 
-    protected static ?string $navigationGroup = 'Management Stock';  
+    protected static ?string $navigationGroup = 'Manajemen Stok';  
 
     protected static ?int $navigationSort = 26; //29
 
