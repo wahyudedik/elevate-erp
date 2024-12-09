@@ -63,7 +63,7 @@ class AccountingPolicy
      */
     public function forceDelete(User $user, Accounting $accounting): bool
     {
-        return $user->can('force_delete_accounting');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -71,7 +71,7 @@ class AccountingPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_accounting');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class AccountingPolicy
      */
     public function restore(User $user, Accounting $accounting): bool
     {
-        return $user->can('restore_accounting');
+        return $user->can('{{ Restore }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class AccountingPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_accounting');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class AccountingPolicy
      */
     public function replicate(User $user, Accounting $accounting): bool
     {
-        return $user->can('replicate_accounting');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class AccountingPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_accounting');
+        return $user->can('{{ Reorder }}');
     }
 }

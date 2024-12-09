@@ -92,11 +92,6 @@ class Company extends Model implements HasCurrentTenantLabel
         return $this->hasMany(Activity::class);
     }
 
-    public function roles()
-    {
-        return $this->hasMany(Roles::class, 'company_id');
-    }
-
     public function cameras()
     {
         return $this->hasMany(Camera::class, 'company_id');

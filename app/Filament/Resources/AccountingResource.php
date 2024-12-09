@@ -31,10 +31,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AccountingResource\Pages;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Filament\Resources\AccountingResource\RelationManagers;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use App\Filament\Resources\AccountingResource\RelationManagers\LedgerRelationManager;
 use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRelationManager;
 
-class AccountingResource extends Resource
+class AccountingResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Accounting::class;
 
@@ -55,6 +56,19 @@ class AccountingResource extends Resource
     protected static ?string $navigationGroup = 'Manajemen Keuangan';
 
     protected static ?string $navigationIcon = 'mdi-finance';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
 
     public static function form(Form $form): Form
     {

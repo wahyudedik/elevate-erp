@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Filament\Notifications\Livewire\DatabaseNotifications;
 use App\Models\User;
+use App\App\Policies\ActivityPolicy;
 use Illuminate\Support\Facades\Gate;
-use App\Policies\ActivityPolicy;
+use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
+use Filament\Notifications\Livewire\DatabaseNotifications;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +30,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->usertype === 'dev';
         });
 
-        Gate::policy(Activity::class, ActivityPolicy::class);
+        // Gate::policy(Activity::class, ActivityPolicy::class);
     }
 }

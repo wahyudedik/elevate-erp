@@ -2,20 +2,22 @@
 
 namespace App\Filament\Dev\Resources;
 
-use App\Filament\Dev\Resources\RolesResource\Pages;
-use App\Filament\Dev\Resources\RolesResource\RelationManagers;
-use App\Models\Roles;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Roles;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Spatie\Permission\Models\Role;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Dev\Resources\RolesResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Dev\Resources\RolesResource\RelationManagers;
+use Filament\Facades\Filament;
 
 class RolesResource extends Resource
 {
-    protected static ?string $model = Roles::class;
+    protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -24,7 +26,8 @@ class RolesResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('company_id')
-                    ->numeric(),
+                    ->numeric()
+                    ->default(Filament::getTenant()->id),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
