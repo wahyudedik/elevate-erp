@@ -27,7 +27,7 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     protected static ?string $tenantOwnershipRelationshipName = 'company';
     
-    protected static ?string $tenantRelationshipName = 'roles';
+    protected static ?string $tenantRelationshipName = 'role';
 
     public static function getPermissionPrefixes(): array 
     {
