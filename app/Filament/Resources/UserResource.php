@@ -68,8 +68,8 @@ class UserResource extends Resource
                             ->relationship('roles', 'name')
                             // ->multiple()
                             ->preload()
-                            ->searchable()
-                            ->visible(fn ($record) => in_array($record?->usertype, ['member', 'dev'])),
+                            ->searchable(),
+                            // ->visible(fn ($record) => in_array($record?->usertype, ['member', 'dev'])),
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->maxLength(255)
