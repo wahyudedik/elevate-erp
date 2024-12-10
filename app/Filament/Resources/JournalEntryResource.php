@@ -84,7 +84,7 @@ class JournalEntryResource extends Resource
                             ->prefix('IDR')
                             ->maxValue(429494324672.95),
                         Forms\Components\Select::make('account_id')
-                            ->relationship('account', 'account_name', fn($query, $state) => $query->branch_id('id', $state('branch_id')))
+                            ->relationship('account', 'account_name', fn($query, $state) => $query->branch_id($state('branch_id')))
                             ->required()
                             ->label('Akun')
                             ->searchable()
