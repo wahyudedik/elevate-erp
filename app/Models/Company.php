@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Branch;
 use App\Filament\Pages\Accounts;
 use App\Models\ManagementCRM\Sale;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Permission\Models\Role;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
@@ -26,6 +27,7 @@ use App\Models\ManagementStock\Inventory;
 use App\Models\ManagementFinancial\Ledger;
 use App\Models\ManagementSDM\Applications;
 use App\Models\ManagementStock\Procurement;
+use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\ManagementCRM\TicketResponse;
 use App\Models\ManagementFinancial\CashFlow;
 use App\Models\ManagementStock\PurchaseItem;
@@ -86,11 +88,6 @@ class Company extends Model implements HasCurrentTenantLabel
         'vision' => 'string',
         'qna' => 'array',
     ];
-
-    public function activities()
-    {
-        return $this->hasMany(Activity::class);
-    }
 
     public function cameras()
     {

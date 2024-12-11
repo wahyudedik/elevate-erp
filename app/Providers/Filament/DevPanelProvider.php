@@ -69,7 +69,9 @@ class DevPanelProvider extends PanelProvider
                     ->url('docs/api'),
             ])
             ->plugins([
-                \Hasnayeen\Themes\ThemesPlugin::make()
+                \Hasnayeen\Themes\ThemesPlugin::make(),
+                \Rmsramos\Activitylog\ActivitylogPlugin::make()
+                    ->resource(\Rmsramos\Activitylog\Resources\ActivitylogResource::class,)
             ]);
     }
 }

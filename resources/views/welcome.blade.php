@@ -7,7 +7,7 @@
             <a href="index.html" class="logo d-flex align-items-center me-auto">
                 <!-- Uncomment the line below if you also wish to use an image logo -->
                 {{-- <img src="{{ asset('home/assets/img/5-removebg.png') }}" alt=""> --}}
-                <h1 class="sitename">Qalquity ERP</h1>
+                <h1 class="sitename">Qalcuity.com</h1>
             </a>
 
             <nav id="navmenu" class="navmenu">
@@ -47,7 +47,7 @@
                 <div class="row gy-4">
                     <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center" data-aos="zoom-out">
                         <h1>Better Solutions For Your Business</h1>
-                        <p>Qalquity ERP - Menaikkan Efisiensi, Mengangkat Prestasi</p>
+                        <p>Aplikasi ERP untuk Menaikkan Efisiensi, Mengangkat Prestasi</p>
                         <div class="d-flex">
                             <a href="#about" class="btn-get-started">About Me</a>
                             <a href="https://www.youtube.com/watch?v=LXb3EKWsInQ"
@@ -132,7 +132,7 @@
 
                     <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
                         <p>
-                            Qalquity ERP adalah sebuah sistem perangkat lunak Enterprise Resource Planning (ERP) yang
+                            Qalcuity ERP adalah sebuah sistem perangkat lunak Enterprise Resource Planning (ERP) yang
                             dirancang untuk membantu perusahaan mengelola berbagai aspek bisnis mereka secara
                             terintegrasi. ERP adalah sistem yang menyatukan berbagai fungsi bisnis, seperti akuntansi,
                             manajemen persediaan, penjualan, sumber daya manusia, dan lainnya, dalam satu platform
@@ -169,9 +169,9 @@
                     <div class="col-lg-7 d-flex flex-column justify-content-center order-2 order-lg-1">
 
                         <div class="content px-xl-5" data-aos="fade-up" data-aos-delay="100">
-                            <h3><span>Qalquity </span><strong>ERP</strong></h3>
+                            <h3><span>Qalcuity </span><strong>ERP</strong></h3>
                             <p>
-                                Qalquity ERP - Menaikkan Efisiensi, Mengangkat Prestasi
+                                Qalcuity ERP - Menaikkan Efisiensi, Mengangkat Prestasi
                             </p>
                         </div>
 
@@ -236,7 +236,7 @@
 
                     <div class="col-lg-6 pt-4 pt-lg-0 content">
 
-                        <h3>Qalquity ERP</h3>
+                        <h3>Qalcuity ERP</h3>
                         <p class="fst-italic">
                             Aplikasi Enterprice Resource Planning. Menggunakan teknologi sebagai berikut ini :
                         </p>
@@ -361,8 +361,9 @@
                             Anda lebih cerdas dan lebih cepat!"</p>
                     </div>
                     <div class="col-xl-3 cta-btn-container text-center">
-                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/6281654932383">Register
-                            Now</a>
+                        <a class="cta-btn align-middle" target="_blank" href="https://wa.me/6281654932383">
+                        Whatsapp
+                        </a>
                     </div>
                 </div>
 
@@ -530,7 +531,7 @@
             <div class="row gy-4">
                 <div class="col-lg-4 col-md-6 footer-about">
                     <a href="index.html" class="d-flex align-items-center">
-                        <span class="sitename">Qalquity ERP</span>
+                        <span class="sitename">Qalcuity ERP</span>
                     </a>
                     <div class="footer-contact pt-3">
                         {{ $contactUs->address ?? 'No data' }}
@@ -557,7 +558,7 @@
 
                 <div class="col-lg-4 col-md-12">
                     <h4>Follow Us</h4>
-                    <p>Qalquity ERP - Menaikkan Efisiensi, Mengangkat Prestasi</p>
+                    <p>Qalcuity ERP - Menaikkan Efisiensi, Mengangkat Prestasi</p>
                     <div class="social-links d-flex">
                         <a href=""><i class="bi bi-twitter-x"></i></a>
                         <a href=""><i class="bi bi-facebook"></i></a>
@@ -570,7 +571,7 @@
         </div>
 
         <div class="container copyright text-center mt-4">
-            <p>© <span>Copyright</span> <strong class="px-1 sitename">Qalquity ERP</strong> <span>All Rights
+            <p>© <span>Copyright</span> <strong class="px-1 sitename">Qalcuity ERP</strong> <span>All Rights
                     Reserved</span>
             </p>
         </div>

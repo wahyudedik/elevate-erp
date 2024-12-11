@@ -12,6 +12,7 @@ use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use OpenSpout\Writer\CSV\Writer;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -35,7 +36,7 @@ use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use App\Filament\Resources\AccountingResource\RelationManagers\LedgerRelationManager;
 use App\Filament\Resources\AccountingResource\RelationManagers\JournalEntriesRelationManager;
 
-class AccountingResource extends Resource implements HasShieldPermissions
+class AccountingResource extends Resource
 {
     protected static ?string $model = Accounting::class;
 
@@ -56,19 +57,6 @@ class AccountingResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationGroup = 'Manajemen Keuangan';
 
     protected static ?string $navigationIcon = 'mdi-finance';
-
-    public static function getPermissionPrefixes(): array
-    {
-        return [
-            'view',
-            'view_any',
-            'create',
-            'update',
-            'delete',
-            'delete_any',
-            'publish'
-        ];
-    }
 
     public static function form(Form $form): Form
     {

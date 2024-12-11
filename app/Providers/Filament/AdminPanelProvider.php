@@ -124,7 +124,6 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 \Hasnayeen\Themes\ThemesPlugin::make(),
-                \Rmsramos\Activitylog\ActivitylogPlugin::make(),
             ]);
     }
 }
