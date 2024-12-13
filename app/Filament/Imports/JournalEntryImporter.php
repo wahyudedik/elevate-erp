@@ -20,15 +20,15 @@ class JournalEntryImporter extends Importer
                 ->relationship('company', 'id')
                 ->rules(['required', 'exists:companies,id']),
             ImportColumn::make('branch_id')
-                ->relationship('branch', 'id')
-                ->rules(['nullable', 'exists:branches,id']),
+                ->relationship('branch', 'name')
+                ->rules(['nullable', 'exists:branches,name']),
             ImportColumn::make('entry_date')
-                ->date(),
+                ->date()
+                ->rules(['required']),
             ImportColumn::make('description')
                 ->rules(['nullable']),
             ImportColumn::make('entry_type')
-                ->rules(['required'])
-                ->acceptsOnly(['debit', 'credit']),
+                ->rules(['required', 'in:debit,credit']),
             ImportColumn::make('amount')
                 ->numeric()
                 ->rules(['required']),

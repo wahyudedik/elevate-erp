@@ -23,11 +23,13 @@ class JournalEntryExporter extends Exporter
             ExportColumn::make('entry_date')
                 ->label('Entry Date'),
             ExportColumn::make('description')
-                ->label('Description'),
+                ->label('Description')
+                ->formatStateUsing(fn($state) => strip_tags($state)),
             ExportColumn::make('entry_type')
                 ->label('Entry Type'),
             ExportColumn::make('amount')
-                ->label('Amount'),
+                ->label('Amount')
+                ->formatStateUsing(fn($state) => number_format($state, 2)),
             ExportColumn::make('account.name')
                 ->label('Account'),
             ExportColumn::make('deleted_at')
