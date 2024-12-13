@@ -16,28 +16,16 @@ class JournalEntryExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
-            ExportColumn::make('company.name')
-                ->label('Company'),
-            ExportColumn::make('branch.name')
-                ->label('Branch'),
-            ExportColumn::make('entry_date')
-                ->label('Entry Date'),
-            ExportColumn::make('description')
-                ->label('Description')
-                ->formatStateUsing(fn($state) => strip_tags($state)),
-            ExportColumn::make('entry_type')
-                ->label('Entry Type'),
-            ExportColumn::make('amount')
-                ->label('Amount')
-                ->formatStateUsing(fn($state) => number_format($state, 2)),
-            ExportColumn::make('account.name')
-                ->label('Account'),
-            ExportColumn::make('deleted_at')
-                ->label('Deleted At'),
-            ExportColumn::make('created_at')
-                ->label('Created At'),
-            ExportColumn::make('updated_at')
-                ->label('Updated At'),
+            ExportColumn::make('company.name'),
+            ExportColumn::make('branch.name'),
+            ExportColumn::make('entry_date'),
+            ExportColumn::make('description'),
+            ExportColumn::make('entry_type'),
+            ExportColumn::make('amount'),
+            ExportColumn::make('account.name'),
+            ExportColumn::make('deleted_at'),
+            ExportColumn::make('created_at'),
+            ExportColumn::make('updated_at'),
         ];
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Imports;
 
+use App\Models\Branch;
+use App\Models\Company;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Models\Import;
@@ -17,30 +19,33 @@ class JournalEntryImporter extends Importer
             ImportColumn::make('id')
                 ->numeric(),
             ImportColumn::make('company_id')
-                ->relationship('company', 'id')
-                ->rules(['required', 'exists:companies,id']),
+                ->requiredMapping()
+                ->numeric()
+                ->rules(['required', 'integer', 'exists:companies,id']),
             ImportColumn::make('branch_id')
-                ->relationship('branch', 'name')
-                ->rules(['nullable', 'exists:branches,name']),
+                ->numeric()
+                ->rules(['nullable', 'integer', 'exists:branches,id']),
             ImportColumn::make('entry_date')
-                ->date()
-                ->rules(['required']),
+                ->requiredMapping()
+                ->rules(['required', 'date']),
             ImportColumn::make('description')
-                ->rules(['nullable']),
+                ->rules(['nullable', 'string']),
             ImportColumn::make('entry_type')
+                ->requiredMapping()
                 ->rules(['required', 'in:debit,credit']),
             ImportColumn::make('amount')
                 ->numeric()
-                ->rules(['required']),
+                ->requiredMapping()
+                ->rules(['required', 'numeric']),
             ImportColumn::make('account_id')
-                ->relationship('account', 'id')
-                ->rules(['nullable', 'exists:accounts,id']),
+                ->numeric()
+                ->rules(['nullable', 'integer', 'exists:accounts,id']),
             ImportColumn::make('deleted_at')
-                ->rules(['nullable']),
+                ->rules(['nullable', 'date']),
             ImportColumn::make('created_at')
-                ->rules(['nullable']),
+                ->rules(['nullable', 'date']),
             ImportColumn::make('updated_at')
-                ->rules(['nullable']),
+                ->rules(['nullable', 'date']),
         ];
     }
 
