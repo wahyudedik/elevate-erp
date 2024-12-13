@@ -16,6 +16,8 @@ class JournalEntryExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
             ExportColumn::make('branch.name')
                 ->label('Branch'),
             ExportColumn::make('entry_date')
@@ -28,6 +30,8 @@ class JournalEntryExporter extends Exporter
                 ->label('Amount'),
             ExportColumn::make('account.name')
                 ->label('Account'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

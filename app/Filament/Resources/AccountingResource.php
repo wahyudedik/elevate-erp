@@ -386,7 +386,7 @@ class AccountingResource extends Resource
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
-                        ->label('Ekspor')
+                        ->label('Ekspor Akun')
                         ->exporter(AccountingExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
@@ -398,7 +398,7 @@ class AccountingResource extends Resource
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()
-                        ->label('Impor')
+                        ->label('Impor Akun')
                         ->importer(AccountingImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
                         ->color('info')
@@ -471,6 +471,7 @@ class AccountingResource extends Resource
                                     'equity' => 'Equity / Modal',
                                     'revenue' => 'Revenue / Pendapatan',
                                     'expense' => 'Expense / Beban',
+                                    'kas' => 'Kas',
                                 ])
                                 ->required(),
                         ])
@@ -491,12 +492,12 @@ class AccountingResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Account exported successfully' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Akun berhasil diekspor' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                    ]),
+                ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()

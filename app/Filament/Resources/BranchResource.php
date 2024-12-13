@@ -8,21 +8,23 @@ use App\Models\Branch;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Filament\Forms\Components\Actions;
 use App\Filament\Exports\BranchExporter;
 use App\Filament\Imports\BranchImporter;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\ExportBulkAction;
 use Humaidem\FilamentMapPicker\Fields\OSMMap;
 use App\Filament\Resources\BranchResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BranchResource\RelationManagers;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use Illuminate\Support\Facades\Auth;
 
 class BranchResource extends Resource
 {
@@ -33,6 +35,8 @@ class BranchResource extends Resource
     protected static ?string $modelLabel = 'Cabang';
 
     protected static ?string $pluralModelLabel = 'Cabang';
+
+    protected static ?string $slug = 'cabang';
 
     protected static ?int $navigationSort = 4;
 
@@ -112,9 +116,22 @@ class BranchResource extends Resource
                             ->showMarker()
                             ->draggable()
                             ->extraControl([
-                                'zoomDelta'           => 1,
-                                'zoomSnap'            => 0.25,
-                                'wheelPxPerZoomLevel' => 60
+                                'zoomDelta' => 1,
+                                'zoomSnap' => 0.25,
+                                'wheelPxPerZoomLevel' => 60,
+                                'locate' => [
+                                    'enableHighAccuracy' => true,
+                                    'maximumAge' => 0,
+                                    'timeout' => 5000,
+                                    'setView' => 'always',
+                                    'maxZoom' => 18,
+                                    'watch' => true,
+                                    'clickBehavior' => [
+                                        'inView' => 'stop',
+                                        'outOfView' => 'setView',
+                                        'inViewNotFollowing' => 'setView'
+                                    ]
+                                ]
                             ])
                             ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
                     ])

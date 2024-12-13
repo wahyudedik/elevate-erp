@@ -2,12 +2,14 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Clusters\Employee;
 use Filament\Pages\Page;
+use App\Filament\Clusters\Employee;
+use Illuminate\Support\Facades\Auth;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class Map extends Page
 {
-
+    use HasPageShield;
     protected static ?string $cluster = Employee::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map';

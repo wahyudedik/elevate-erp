@@ -15,32 +15,31 @@ class JournalEntryImporter extends Importer
     {
         return [
             ImportColumn::make('id')
-                ->type('integer'),
-            ImportColumn::make('branch')
-                ->type('string')
-                ->rules(['nullable']),
+                ->numeric(),
+            ImportColumn::make('company_id')
+                ->relationship('company', 'id')
+                ->rules(['required', 'exists:companies,id']),
+            ImportColumn::make('branch_id')
+                ->relationship('branch', 'id')
+                ->rules(['nullable', 'exists:branches,id']),
             ImportColumn::make('entry_date')
-                ->type('date')
-                ->required(),
+                ->date(),
             ImportColumn::make('description')
-                ->type('string')
                 ->rules(['nullable']),
             ImportColumn::make('entry_type')
-                ->type('select')
-                ->options(['debit', 'credit'])
-                ->required(),
+                ->rules(['required'])
+                ->acceptsOnly(['debit', 'credit']),
             ImportColumn::make('amount')
-                ->type('decimal')
-                ->required(),
+                ->numeric()
+                ->rules(['required']),
             ImportColumn::make('account_id')
-                ->type('select')
                 ->relationship('account', 'id')
                 ->rules(['nullable', 'exists:accounts,id']),
+            ImportColumn::make('deleted_at')
+                ->rules(['nullable']),
             ImportColumn::make('created_at')
-                ->type('datetime')
                 ->rules(['nullable']),
             ImportColumn::make('updated_at')
-                ->type('datetime')
                 ->rules(['nullable']),
         ];
     }

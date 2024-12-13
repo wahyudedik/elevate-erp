@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use App\Models\ManagementSDM\Employee;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -38,11 +39,13 @@ class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static ?string $navigationLabel = 'Karyawan';
+    protected static ?string $navigationLabel = 'Daftar Karyawan';
 
-    protected static ?string $modelLabel = 'Karyawan';
-    
-    protected static ?string $pluralModelLabel = 'Karyawan';
+    protected static ?string $modelLabel = 'Daftar Karyawan';
+
+    protected static ?string $pluralModelLabel = 'Daftar Karyawan';
+
+    protected static ?string $slug = 'daftar-karyawan';
 
     protected static ?string $cluster = ClustersEmployee::class;
 
@@ -62,86 +65,124 @@ class EmployeeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Personal Information')
+                Forms\Components\Section::make('Informasi Pribadi')
                     ->schema([
                         Forms\Components\TextInput::make('first_name')
+                            ->label('Nama Depan')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('last_name')
+                            ->label('Nama Belakang')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('employee_code')
+                            ->label('Kode Karyawan')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
+                            ->label('Email')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
+                            ->label('Telepon')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\DatePicker::make('date_of_birth'),
+                        Forms\Components\DatePicker::make('date_of_birth')
+                            ->label('Tanggal Lahir'),
                         Forms\Components\Select::make('gender')
+                            ->label('Jenis Kelamin')
                             ->options([
-                                'male' => 'Male',
-                                'female' => 'Female',
-                                'other' => 'Other',
+                                'male' => 'Laki-laki',
+                                'female' => 'Perempuan',
+                                'other' => 'Lainnya',
                             ]),
                         Forms\Components\TextInput::make('national_id_number')
+                            ->label('Nomor KTP')
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Employment Details')
+                Forms\Components\Section::make('Detail Pekerjaan')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
-                            ->preload(),
-                        Forms\Components\Select::make('position_id')
-                            ->relationship('position', 'name')
-                            ->nullable()
-                            ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->live(),
                         Forms\Components\Select::make('department_id')
-                            ->relationship('department', 'name')
+                            ->label('Departemen')
+                            ->relationship(
+                                'department',
+                                'name',
+                                fn($query, $get) =>
+                                $query->when(
+                                    $get('branch_id'),
+                                    fn($query, $branch_id) =>
+                                    $query->where('branch_id', $branch_id)
+                                )
+                            )
                             ->nullable()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->live()
+                            ->hidden(fn($get) => ! $get('branch_id')),
+                        Forms\Components\Select::make('position_id')
+                            ->label('Jabatan')
+                            ->relationship(
+                                'position',
+                                'name',
+                                fn($query, $get) =>
+                                $query->when(
+                                    $get('department_id'),
+                                    fn($query, $department_id) =>
+                                    $query->where('department_id', $department_id)
+                                )
+                            )
+                            ->nullable()
+                            ->searchable()
+                            ->preload()
+                            ->hidden(fn($get) => ! $get('department_id')),
                         Forms\Components\DatePicker::make('date_of_joining')
+                            ->label('Tanggal Bergabung')
                             ->required()
                             ->default(now()),
                         Forms\Components\TextInput::make('salary')
+                            ->label('Gaji')
                             ->numeric()
                             ->prefix('IDR')
                             ->maxValue(9999999999999.99),
                         Forms\Components\Select::make('employment_status')
+                            ->label('Status Kepegawaian')
                             ->options([
-                                'permanent' => 'Permanent',
-                                'contract' => 'Contract',
-                                'internship' => 'Internship',
+                                'permanent' => 'Tetap',
+                                'contract' => 'Kontrak',
+                                'internship' => 'Magang',
                             ])
                             ->default('permanent'),
                         Forms\Components\Select::make('manager_id')
+                            ->label('Manajer')
                             ->relationship('manager', 'position_id')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('status')
+                            ->label('Status')
                             ->options([
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
-                                'terminated' => 'Terminated',
-                                'resigned' => 'Resigned',
+                                'active' => 'Aktif',
+                                'inactive' => 'Tidak Aktif',
+                                'terminated' => 'Diberhentikan',
+                                'resigned' => 'Mengundurkan Diri',
                             ])
                             ->default('active')
                             ->required(),
                         Forms\Components\Select::make('user_id')
                             ->relationship('user', 'name')
-                            ->label('User')
+                            ->label('Pengguna')
                             ->preload()
                             ->createOptionForm([
                                 Forms\Components\FileUpload::make('image')
@@ -152,59 +193,90 @@ class EmployeeResource extends Resource
                                     ->visibility('public')
                                     ->maxSize(5024)
                                     ->columnSpanFull()
-                                    ->label('Profile Image'),
+                                    ->label('Foto Profil'),
                                 Forms\Components\TextInput::make('name')
+                                    ->label('Nama')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('email')
+                                    ->label('Email')
                                     ->email()
                                     ->required()
                                     ->maxLength(255),
-                                Forms\Components\DateTimePicker::make('email_verified_at'),
+                                Forms\Components\DateTimePicker::make('email_verified_at')
+                                    ->label('Email Terverifikasi Pada'),
                                 Forms\Components\Select::make('roles')
+                                    ->label('Peran')
                                     ->relationship('roles', 'name')
-                                    // ->multiple()
                                     ->preload()
                                     ->searchable(),
                                 Forms\Components\TextInput::make('password')
+                                    ->label('Kata Sandi')
                                     ->password()
                                     ->maxLength(255)
                                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
                                     ->dehydrated(fn($state) => filled($state))
                                     ->required(fn(string $context): bool => $context === 'create'),
                                 Forms\Components\Select::make('usertype')
+                                    ->label('Tipe Pengguna')
                                     ->options([
-                                        'staff' => 'Staff',
-                                        'member' => 'Member',
+                                        'staff' => 'Staf',
+                                        'member' => 'Anggota',
                                     ])
                                     ->required()
                                     ->default('staff'),
                             ]),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Address Information')
+                Forms\Components\Section::make('Informasi Alamat')
                     ->schema([
                         Forms\Components\Textarea::make('address')
+                            ->label('Alamat')
                             ->maxLength(65535)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('city')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('state')
-                            ->maxLength(255),
+                        Forms\Components\Select::make('province_id')
+                            ->label('Provinsi')
+                            ->live()
+                            ->afterStateUpdated(fn(callable $set) => $set('city_id', null))
+                            ->options(fn() => Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+                                ->collect()
+                                ->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('city_id')
+                            ->label('Kota/Kabupaten')
+                            ->live()
+                            ->afterStateUpdated(fn(callable $set) => $set('district_id', null))
+                            ->options(fn($get) => $get('province_id')
+                                ? Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/regencies/{$get('province_id')}.json")
+                                ->collect()
+                                ->pluck('name', 'id')
+                                : [])
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('district_id')
+                            ->label('Kecamatan')
+                            ->live()
+                            ->options(fn($get) => $get('city_id')
+                                ? Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/districts/{$get('city_id')}.json")
+                                ->collect()
+                                ->pluck('name', 'id')
+                                : [])
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('postal_code')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('country')
+                            ->label('Kode Pos')
                             ->maxLength(255),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Employee Documents')
+                Forms\Components\Section::make('Dokumen Karyawan')
                     ->schema([
                         Forms\Components\FileUpload::make('profile_picture')
                             ->image()
                             ->disk('public')
                             ->directory('employee-profile-pictures')
                             ->maxSize(1024)
-                            ->label('Profile Picture')
+                            ->label('Foto Profil')
                             ->imagePreviewHeight('250')
                             ->downloadable()
                             ->avatar()
@@ -215,20 +287,20 @@ class EmployeeResource extends Resource
                             ->disk('public')
                             ->directory('employee-contracts')
                             ->maxSize(5120)
-                            ->label('Employment Contract')
+                            ->label('Kontrak Kerja')
                             ->downloadable()
                             ->openable()
                             ->visibility('public'),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)

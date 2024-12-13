@@ -50,7 +50,7 @@ class JournalEntriesRelationManager extends RelationManager
                             ->label('Tanggal Entri')
                             ->default(now())
                             ->columnSpanFull(),
-                        Forms\Components\Textarea::make('description')
+                        Forms\Components\RichEditor::make('description')
                             ->label('Deskripsi')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('entry_type')
@@ -111,6 +111,7 @@ class JournalEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(50)
+                    ->html()
                     ->searchable()
                     ->toggleable()
                     ->wrap(),

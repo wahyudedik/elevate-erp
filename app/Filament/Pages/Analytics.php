@@ -4,9 +4,11 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use App\Filament\Clusters\Dashboard;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class Analytics extends Page
 {
+    use HasPageShield;
     protected static ?string $cluster = Dashboard::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-pie';

@@ -13,11 +13,13 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class cctv extends Page implements HasForms
 {
     use InteractsWithForms;
     use WithFileUploads;
+    use HasPageShield;
 
     protected static ?string $title = '';
     protected static ?string $navigationIcon = 'heroicon-o-video-camera';

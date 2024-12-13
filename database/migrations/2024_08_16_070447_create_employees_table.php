@@ -31,10 +31,10 @@ return new class extends Migration
             $table->enum('employment_status', ['permanent', 'contract', 'internship'])->default('permanent');  // Status kerja
             $table->foreignId('manager_id')->nullable()->constrained('employees')->onDelete('set null');  // Manager dari karyawan (self-reference)
             $table->string('address')->nullable();  // Alamat
-            $table->string('city')->nullable();  // Kota
-            $table->string('state')->nullable();  // Provinsi
+            $table->string('province_id')->nullable();  // Kota
+            $table->string('city_id')->nullable();  // Provinsi
+            $table->string('district_id')->nullable();  // Kecamatan
             $table->string('postal_code')->nullable();  // Kode pos
-            $table->string('country')->nullable();  // Negara
             $table->enum('status', ['active', 'inactive', 'terminated', 'resigned'])->default('active');  // Status karyawan
             $table->string('profile_picture')->nullable();  // Foto profil
             $table->string('contract')->nullable();  // contract kerja

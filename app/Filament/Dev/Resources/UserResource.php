@@ -36,15 +36,18 @@ class UserResource extends Resource
                 Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->required(fn(string $operation): bool => $operation === 'create')
                     ->maxLength(255)
-                    ->dehydrated(fn ($state) => filled($state))
+                    ->dehydrated(fn($state) => filled($state))
                     ->revealable(),
                 Forms\Components\Select::make('usertype')
                     ->options([
                         'dev' => 'Dev',
                         'member' => 'Member',
                     ])
+                    ->required(),
+                Forms\Components\Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
@@ -67,6 +70,8 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('usertype'),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

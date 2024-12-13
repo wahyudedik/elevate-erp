@@ -64,7 +64,7 @@ class LedgerRelationManager extends RelationManager
                             ->maxValue(429496976772.95)
                             ->minValue(0)
                             ->step(0.01),
-                        Forms\Components\Textarea::make('transaction_description')
+                        Forms\Components\RichEditor::make('transaction_description')
                             ->label('Deskripsi Transaksi')
                             ->maxLength(65535)
                             ->columnSpanFull(),
@@ -139,6 +139,7 @@ class LedgerRelationManager extends RelationManager
                     ->label('Deskripsi')
                     ->limit(50)
                     ->wrap()
+                    ->html()
                     ->searchable()
                     ->toggleable()
                     ->tooltip(fn($record) => $record->transaction_description)

@@ -6,7 +6,9 @@ use Filament\Clusters\Cluster;
 
 class Employee extends Cluster
 {
-    protected static ?string $navigationLabel = 'Employee';
+    protected static ?string $navigationLabel = 'Karyawan';
+
+    protected static ?string $slug = 'karyawan';
 
     protected static ?string $navigationGroup = 'Manajemen SDM';
 

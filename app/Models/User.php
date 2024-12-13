@@ -32,16 +32,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
     {
         //add validasi berdasarkan usertype
         if ($panel->getId() === 'admin') {
-            return in_array($this->usertype, ['member', 'staff', 'dev']) && str_ends_with($this->email, '@gmail.com');
+            return in_array($this->usertype, ['member', 'staff', 'dev']) && str_ends_with($this->email, '@gmail.com') && $this->is_active;
         }
 
         if ($panel->getId() === 'dev') {
-            return $this->usertype === 'dev' && str_ends_with($this->email, '@gmail.com');
+            return $this->usertype === 'dev' && str_ends_with($this->email, '@gmail.com') && $this->is_active;
         }
 
         return false;
     }
-    
     public function company(): BelongsToMany
     {
         return $this->belongsToMany(Company::class);

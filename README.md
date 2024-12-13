@@ -20,14 +20,15 @@ Perbaikan :
 -   [x] bug dan bahasa indonesia => Jurnal
 -   [x] bug dan bahasa indonesia => Buku Besar
 -   [x] bug dan bahasa indonesia => laporan keuangan
--   [x] bug => permission
+-   [x] bug => role permission
+-   [x] Email Verification port .env dan .env.example
 
 Fitur Admin :
 
--   [x] fitur login
--   [x] fitur register
--   [x] fitur forgot password
--   [x] fitur reset password
+-   [x] fitur login = User untuk melakukan login yang berstatus active
+-   [x] fitur register = User untuk melakukan register untuk menjadi user aktif dan masuk ke dalam sistem
+-   [x] fitur forgot password =  User untuk melakukan reset password
+-   [x] fitur reset password = User untuk melakukan reset password
 -   [x] fitur profile
 -   [x] fitur logout
 -   [x] fitur dashboard
@@ -41,10 +42,10 @@ Fitur Admin :
 -   [x] fitur jurnal
 -   [x] fitur bukuu besar dan transaksi
 -   [x] fitur laporan keuangan -> laporan laba rugi, laporan neraca, laporan arus kas
--   [x] fitur permission
+-   [x] fitur role permission
 
 bug :
 
 -   [] Deployment error fitur permission super-admin dan register/login
 -   [] Actifyti log error belum setting per company
--   [x] Email Verification port .env dan .env.example
+-   [] laporan keuangan belum otomatis

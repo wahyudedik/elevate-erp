@@ -20,7 +20,7 @@ class AccountingExporter extends Exporter
             ExportColumn::make('account_name'),
             ExportColumn::make('account_number'),
             ExportColumn::make('account_type'),
-            ExportColumn::make('initial_balance'),
+            ExportColumn::make('initial_balance'), 
             ExportColumn::make('current_balance'),
             ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),

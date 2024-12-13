@@ -5,18 +5,24 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use App\Models\ManagementFinancial\JournalEntry;
+use Filament\Facades\Filament;
 
 class FinancialPieChart extends ChartWidget
 {
     protected static ?string $heading = 'Expense Breakdown';
-
     protected function getData(): array
     {
+        $tenantId = Filament::getTenant()->id;
+
         $expenseData = JournalEntry::query()
+            ->select('accounts.account_name', DB::raw('SUM(journal_entries.amount) as total_amount'))
             ->join('accounts', 'journal_entries.account_id', '=', 'accounts.id')
             ->where('accounts.account_type', 'expense')
-            ->select('accounts.account_name', DB::raw('SUM(journal_entries.amount) as total_amount'))
+            ->where('journal_entries.company_id', $tenantId)
+            ->where('accounts.company_id', $tenantId)
+            ->whereNull('journal_entries.deleted_at')
             ->groupBy('accounts.account_name')
+            ->withoutGlobalScopes()
             ->get();
 
         return [
