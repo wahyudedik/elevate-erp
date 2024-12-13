@@ -16,10 +16,13 @@ class AccountingImporter extends Importer
         return [
             ImportColumn::make('id')
                 ->label('ID')
-                ->rules(['required', 'integer', 'exists:accounts,id']),
-            ImportColumn::make('branch')
+                ->rules(['required', 'integer']),
+            ImportColumn::make('company_id')
+                ->label('Company')
+                ->rules(['required', 'integer']),
+            ImportColumn::make('branch_id')
                 ->label('Branch')
-                ->rules(['required', 'string', 'exists:branches,name']),
+                ->rules(['required', 'integer']),
             ImportColumn::make('account_name')
                 ->label('Account Name')
                 ->rules(['required', 'string']),
@@ -28,17 +31,20 @@ class AccountingImporter extends Importer
                 ->rules(['required', 'string', 'unique:accounts,account_number']),
             ImportColumn::make('account_type')
                 ->label('Account Type')
-                ->rules(['required', 'string', 'in:asset,liability,equity,revenue,expense']),
+                ->rules(['required', 'string', 'in:asset,liability,equity,revenue,expense,kas']),
             ImportColumn::make('initial_balance')
                 ->label('Initial Balance')
                 ->rules(['required', 'numeric', 'decimal:0,2']),
             ImportColumn::make('current_balance')
                 ->label('Current Balance')
                 ->rules(['required', 'numeric', 'decimal:0,2']),
+            ImportColumn::make('deleted_at')
+                ->label('Deleted At')
+                ->rules(['nullable', 'date']),
             ImportColumn::make('created_at')
                 ->label('Created At')
                 ->rules(['required', 'date']),
-            importColumn::make('updated_at')
+            ImportColumn::make('updated_at')
                 ->label('Updated At')
                 ->rules(['required', 'date']),
         ];

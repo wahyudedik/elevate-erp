@@ -15,12 +15,14 @@ class AccountingExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
-            ExportColumn::make('branch'),
+            ExportColumn::make('company_id'),
+            ExportColumn::make('branch_id'),
             ExportColumn::make('account_name'),
             ExportColumn::make('account_number'),
             ExportColumn::make('account_type'),
             ExportColumn::make('initial_balance'),
             ExportColumn::make('current_balance'),
+            ExportColumn::make('deleted_at'),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];

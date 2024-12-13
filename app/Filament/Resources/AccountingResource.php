@@ -89,6 +89,7 @@ class AccountingResource extends Resource
                                 'equity' => 'Equity / Modal',
                                 'revenue' => 'Revenue / Pendapatan',
                                 'expense' => 'Expense / Beban',
+                                'kas' => 'Kas',
                             ]),
                         Forms\Components\TextInput::make('initial_balance')
                             ->label('Saldo Awal')
@@ -196,16 +197,17 @@ class AccountingResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
                     ->relationship('branch', 'name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->multiple()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('account_type')
                     ->options([
-                        'asset' => 'Asset',
-                        'liability' => 'Liability',
-                        'equity' => 'Equity',
-                        'revenue' => 'Revenue',
-                        'expense' => 'Expense',
+                        'asset' => 'Asset/Aset',
+                        'liability' => 'Liability/Kewajiban',
+                        'equity' => 'Equity/Modal',
+                        'revenue' => 'Revenue/Pendapatan',
+                        'expense' => 'Expense/Beban',
+                        'kas' => 'Kas',
                     ])
                     ->label('Account Type')
                     ->multiple()
@@ -234,9 +236,9 @@ class AccountingResource extends Resource
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Created from'),
+                            ->label('Dibuat dari'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Created until'),
+                            ->label('Dibuat sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -384,23 +386,25 @@ class AccountingResource extends Resource
                     ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
+                        ->label('Ekspor')
                         ->exporter(AccountingExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Account exported successfully' . ' ' . now()->toDateTimeString())
+                                ->title('Akun berhasil diekspor' . ' ' . now()->toDateTimeString())
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()
+                        ->label('Impor')
                         ->importer(AccountingImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Account imported successfully' . ' ' . now()->toDateTimeString())
+                                ->title('Akun berhasil diimpor' . ' ' . now()->toDateTimeString())
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
@@ -492,7 +496,7 @@ class AccountingResource extends Resource
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ])->label('Bulk Actions'),
+                    ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()

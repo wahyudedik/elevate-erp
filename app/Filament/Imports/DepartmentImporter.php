@@ -24,16 +24,14 @@ class DepartmentImporter extends Importer
             ImportColumn::make('name')
                 ->requiredMapping()
                 ->rules(['required', 'max:255']),
-            ImportColumn::make('description'),
+            ImportColumn::make('description')
+                ->rules(['nullable']),
             ImportColumn::make('created_at')
-                ->date()
-                ->rules(['date']),
+                ->rules(['nullable', 'date_format:Y-m-d H:i:s']),
             ImportColumn::make('updated_at')
-                ->date()
-                ->rules(['date']),
+                ->rules(['nullable', 'date_format:Y-m-d H:i:s']),
             ImportColumn::make('deleted_at')
-                ->date()
-                ->rules(['date']),
+                ->rules(['nullable', 'date_format:Y-m-d H:i:s']),
         ];
     }
 

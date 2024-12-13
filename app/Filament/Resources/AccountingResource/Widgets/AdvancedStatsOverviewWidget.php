@@ -30,6 +30,31 @@ class AdvancedStatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-currency-dollar', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
+            Stat::make('Total Ekuitas', $this->formatNumber(Accounting::where('account_type', 'equity')->sum('current_balance')))->icon('heroicon-o-scale')
+                ->description("Total nilai akun ekuitas")
+                ->descriptionIcon('heroicon-o-currency-dollar', 'before')
+                ->descriptionColor('warning')
+                ->iconColor('warning'),
+            Stat::make('Total Pendapatan', $this->formatNumber(Accounting::where('account_type', 'revenue')->sum('current_balance')))->icon('heroicon-o-scale')
+                ->description("Total nilai akun pendapatan")
+                ->descriptionIcon('heroicon-o-currency-dollar', 'before')
+                ->descriptionColor('success')
+                ->iconColor('success'),
+            Stat::make('Total Pengeluaran', $this->formatNumber(Accounting::where('account_type', 'expense')->sum('current_balance')))->icon('heroicon-o-scale')
+                ->description("Total nilai akun pengeluaran")
+                ->descriptionIcon('heroicon-o-currency-dollar', 'before')
+                ->descriptionColor('danger')
+                ->iconColor('danger'),
+            Stat::make('Total Kas', $this->formatNumber(Accounting::where('account_type', 'kas')->sum('current_balance')))->icon('heroicon-o-scale')
+                ->description("Total nilai akun kas")
+                ->descriptionIcon('heroicon-o-currency-dollar', 'before')
+                ->descriptionColor('primary')
+                ->iconColor('primary'),
+            // Stat::make('Total Piutang', $this->formatNumber(Accounting::where('account_type', 'receivable')->sum('current_balance')))->icon('heroicon-o-scale')
+            //     ->description("Total nilai akun piutang")
+            //     ->descriptionIcon('heroicon-o-currency-dollar', 'before')
+            //     ->descriptionColor('primary')
+            //     ->iconColor('primary'),
         ];
     }
 

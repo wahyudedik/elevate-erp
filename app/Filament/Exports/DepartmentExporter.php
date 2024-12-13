@@ -14,7 +14,7 @@ class DepartmentExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
+            ExportColumn::make('id') 
                 ->label('ID'),
             ExportColumn::make('company_id'),
             ExportColumn::make('branch_id'),

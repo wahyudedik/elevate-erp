@@ -20,6 +20,7 @@ Perbaikan :
 -   [x] bug dan bahasa indonesia => Jurnal
 -   [x] bug dan bahasa indonesia => Buku Besar
 -   [x] bug dan bahasa indonesia => laporan keuangan
+-   [x] bug => permission
 
 Fitur Admin :
 
@@ -40,6 +41,7 @@ Fitur Admin :
 -   [x] fitur jurnal
 -   [x] fitur bukuu besar dan transaksi
 -   [x] fitur laporan keuangan -> laporan laba rugi, laporan neraca, laporan arus kas
+-   [x] fitur permission
 
 bug :
 
