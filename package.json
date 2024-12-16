@@ -19,6 +19,8 @@
         "vite": "^5.0"
     },
     "dependencies": {
-        "hls.js": "^1.5.17"
+        "@puppeteer/browsers": "^2.6.1",
+        "hls.js": "^1.5.17",
+        "puppeteer": "^23.10.4"
     }
 }

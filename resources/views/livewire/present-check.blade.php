@@ -44,16 +44,6 @@
                                 Presensi</button>
                         @endif
                     </form>
-                    {{-- <form class="row g-3 mt-3" wire:submit="store" enctype="multipart/form-data">
-                        <button type="button" onclick="tagLocation()"
-                            class="px-4 py-2 bg-blue-500 text-white rounded">Tag Location</button>
-                        @if ($insideRadius && !$attendance?->check_out)
-                            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded">Submit
-                                Presensi</button>
-                        @elseif ($attendance?->check_out)
-                            <p class="text-red-500">Anda sudah melakukan check out hari ini.</p>
-                        @endif
-                    </form> --}}
                 </div>
 
             </div>
@@ -98,13 +88,9 @@
                     map.setView([lat, lng], 15);
 
                     if (isWithinRadius(lat, lng, branch, radius)) {
-                        component.set('insideRadius', true);
-                        component.set('latitude', lat);
-                        component.set('longitude', lng);
+                        @this.call('setLocation', lat, lng);
                     }
-                })
-            } else {
-                alert('Tidak bisa get location');
+                });
             }
         }
 

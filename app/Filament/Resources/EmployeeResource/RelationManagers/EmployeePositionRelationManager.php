@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\EmployeeResource\RelationManagers;
 
+use App\Models\Branch;
+use App\Models\Department;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -12,6 +14,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ManagementSDM\EmployeePosition;
+use App\Models\Position;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 
@@ -19,11 +22,13 @@ class EmployeePositionRelationManager extends RelationManager
 {
     protected static string $relationship = 'employeePosition';
 
+    protected static ?string $title = 'Posisi Karyawan';
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Employee Position Details')
+                Forms\Components\Section::make('Detail Posisi Karyawan')
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
@@ -31,48 +36,41 @@ class EmployeePositionRelationManager extends RelationManager
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
-                            ->preload(),
-                        Forms\Components\Select::make('employee_id')
-                            ->relationship('employee', 'first_name')
+                            ->preload()
+                            ->label('Cabang'),
+                        Forms\Components\Select::make('department')
+                            ->options(fn($get) => Department::query()
+                                ->where('branch_id', $get('branch_id'))
+                                ->pluck('name', 'name')
+                                ->toArray())
                             ->required()
                             ->searchable()
-                            ->preload()
-                            ->label('Employee'),
+                            ->live()
+                            ->label('Departemen'),
                         Forms\Components\Select::make('position')
-                            ->options([
-                                'manager' => 'Manager',
-                                'supervisor' => 'Supervisor',
-                                'team_lead' => 'Team Lead',
-                                'developer' => 'Developer',
-                                'designer' => 'Designer',
-                                'analyst' => 'Analyst',
-                                'hr_specialist' => 'HR Specialist',
-                                'accountant' => 'Accountant',
-                                'sales_representative' => 'Sales Representative',
-                                'customer_support' => 'Customer Support',
-                                'marketing_specialist' => 'Marketing Specialist',
-                                'project_manager' => 'Project Manager',
-                                'quality_assurance' => 'Quality Assurance',
-                                'other' => 'Other',
-                            ])
+                            ->options(fn($get) => Position::query()
+                                ->where('branch_id', $get('branch_id'))
+                                ->pluck('name', 'name')
+                                ->toArray())
                             ->required()
-                            ->searchable(),
-                        Forms\Components\DatePicker::make('start_date')
-                            ->required()
+                            ->searchable()
+                            ->live()
+                            ->label('Posisi'),
+                        Forms\Components\DatePicker::make('start_date')->required()
                             ->default(now())
-                            ->label('Start Date'),
+                            ->label('Tanggal Mulai'),
                         Forms\Components\DatePicker::make('end_date')
                             ->nullable()
-                            ->label('End Date'),
+                            ->label('Tanggal Berakhir'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -88,83 +86,71 @@ class EmployeePositionRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
-                    ->label('Employee')
-                    ->toggleable(),
+                    ->label('Karyawan')
+                    ->toggleable()
+                    ->icon('heroicon-m-user'),
+                Tables\Columns\TextColumn::make('department')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Departemen')
+                    ->toggleable()
+                    ->icon('heroicon-m-building-office-2'),
                 Tables\Columns\TextColumn::make('position')
                     ->searchable()
                     ->sortable()
-                    ->label('Position')
-                    ->toggleable(),
+                    ->label('Posisi')
+                    ->description(fn(EmployeePosition $record): string => $record->start_date ? $record->start_date->diffForHumans($record->end_date ?? now(), ['syntax' => true]) : '-')
+                    ->toggleable()
+                    ->icon('heroicon-m-briefcase'),
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->label('Tanggal Mulai')
+                    ->icon('heroicon-m-calendar'),
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Tanggal Berakhir')
+                    ->icon('heroicon-m-calendar'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Dibuat Pada')
+                    ->icon('heroicon-m-clock'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Terakhir Diubah')
+                    ->icon('heroicon-m-arrow-path'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
                     ->label('Branch'),
-                Tables\Filters\SelectFilter::make('employee')
-                    ->relationship('employee', 'first_name')
-                    ->searchable()
-                    ->preload()
-                    ->label('Filter by Employee'),
-                Tables\Filters\SelectFilter::make('position')
-                    ->searchable()
-                    ->preload()
-                    ->label('Filter by Position'),
-                Tables\Filters\Filter::make('active')
-                    ->query(fn(Builder $query): Builder => $query->whereNull('end_date'))
-                    ->toggle()
-                    ->label('Show Only Active Positions'),
-                Tables\Filters\Filter::make('start_date')
-                    ->form([
-                        DatePicker::make('start'),
-                        DatePicker::make('end')
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['start'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('start_date', '>=', $date),
-                            )
-                            ->when(
-                                $data['end'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('end_date', '<=', $date),
-                            );
-                    })->columns(2),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    // Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    // Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('endPosition')
                         ->label('End Position')
                         ->icon('heroicon-o-x-circle')
@@ -213,26 +199,17 @@ class EmployeePositionRelationManager extends RelationManager
                 ]),
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                // CreateAction::make()->icon('heroicon-o-plus')->label('Buat Posisi Baru'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus')
-            ]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
+                // Tables\Actions\CreateAction::make()
+                //     ->icon('heroicon-o-plus')
+                //     ->label('Buat Posisi Baru'),
             ]);
     }
 }

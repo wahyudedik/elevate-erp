@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Recruitment extends Model
+class Recruitment extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 

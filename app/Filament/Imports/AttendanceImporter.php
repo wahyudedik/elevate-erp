@@ -44,10 +44,10 @@ class AttendanceImporter extends Importer
                 ->rules(['nullable', 'date_format:H:i:s']),
             ImportColumn::make('schedules_latitude')
                 ->numeric()
-                ->rules(['required']),
+                ->rules(['required', 'numeric']),
             ImportColumn::make('schedules_longitude')
                 ->numeric()
-                ->rules(['required']),
+                ->rules(['required', 'numeric']),
             ImportColumn::make('check_in')
                 ->time()
                 ->rules(['nullable', 'date_format:H:i:s']),
@@ -56,16 +56,16 @@ class AttendanceImporter extends Importer
                 ->rules(['nullable', 'date_format:H:i:s']),
             ImportColumn::make('latitude_check_in')
                 ->numeric()
-                ->rules(['nullable']),
+                ->rules(['nullable', 'numeric']),
             ImportColumn::make('longitude_check_in')
                 ->numeric()
-                ->rules(['nullable']),
+                ->rules(['nullable', 'numeric']),
             ImportColumn::make('latitude_check_out')
                 ->numeric()
-                ->rules(['nullable']),
+                ->rules(['nullable', 'numeric']),
             ImportColumn::make('longitude_check_out')
                 ->numeric()
-                ->rules(['nullable']),
+                ->rules(['nullable', 'numeric']),
             ImportColumn::make('status')
                 ->requiredMapping()
                 ->rules(['required', 'in:present,absent,late,on_leave']),

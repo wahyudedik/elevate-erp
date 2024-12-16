@@ -54,10 +54,10 @@ class EmployeeImporter extends Importer
             ImportColumn::make('manager_id')
                 ->numeric(),
             ImportColumn::make('address'),
-            ImportColumn::make('city'),
-            ImportColumn::make('state'),
+            ImportColumn::make('province_id'),
+            ImportColumn::make('city_id'),
+            ImportColumn::make('district_id'),
             ImportColumn::make('postal_code'),
-            ImportColumn::make('country'),
             ImportColumn::make('status')
                 ->acceptsOnly(['active', 'inactive', 'terminated', 'resigned'])
                 ->default('active'),

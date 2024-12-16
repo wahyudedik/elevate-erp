@@ -33,7 +33,7 @@ class RecruitmentResource extends Resource
     protected static ?string $navigationLabel = 'Rekrutmen';
 
     protected static ?string $modelLabel = 'Rekrutmen';
-    
+
     protected static ?string $pluralModelLabel = 'Rekrutmen';
 
     protected static ?string $cluster = Employee::class;
@@ -54,51 +54,59 @@ class RecruitmentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Job Details')
+                Forms\Components\Section::make('Detail Pekerjaan')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\TextInput::make('job_title')
+                            ->label('Judul Pekerjaan')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\RichEditor::make('job_description')
+                            ->label('Deskripsi Pekerjaan')
                             ->required()
                             ->columnSpanFull(),
                         Forms\Components\Select::make('employment_type')
+                            ->label('Jenis Pekerjaan')
                             ->required()
                             ->options([
                                 'full_time' => 'Full Time',
                                 'part_time' => 'Part Time',
-                                'contract' => 'Contract',
-                                'internship' => 'Internship',
+                                'contract' => 'Kontrak',
+                                'internship' => 'Magang',
                             ]),
                         Forms\Components\TextInput::make('location')
+                            ->label('Lokasi')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\DatePicker::make('posted_date')
+                            ->label('Tanggal Posting')
                             ->required()
                             ->default(now()),
-                        Forms\Components\DatePicker::make('closing_date'),
+                        Forms\Components\DatePicker::make('closing_date')
+                            ->label('Tanggal Penutupan'),
                         Forms\Components\Select::make('status')
+                            ->label('Status')
                             ->required()
                             ->options([
-                                'open' => 'Open',
-                                'closed' => 'Closed',
-                                'on_hold' => 'On Hold',
+                                'open' => 'Buka',
+                                'closed' => 'Tutup',
+                                'on_hold' => 'Ditahan',
                             ])
                             ->default('open'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -113,17 +121,24 @@ class RecruitmentResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->iconColor('primary')
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('job_title')
+                    ->label('Judul Pekerjaan')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->weight('medium')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('employment_type')
+                    ->label('Jenis Pekerjaan')
                     ->searchable()
                     ->sortable()
                     ->badge()
@@ -133,21 +148,30 @@ class RecruitmentResource extends Resource
                         'contract' => 'danger',
                         'internship' => 'info',
                     })
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->icon('heroicon-o-map-pin')
+                    ->iconColor('success')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('posted_date')
+                    ->label('Tanggal Posting')
                     ->date()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('closing_date')
+                    ->label('Tanggal Penutupan')
                     ->date()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->searchable()
                     ->sortable()
                     ->badge()
@@ -156,15 +180,20 @@ class RecruitmentResource extends Resource
                         'closed' => 'danger',
                         'on_hold' => 'warning',
                     })
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diubah')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -172,7 +201,7 @@ class RecruitmentResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('employment_type')
                     ->options([
                         'full_time' => 'Full Time',
@@ -180,7 +209,7 @@ class RecruitmentResource extends Resource
                         'contract' => 'Contract',
                         'internship' => 'Internship',
                     ])
-                    ->label('Employment Type')
+                    ->label('Jenis Pekerjaan')
                     ->multiple(),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -192,9 +221,9 @@ class RecruitmentResource extends Resource
                 Tables\Filters\Filter::make('posted_date')
                     ->form([
                         Forms\Components\DatePicker::make('posted_from')
-                            ->label('Posted From'),
+                            ->label('Diposting Dari'),
                         Forms\Components\DatePicker::make('posted_until')
-                            ->label('Posted Until'),
+                            ->label('Diposting Sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -210,9 +239,9 @@ class RecruitmentResource extends Resource
                 Tables\Filters\Filter::make('closing_date')
                     ->form([
                         Forms\Components\DatePicker::make('closing_from')
-                            ->label('Closing From'),
+                            ->label('Ditutup Dari'),
                         Forms\Components\DatePicker::make('closing_until')
-                            ->label('Closing Until'),
+                            ->label('Ditutup Sampai'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -226,10 +255,10 @@ class RecruitmentResource extends Resource
                             );
                     })->columns(2),
                 Tables\Filters\TernaryFilter::make('has_closing_date')
-                    ->label('Has Closing Date')
+                    ->label('Ada Tanggal Penutupan')
                     ->nullable()
-                    ->trueLabel('Yes')
-                    ->falseLabel('No')
+                    ->trueLabel('Ya')
+                    ->falseLabel('Tidak')
                     ->queries(
                         true: fn(Builder $query) => $query->whereNotNull('closing_date'),
                         false: fn(Builder $query) => $query->whereNull('closing_date'),
@@ -241,6 +270,7 @@ class RecruitmentResource extends Resource
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('close')
                         ->label('Close Recruitment')
                         ->icon('heroicon-o-x-circle')
@@ -259,14 +289,29 @@ class RecruitmentResource extends Resource
                             $record->update(['status' => 'open', 'closing_date' => null]);
                         })
                         ->visible(fn(Recruitment $record): bool => $record->status === 'closed'),
-                    Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('Link to Application Form')
                         ->label('Link to Application Form')
                         ->icon('heroicon-o-map')
                         ->color('primary')
                         ->url(fn(Recruitment $record): string => route('candidate.apply', $record))
                         ->openUrlInNewTab(),
-                ])
+                ]),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('generate-poster')
+                        ->label('Generate Poster')
+                        ->icon('heroicon-o-document')
+                        ->color('warning')
+                        ->url(fn(Recruitment $record): string => route('recruitment.generate-poster', $record))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('generate-poster-pdf')
+                        ->label('Download as PDF')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('warning')
+                        ->url(fn(Recruitment $record): string => route('recruitment.generate-poster', ['recruitment' => $record, 'format' => 'pdf']))
+                        ->openUrlInNewTab(),
+                ])->label('Download Poster')
+                    ->icon('heroicon-o-document')
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

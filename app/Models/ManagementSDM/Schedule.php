@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Company;
@@ -14,14 +15,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Schedule extends Model
+class Schedule extends BaseModel
 {
     use HasFactory, SoftDeletes, Notifiable, LogsActivity;
-
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
 
     protected $table = 'schedules';
 

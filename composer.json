@@ -39,6 +39,8 @@
         "rmsramos/activitylog": "^1.0",
         "ryangjchandler/blade-tabler-icons": "^2.3",
         "saade/blade-iconsax": "^1.2",
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/browsershot": "^5.0",
         "spatie/laravel-permission": "^6.10",
         "troccoli/blade-health-icons": "^3.0"
     },

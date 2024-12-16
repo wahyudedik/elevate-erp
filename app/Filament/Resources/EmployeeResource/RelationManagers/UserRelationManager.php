@@ -17,11 +17,13 @@ class UserRelationManager extends RelationManager
 {
     protected static string $relationship = 'user';
 
+    protected static ?string $title = 'Pengguna';
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('User Information')
+                Forms\Components\Section::make('Informasi Pengguna')
                     ->schema([
                         Forms\Components\FileUpload::make('image')
                             ->image()
@@ -31,42 +33,48 @@ class UserRelationManager extends RelationManager
                             ->visibility('public')
                             ->maxSize(5024)
                             ->columnSpanFull()
-                            ->label('Profile Image'),
+                            ->label('Foto Profil'),
                         Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->label('Nama'),
                         Forms\Components\TextInput::make('email')
                             ->email()
                             ->required()
-                            ->maxLength(255),
-                        Forms\Components\DateTimePicker::make('email_verified_at'),
+                            ->maxLength(255)
+                            ->label('Surel'),
+                        Forms\Components\DateTimePicker::make('email_verified_at')
+                            ->label('Tanggal Verifikasi Email'),
                         Forms\Components\Select::make('roles')
                             ->relationship('roles', 'name')
                             // ->multiple()
                             ->preload()
-                            ->searchable(),
+                            ->searchable()
+                            ->label('Peran'),
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->maxLength(255)
                             ->dehydrateStateUsing(fn($state) => Hash::make($state))
                             ->dehydrated(fn($state) => filled($state))
-                            ->required(fn(string $context): bool => $context === 'create'),
+                            ->required(fn(string $context): bool => $context === 'create')
+                            ->label('Kata Sandi'),
                         Forms\Components\Select::make('usertype')
                             ->options([
-                                'staff' => 'Staff',
-                                'member' => 'Member',
+                                'staff' => 'Staf',
+                                'member' => 'Anggota',
                             ])
                             ->required()
-                            ->default('staff'),
+                            ->default('staff')
+                            ->label('Tipe Pengguna'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -82,45 +90,71 @@ class UserRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->icon('heroicon-m-user')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('email')
-                    ->icon('heroicon-o-envelope')
+                    ->label('Surel')
+                    ->icon('heroicon-m-envelope')
                     ->toggleable()
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('Surel disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('email_verified_at')
-                    ->icon('heroicon-o-check-badge')
+                    ->label('Verifikasi Email')
+                    ->icon('heroicon-m-check-badge')
                     ->toggleable()
-                    ->dateTime()
-                    ->sortable(),
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->badge()
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('usertype')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('roles.name'),
+                    ->label('Tipe Pengguna')
+                    ->toggleable()
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'dev' => 'Pengembang',
+                        'staff' => 'Staf',
+                        'member' => 'Anggota',
+                    }),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Peran')
+                    ->badge()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('email_verified_at')
-                    ->label('Email verification')
-                    ->placeholder('All users')
-                    ->trueLabel('Verified users')
-                    ->falseLabel('Unverified users')
+                    ->label('Verifikasi Email')
+                    ->placeholder('Semua Pengguna')
+                    ->trueLabel('Pengguna Terverifikasi')
+                    ->falseLabel('Pengguna Belum Terverifikasi')
                     ->queries(
                         true: fn(Builder $query) => $query->whereNotNull('email_verified_at'),
                         false: fn(Builder $query) => $query->whereNull('email_verified_at'),
                     ),
                 Tables\Filters\Filter::make('created_at')
+                    ->label('Dibuat Pada')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from'),
-                        Forms\Components\DatePicker::make('created_until'),
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -142,7 +176,7 @@ class UserRelationManager extends RelationManager
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->color('primary')->icon('heroicon-o-plus'),
+                // CreateAction::make()->color('primary')->icon('heroicon-o-plus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

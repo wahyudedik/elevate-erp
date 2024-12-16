@@ -13,20 +13,20 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Leaves', Leave::count())->icon('heroicon-o-calendar')
+            Stat::make('Total Cuti', Leave::count())->icon('heroicon-o-calendar')
                 ->chartColor('primary')
                 ->iconPosition('start')
-                ->description('All leave requests')
+                ->description('Semua pengajuan cuti')
                 ->descriptionIcon('heroicon-o-document', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Pending Leaves', Leave::where('status', 'pending')->count())->icon('heroicon-o-clock')
-                ->description('Awaiting approval')
+            Stat::make('Cuti Tertunda', Leave::where('status', 'pending')->count())->icon('heroicon-o-clock')
+                ->description('Menunggu persetujuan')
                 ->descriptionIcon('heroicon-o-clock', 'before')
                 ->descriptionColor('warning')
                 ->iconColor('warning'),
-            Stat::make('Approved Leaves', Leave::where('status', 'approved')->count())->icon('heroicon-o-check-circle')
-                ->description("Successfully approved")
+            Stat::make('Cuti Disetujui', Leave::where('status', 'approved')->count())->icon('heroicon-o-check-circle')
+                ->description("Berhasil disetujui")
                 ->descriptionIcon('heroicon-o-check', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success')

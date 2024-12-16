@@ -26,6 +26,8 @@ class ShiftExporter extends Exporter
                 ->label('Start Time'),
             ExportColumn::make('end_time')
                 ->label('End Time'),
+            ExportColumn::make('deleted_at')
+                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')

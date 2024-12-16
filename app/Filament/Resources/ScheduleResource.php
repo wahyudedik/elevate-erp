@@ -29,7 +29,7 @@ class ScheduleResource extends Resource
     protected static ?string $navigationLabel = 'Jadwal';
 
     protected static ?string $modelLabel = 'Jadwal';
-    
+
     protected static ?string $pluralModelLabel = 'Jadwal';
 
     protected static ?string $cluster = Employee::class;
@@ -50,50 +50,55 @@ class ScheduleResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Schedule Details')
+                Forms\Components\Section::make('Detail Jadwal')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->required()
                             ->relationship('branch', 'name')
+                            ->label('Cabang')
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('user_id')
                             ->required()
                             ->relationship('user', 'name')
+                            ->label('Pengguna')
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('employee_id')
                             ->relationship('employee', 'first_name')
+                            ->label('Karyawan')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('shift_id')
                             ->relationship('shift', 'name')
+                            ->label('Shift')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\DatePicker::make('date')
                             ->required()
                             ->default(now())
+                            ->label('Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y'),
                         Forms\Components\Toggle::make('is_wfa')
-                            ->label('Is WFA')
+                            ->label('Kerja Dari Rumah')
                             ->default(false),
                         Forms\Components\Toggle::make('is_banned')
-                            ->label('Is Banned')
+                            ->label('Diblokir')
                             ->default(false),
                     ])
                     ->columns(2)
                     ->collapsible(),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -110,38 +115,43 @@ class ScheduleResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('employee.first_name')
+                    ->label('Karyawan')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('User')
+                    ->label('Pengguna')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('shift.name')
+                    ->label('Shift')
                     ->searchable()
                     ->description(fn(Schedule $record): string => $record->shift->start_time->format('H:i') . ' - ' . $record->shift->end_time->format('H:i'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('date')
+                    ->label('Tanggal')
                     ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_wfa')
-                    ->label('WFA')
+                    ->label('Kerja Dari Rumah')
                     ->boolean(),
                 Tables\Columns\IconColumn::make('is_banned')
-                    ->label('Banned')
+                    ->label('Diblokir')
                     // ->hidden(fn () => !Auth::user()->hasRole('super_admin'))
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -152,12 +162,12 @@ class ScheduleResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('User'),
+                    ->label('Pengguna'),
                 Tables\Filters\SelectFilter::make('branch_id')
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -172,7 +182,7 @@ class ScheduleResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export schedule completed' . ' ' . now())
+                                ->title('Ekspor jadwal selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -181,7 +191,7 @@ class ScheduleResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import schedule completed' . ' ' . now())
+                                ->title('Impor jadwal selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -197,7 +207,7 @@ class ScheduleResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export schedule completed' . ' ' . now())
+                                ->title('Ekspor jadwal selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -205,7 +215,8 @@ class ScheduleResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->label('Buat Jadwal Baru'),
             ]);
     }
 

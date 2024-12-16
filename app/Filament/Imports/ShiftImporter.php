@@ -29,6 +29,15 @@ class ShiftImporter extends Importer
             ImportColumn::make('end_time')
                 ->required()
                 ->time(),
+            ImportColumn::make('deleted_at')
+                ->nullable()
+                ->date(),
+            ImportColumn::make('created_at')
+                ->nullable()
+                ->date(),
+            ImportColumn::make('updated_at')
+                ->nullable()
+                ->date(),
         ];
     }
 

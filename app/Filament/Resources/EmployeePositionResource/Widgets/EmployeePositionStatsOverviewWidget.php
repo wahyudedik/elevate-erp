@@ -13,33 +13,33 @@ class EmployeePositionStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Positions', function () {
+            Stat::make('Total Jabatan', function () {
                 return $this->formatNumber(EmployeePosition::count());
             })->icon('heroicon-o-briefcase')
                 ->iconBackgroundColor('primary')
                 ->chartColor('primary')
                 ->iconPosition('end')
-                ->description('Total employee positions')
+                ->description('Total jabatan karyawan')
                 ->descriptionIcon('heroicon-o-information-circle', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Active Positions', function () {
+            Stat::make('Jabatan Aktif', function () {
                 return $this->formatNumber(EmployeePosition::whereNull('end_date')->count());
             })->icon('heroicon-o-user-group')
                 ->iconBackgroundColor('success')
                 ->chartColor('success')
                 ->iconPosition('end')
-                ->description('Currently active positions')
+                ->description('Jabatan yang sedang aktif')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Ended Positions', function () {
+            Stat::make('Jabatan Berakhir', function () {
                 return $this->formatNumber(EmployeePosition::whereNotNull('end_date')->count());
             })->icon('heroicon-o-archive-box-x-mark')
                 ->iconBackgroundColor('danger')
                 ->chartColor('danger')
                 ->iconPosition('end')
-                ->description('Positions that have ended')
+                ->description('Jabatan yang telah berakhir')
                 ->descriptionIcon('heroicon-o-chevron-down', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger')

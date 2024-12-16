@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('posted_date');
             $table->date('closing_date')->nullable(); 
             $table->string('status')->default('open');
-            $table->softDeletes();  // Kolom untuk soft delete
+            $table->softDeletes();  // Kolom untuk soft delete 
             $table->timestamps(); 
         });
 

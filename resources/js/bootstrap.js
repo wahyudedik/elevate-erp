@@ -12,7 +12,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 import './echo';  
 
 import Echo from 'laravel-echo';
-import Reverb from '@reverb/client';
+// import Reverb from '@reverb/client';
 
 window.Echo = new Echo({
     broadcaster: 'reverb',

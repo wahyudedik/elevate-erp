@@ -73,6 +73,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         'password',
         'usertype',
         'email_verified_at',
+        'is_active',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -85,6 +86,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
                 'password',
                 'usertype',
                 'email_verified_at',
+                'is_active'
             ]);
     }
 
@@ -108,6 +110,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Has
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean'
         ];
     }
 

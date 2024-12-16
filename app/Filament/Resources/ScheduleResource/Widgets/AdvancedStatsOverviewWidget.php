@@ -15,23 +15,23 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Employees', Employee::count())->icon('heroicon-o-users')
-                ->description("Registered employees")
+            Stat::make('Total Karyawan', Employee::count())->icon('heroicon-o-users')
+                ->description("Karyawan terdaftar")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('primary'),
-            Stat::make('Total Shifts', Shift::count())->icon('heroicon-o-clock')
-                ->description("Active shifts")
+            Stat::make('Total Shift', Shift::count())->icon('heroicon-o-clock')
+                ->description("Shift aktif")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('warning'),
-            Stat::make('WFA Schedules', Schedule::where('is_wfa', true)->count())->icon('heroicon-o-home')
-                ->description("Work from anywhere schedules")
+            Stat::make('Jadwal WFA', Schedule::where('is_wfa', true)->count())->icon('heroicon-o-home')
+                ->description("Jadwal kerja dari mana saja")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('success'),
-            Stat::make('Banned Schedules', Schedule::where('is_banned', true)->count())->icon('ionicon-ban')
-                ->description("Banned schedules")
+            Stat::make('Jadwal Diblokir', Schedule::where('is_banned', true)->count())->icon('ionicon-ban')
+                ->description("Jadwal yang diblokir")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger')

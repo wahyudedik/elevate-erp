@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Department;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -48,7 +49,8 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('employee_id')->nullable()->constrained('employees')->onDelete('cascade');
-            $table->string('position');  // Jabatan
+            $table->json('department');
+            $table->json('position');  // Jabatan
             $table->date('start_date');  // Tanggal mulai jabatan
             $table->date('end_date')->nullable();  // Tanggal berakhir jabatan
             $table->softDeletes();  // Kolom untuk soft delete

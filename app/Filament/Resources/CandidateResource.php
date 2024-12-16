@@ -38,7 +38,7 @@ class CandidateResource extends Resource
     protected static ?string $navigationLabel = 'Kandidat';
 
     protected static ?string $modelLabel = 'Kandidat';
-    
+
     protected static ?string $pluralModelLabel = 'Kandidat';
 
     protected static ?string $cluster = Employee::class;
@@ -59,42 +59,51 @@ class CandidateResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Personal Information')
+                Forms\Components\Section::make('Informasi Pribadi')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\TextInput::make('first_name')
+                            ->label('Nama Depan')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('last_name')
+                            ->label('Nama Belakang')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
+                            ->label('Email')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
+                            ->label('Nomor Telepon')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\DatePicker::make('date_of_birth'),
+                        Forms\Components\DatePicker::make('date_of_birth')
+                            ->label('Tanggal Lahir'),
                         Forms\Components\Select::make('gender')
+                            ->label('Jenis Kelamin')
                             ->options([
-                                'male' => 'Male',
-                                'female' => 'Female',
-                                'other' => 'Other',
+                                'male' => 'Laki-laki',
+                                'female' => 'Perempuan',
+                                'other' => 'Lainnya',
                             ]),
                         Forms\Components\TextInput::make('national_id_number')
+                            ->label('Nomor KTP')
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Application Details')
+                Forms\Components\Section::make('Detail Lamaran')
                     ->schema([
                         Forms\Components\Select::make('position_applied')
+                            ->label('Posisi yang Dilamar')
                             ->required()
                             ->options(function () {
                                 return Recruitment::where('status', 'open')->pluck('job_title', 'id');
@@ -102,6 +111,7 @@ class CandidateResource extends Resource
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('recruiter_id')
+                            ->label('Perekrut')
                             ->relationship('recruiter', 'first_name')
                             ->searchable()
                             ->preload()
@@ -122,9 +132,11 @@ class CandidateResource extends Resource
                                 }
                             }),
                         Forms\Components\DatePicker::make('application_date')
+                            ->label('Tanggal Lamaran')
                             ->required()
                             ->default(now()),
                         Forms\Components\FileUpload::make('resume')
+                            ->label('Resume')
                             ->acceptedFileTypes(['application/pdf'])
                             ->maxSize(5120)
                             ->directory('candidate-resumes')
@@ -132,30 +144,35 @@ class CandidateResource extends Resource
                             ->openable(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Address Information')
+                Forms\Components\Section::make('Informasi Alamat')
                     ->schema([
                         Forms\Components\TextInput::make('address')
+                            ->label('Alamat')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('city')
+                            ->label('Kota')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('state')
+                            ->label('Provinsi')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('postal_code')
+                            ->label('Kode Pos')
                             ->maxLength(255),
                         Forms\Components\Select::make('country')
+                            ->label('Negara')
                             ->searchable()
                             ->options([
                                 'Indonesia' => 'Indonesia'
                             ]),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)

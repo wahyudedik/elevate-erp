@@ -31,7 +31,7 @@ class ShiftResource extends Resource
     protected static ?string $navigationLabel = 'Shift';
 
     protected static ?string $modelLabel = 'Shift';
-    
+
     protected static ?string $pluralModelLabel = 'Shift';
 
     protected static ?string $cluster = Employee::class;
@@ -52,33 +52,34 @@ class ShiftResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Shift Details')
+                Forms\Components\Section::make('Detail Shift')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->label('Cabang'),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
-                            ->label('Shift Name'),
+                            ->label('Nama Shift'),
                         Forms\Components\TimePicker::make('start_time')
                             ->required()
-                            ->label('Start Time'),
+                            ->label('Waktu Mulai'),
                         Forms\Components\TimePicker::make('end_time')
                             ->required()
-                            ->label('End Time'),
+                            ->label('Waktu Selesai'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -96,34 +97,36 @@ class ShiftResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Shift Name')
+                    ->label('Nama Shift')
                     ->sortable()
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('start_time')
-                    ->label('Start Time')
+                    ->label('Waktu Mulai')
                     ->sortable()
+                    ->time()
                     ->icon('heroicon-o-clock')
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('end_time')
-                    ->label('End Time')
+                    ->label('Waktu Selesai')
                     ->icon('heroicon-o-clock')
                     ->sortable()
+                    ->time()
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -134,43 +137,7 @@ class ShiftResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
-                Tables\Filters\Filter::make('start_time')
-                    ->form([
-                        Forms\Components\TimePicker::make('start_from')
-                            ->label('Start From'),
-                        Forms\Components\TimePicker::make('start_until')
-                            ->label('Start Until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['start_from'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('start_time', '>=', $date),
-                            )
-                            ->when(
-                                $data['start_until'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('start_time', '<=', $date),
-                            );
-                    })->columns(2),
-                Tables\Filters\Filter::make('end_time')
-                    ->form([
-                        Forms\Components\TimePicker::make('end_from')
-                            ->label('End From'),
-                        Forms\Components\TimePicker::make('end_until')
-                            ->label('End Until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['end_from'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('end_time', '>=', $date),
-                            )
-                            ->when(
-                                $data['end_until'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('end_time', '<=', $date),
-                            );
-                    })->columns(2),
+                    ->label('Cabang'),
             ])
             ->actions([
                 ActionGroup::make([
@@ -182,14 +149,14 @@ class ShiftResource extends Resource
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Shift Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(ShiftExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor shift selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -198,7 +165,7 @@ class ShiftResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import department completed' . ' ' . now())
+                                ->title('Impor shift selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -214,7 +181,7 @@ class ShiftResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor shift selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -222,7 +189,7 @@ class ShiftResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Shift')
+                    ->label('Buat Shift Baru')
                     ->icon('heroicon-o-plus'),
             ]);
     }

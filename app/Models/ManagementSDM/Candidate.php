@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Candidate extends Model
+class Candidate extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
@@ -90,12 +91,14 @@ class Candidate extends Model
         });
 
         static::created(function ($candidate) {
-            $application = new Applications();
-            $application->candidate_id = $candidate->id;
-            $application->recruitment_id = $candidate->position_applied;
-            $application->status = $candidate->status;
-            $application->resume = $candidate->resume;
-            $application->save();
+            Applications::create([
+                'company_id' => $candidate->company_id,
+                'branch_id' => $candidate->branch_id,
+                'candidate_id' => $candidate->id,
+                'recruitment_id' => $candidate->position_applied,
+                'status' => $candidate->status,
+                'resume' => $candidate->resume
+            ]);
         });
     }
 

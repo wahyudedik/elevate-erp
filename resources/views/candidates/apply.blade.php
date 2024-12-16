@@ -81,16 +81,17 @@
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
                     </div>
-
                     <div class="mb-3">
                         <label for="position_applied" class="form-label">Position Applied</label>
-                        <input type="text" class="form-control" id="position_applied" name="position_applied"
-                            value="{{ $recruitment->id }}" placeholder="{{ $recruitment->first_name }}" required readonly hidden>
+                        @if ($recruitment)
+                            <input type="text" class="form-control" id="position_applied" name="position_applied"
+                                value="{{ $recruitment->id }}" placeholder="{{ $recruitment->first_name }}" required
+                                readonly hidden>
+                        @endif
                         @error('position_applied')
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
                     </div>
-
                     <div class="mb-3">
                         <label for="resume" class="form-label">Resume/CV</label>
                         <input type="file" class="form-control" id="resume" name="resume">

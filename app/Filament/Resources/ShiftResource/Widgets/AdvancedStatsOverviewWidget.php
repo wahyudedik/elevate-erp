@@ -15,26 +15,26 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Shifts', function () {
+            Stat::make('Total Shift', function () {
                 return Shift::count();
             })->icon('heroicon-o-clock')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Total shifts created')
+                ->description('Total shift yang dibuat')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Active Branches', function () {
+            Stat::make('Cabang Aktif', function () {
                 return Branch::whereHas('shift')->count();
             })->icon('heroicon-o-building-office')
-                ->description('Branches with shifts')
+                ->description('Cabang dengan shift')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('warning'),
-            Stat::make('Companies', function () {
+            Stat::make('Perusahaan', function () {
                 return Company::whereHas('shift')->count();
             })->icon('heroicon-o-building-office-2')
-                ->description("Companies with shifts")
+                ->description("Perusahaan dengan shift")
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('primary')

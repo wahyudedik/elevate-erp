@@ -30,7 +30,7 @@ class LeaveResource extends Resource
     protected static ?string $navigationLabel = 'Ijin/Keluar';
 
     protected static ?string $modelLabel = 'Ijin/Keluar';
-    
+
     protected static ?string $pluralModelLabel = 'Ijin/Keluar';
 
     protected static ?string $cluster = Employee::class;
@@ -55,48 +55,54 @@ class LeaveResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name')
+                            ->label('Cabang')
                             ->searchable()
                             ->preload()
                             ->nullable(),
                         Forms\Components\Select::make('user_id')
                             ->relationship('user', 'name')
+                            ->label('Pengguna')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\DatePicker::make('start_date')
+                            ->label('Tanggal Mulai')
                             ->required(),
                         Forms\Components\DatePicker::make('end_date')
+                            ->label('Tanggal Selesai')
                             ->required()
                             ->afterOrEqual('start_date'),
                         Forms\Components\RichEditor::make('reason')
+                            ->label('Alasan')
                             ->columnSpanFull()
                             ->required(),
                         Forms\Components\Select::make('status')
                             ->options([
-                                'pending' => 'Pending',
-                                'approved' => 'Approved',
-                                'rejected' => 'Rejected',
+                                'pending' => 'Tertunda',
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
                             ])
+                            ->label('Status')
                             ->required()
                             ->default('pending'),
                         Forms\Components\RichEditor::make('note')
+                            ->label('Catatan')
                             ->columnSpanFull()
                             ->nullable(),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
                     ->collapsible(),
-
             ]);
     }
 
@@ -107,26 +113,38 @@ class LeaveResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm')
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-m-building-office'),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('User')
+                    ->label('Pengguna')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-m-user'),
                 Tables\Columns\TextColumn::make('start_date')
-                    ->label('Start Date')
-                    ->date()
-                    ->sortable(),
+                    ->label('Tanggal Mulai')
+                    ->date('d M Y')
+                    ->icon('heroicon-m-calendar')
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('end_date')
-                    ->label('End Date')
-                    ->date()
-                    ->sortable(),
+                    ->label('Tanggal Selesai')
+                    ->date('d M Y')
+                    ->icon('heroicon-m-calendar-days')
+                    ->sortable()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('reason')
-                    ->label('Reason')
+                    ->label('Alasan')
                     ->html()
                     ->limit(50)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
@@ -136,16 +154,25 @@ class LeaveResource extends Resource
                         }
                         return $state;
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->icon('heroicon-m-document-text')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',
                         'danger' => 'rejected',
-                    ]),
+                    ])
+                    ->icon(fn(string $state): string => match ($state) {
+                        'pending' => 'heroicon-m-clock',
+                        'approved' => 'heroicon-m-check-circle',
+                        'rejected' => 'heroicon-m-x-circle',
+                    })
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('note')
-                    ->label('Note')
+                    ->label('Catatan')
                     ->limit(50)
                     ->html()
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
@@ -155,17 +182,26 @@ class LeaveResource extends Resource
                         }
                         return $state;
                     })
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-clipboard-document-list')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-clock')
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-arrow-path')
+                    ->color('gray'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -173,7 +209,7 @@ class LeaveResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -183,23 +219,36 @@ class LeaveResource extends Resource
                 Tables\Actions\RestoreAction::make(),
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Cuti Baru'),
+                Tables\Actions\Action::make('download')
+                    ->label('Download Surat')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function () {
+                        $pdf = app('dompdf.wrapper')->loadView('pdf.leave-letter');
+
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, "surat-permohonan-cuti.pdf");
+                    }),
                 ActionGroup::make([
                     ExportAction::make()->exporter(LeaveExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
+                        ->label('Ekspor')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export leave completed' . ' ' . now())
+                                ->title('Ekspor cuti selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()->importer(LeaveImporter::class)
                         ->icon('heroicon-o-arrow-up-tray')
                         ->color('info')
+                        ->label('Impor')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import department completed' . ' ' . now())
+                                ->title('Impor cuti selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -208,7 +257,6 @@ class LeaveResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                     ExportBulkAction::make()->exporter(LeaveExporter::class)
@@ -216,7 +264,7 @@ class LeaveResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export leave completed' . ' ' . now())
+                                ->title('Ekspor cuti selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -224,7 +272,7 @@ class LeaveResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Create Leave')
+                    ->label('Buat Cuti Baru')
                     ->icon('heroicon-o-plus')
             ]);
     }

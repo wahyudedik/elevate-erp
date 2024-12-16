@@ -4,7 +4,9 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Position;
 use Filament\Forms\Form;
+use App\Models\Department;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Filament\Clusters\Employee;
@@ -32,7 +34,7 @@ class EmployeePositionResource extends Resource
     protected static ?string $navigationLabel = 'Jabatan Karyawan';
 
     protected static ?string $modelLabel = 'Jabatan Karyawan';
-    
+
     protected static ?string $pluralModelLabel = 'Jabatan Karyawan';
 
     protected static ?string $cluster = Employee::class;
@@ -52,54 +54,54 @@ class EmployeePositionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Employee Position Details')
+                Forms\Components\Section::make('Detail Jabatan Karyawan')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->label('Cabang'),
                         Forms\Components\Select::make('employee_id')
                             ->relationship('employee', 'first_name')
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->label('Employee'),
-                        Forms\Components\Select::make('position')
-                            ->options([
-                                'manager' => 'Manager',
-                                'supervisor' => 'Supervisor',
-                                'team_lead' => 'Team Lead',
-                                'developer' => 'Developer',
-                                'designer' => 'Designer',
-                                'analyst' => 'Analyst',
-                                'hr_specialist' => 'HR Specialist',
-                                'accountant' => 'Accountant',
-                                'sales_representative' => 'Sales Representative',
-                                'customer_support' => 'Customer Support',
-                                'marketing_specialist' => 'Marketing Specialist',
-                                'project_manager' => 'Project Manager',
-                                'quality_assurance' => 'Quality Assurance',
-                                'other' => 'Other',
-                            ])
+                            ->label('Karyawan'),
+                        Forms\Components\Select::make('department')
+                            ->options(fn($get) => Department::query()
+                                ->where('branch_id', $get('branch_id'))
+                                ->pluck('name', 'name')
+                                ->toArray())
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->live()
+                            ->label('Departemen'),
+                        Forms\Components\Select::make('position')
+                            ->options(fn($get) => Position::query()
+                                ->where('branch_id', $get('branch_id'))
+                                ->pluck('name', 'name')
+                                ->toArray())
+                            ->required()
+                            ->searchable()
+                            ->live()
+                            ->label('Posisi'),
                         Forms\Components\DatePicker::make('start_date')
                             ->required()
                             ->default(now())
-                            ->label('Start Date'),
+                            ->label('Tanggal Mulai'),
                         Forms\Components\DatePicker::make('end_date')
                             ->nullable()
-                            ->label('End Date'),
+                            ->label('Tanggal Berakhir'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -116,35 +118,50 @@ class EmployeePositionResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
-                    ->label('Employee')
+                    ->label('Karyawan')
+                    ->icon('heroicon-m-user')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('department')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Departemen')
+                    ->icon('heroicon-m-building-office-2')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('position')
                     ->searchable()
                     ->sortable()
-                    ->label('Position')
+                    ->label('Posisi')
+                    ->icon('heroicon-m-briefcase')
+                    ->description(fn(EmployeePosition $record): string => $record->start_date ? $record->start_date->diffForHumans($record->end_date ?? now(), ['syntax' => true]) : '-')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable()
+                    ->label('Tanggal Mulai')
+                    ->icon('heroicon-m-calendar')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable()
+                    ->label('Tanggal Berakhir')
+                    ->icon('heroicon-m-calendar')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('Dibuat Pada')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('Terakhir Diubah')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])->defaultSort('created_at', 'desc')
             ->filters([
@@ -153,20 +170,16 @@ class EmployeePositionResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('employee')
                     ->relationship('employee', 'first_name')
                     ->searchable()
                     ->preload()
-                    ->label('Filter by Employee'),
-                Tables\Filters\SelectFilter::make('position')
-                    ->searchable()
-                    ->preload()
-                    ->label('Filter by Position'),
+                    ->label('Filter berdasarkan Karyawan'),
                 Tables\Filters\Filter::make('active')
                     ->query(fn(Builder $query): Builder => $query->whereNull('end_date'))
                     ->toggle()
-                    ->label('Show Only Active Positions'),
+                    ->label('Tampilkan Hanya Posisi Aktif'),
                 Tables\Filters\Filter::make('start_date')
                     ->form([
                         DatePicker::make('start'),
@@ -192,13 +205,13 @@ class EmployeePositionResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('endPosition')
-                        ->label('End Position')
+                        ->label('Akhiri Posisi')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
                         ->form([
                             Forms\Components\DatePicker::make('end_date')
-                                ->label('End Date')
+                                ->label('Tanggal Berakhir')
                                 ->required()
                                 ->minDate(fn(EmployeePosition $record): string => $record->start_date)
                                 ->default(now()),
@@ -211,7 +224,7 @@ class EmployeePositionResource extends Resource
                                 'position_id' => null,
                             ]);
                             Notification::make()
-                                ->title('Position ended')
+                                ->title('Posisi telah diakhiri')
                                 ->success()
                                 ->send();
                         })
@@ -239,14 +252,14 @@ class EmployeePositionResource extends Resource
                 ]),
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Posisi Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(EmployeePositionExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export Position exported completed' . ' ' . now())
+                                ->title('Ekspor Posisi selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -255,7 +268,7 @@ class EmployeePositionResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import Position imported completed' . ' ' . now())
+                                ->title('Impor Posisi selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -266,20 +279,20 @@ class EmployeePositionResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    ExportBulkAction::make()->exporter(EmployeePositionExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->after(function () {
+                            Notification::make()
+                                ->title('Ekspor Posisi selesai' . ' ' . now())
+                                ->success()
+                                ->sendToDatabase(Auth::user());
+                        }),
                 ]),
-                ExportBulkAction::make()->exporter(EmployeePositionExporter::class)
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->after(function () {
-                        Notification::make()
-                            ->title('Export Position exported completed' . ' ' . now())
-                            ->success()
-                            ->sendToDatabase(Auth::user());
-                    }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus')
+                    ->icon('heroicon-o-plus')->label('Buat Posisi Baru'),
             ]);
     }
 
@@ -313,6 +326,7 @@ class EmployeePositionResource extends Resource
             'company_id',
             'branch_id',
             'employee_id',
+            'department',
             'position',
             'start_date',
             'end_date',

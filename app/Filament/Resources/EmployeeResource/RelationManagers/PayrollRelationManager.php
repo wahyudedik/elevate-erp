@@ -21,11 +21,13 @@ class PayrollRelationManager extends RelationManager
 {
     protected static string $relationship = 'payroll';
 
+    protected static ?string $title = 'Gaji';
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Payroll Information')
+                Forms\Components\Section::make('Informasi Penggajian')
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
@@ -33,13 +35,8 @@ class PayrollRelationManager extends RelationManager
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
-                            ->preload(),
-                        Forms\Components\Select::make('employee_id')
-                            ->relationship('employee', 'first_name')
-                            ->required()
-                            ->searchable()
                             ->preload()
-                            ->label('Employee ID'),
+                            ->label('Cabang'),
                         Forms\Components\TextInput::make('basic_salary')
                             ->required()
                             ->numeric()
@@ -54,8 +51,8 @@ class PayrollRelationManager extends RelationManager
                                 if ($employee) {
                                     $set('basic_salary', $employee->salary);
                                 }
-                            }),
-                        // ->mask(RawJs::make('$money($input)')),
+                            })
+                            ->label('Gaji Pokok'),
                         Forms\Components\TextInput::make('allowances')
                             ->required()
                             ->numeric()
@@ -70,13 +67,13 @@ class PayrollRelationManager extends RelationManager
                                 if ($employee) {
                                     $set('allowances', $employee->salary);
                                 }
-                            }),
-                        // ->mask(RawJs::make('$money($input)')),
+                            })
+                            ->label('Tunjangan'),
                         Forms\Components\TextInput::make('deductions')
                             ->default(0)
                             ->numeric()
-                            ->prefix('IDR'),
-                        // ->mask(RawJs::make('$money($input)')),
+                            ->prefix('IDR')
+                            ->label('Potongan'),
                         Forms\Components\TextInput::make('net_salary')
                             ->required()
                             ->numeric()
@@ -91,28 +88,31 @@ class PayrollRelationManager extends RelationManager
                                 $allowances = $get('allowances') ?? 0;
                                 $deductions = $get('deductions') ?? 0;
                                 $set('net_salary', $allowances - $deductions);
-                            }),
-                        // ->mask(RawJs::make('$money($input)')),
+                            })
+                            ->label('Gaji Bersih'),
                         Forms\Components\DatePicker::make('payment_date')
-                            ->required(),
+                            ->required()
+                            ->label('Tanggal Pembayaran'),
                         Forms\Components\Select::make('payment_status')
                             ->options([
-                                'pending' => 'Pending',
-                                'paid' => 'Paid',
+                                'pending' => 'Tertunda',
+                                'paid' => 'Dibayar',
                             ])
                             ->required()
-                            ->default('pending'),
+                            ->default('pending')
+                            ->label('Status Pembayaran'),
                         Forms\Components\TextInput::make('payment_method')
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->label('Metode Pembayaran'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -128,38 +128,58 @@ class PayrollRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->iconColor('primary')
+                    ->sortable()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
-                    ->label('Employee')
-                    ->toggleable(),
+                    ->label('Karyawan')
+                    ->toggleable()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('basic_salary')
+                    ->label('Gaji Pokok')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success')
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('allowances')
+                    ->label('Tunjangan')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success')
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('deductions')
+                    ->label('Potongan')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('danger')
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('net_salary')
+                    ->label('Gaji Bersih')
                     ->money('IDR')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success')
+                    ->size('lg')
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('payment_date')
+                    ->label('Tanggal Pembayaran')
                     ->date()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('payment_status')
+                    ->label('Status Pembayaran')
                     ->colors([
                         'danger' => 'pending',
                         'success' => 'paid',
@@ -168,158 +188,44 @@ class PayrollRelationManager extends RelationManager
                         'heroicon-o-x-circle' => 'pending',
                         'heroicon-o-check-circle' => 'paid',
                     ])
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Metode Pembayaran')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->size('lg'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('lg'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui Pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('lg')
             ])->defaultSort('created_at', 'desc')
-            ->filters([
-                Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\SelectFilter::make('branch_id')
-                    ->relationship('branch', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->label('Branch'),
-                Tables\Filters\SelectFilter::make('employee')
-                    ->relationship('employee', 'first_name')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\Filter::make('basic_salary')
-                    ->label('Basic Salary')
-                    ->form([
-                        Forms\Components\TextInput::make('min')
-                            ->numeric()
-                            ->label('Minimum')
-                            ->placeholder('0'),
-                        Forms\Components\TextInput::make('max')
-                            ->numeric()
-                            ->label('Maximum')
-                            ->placeholder('1000000'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min'],
-                                fn(Builder $query, $min): Builder => $query->where('basic_salary', '>=', $min),
-                            )
-                            ->when(
-                                $data['max'],
-                                fn(Builder $query, $max): Builder => $query->where('basic_salary', '<=', $max),
-                            );
-                    })->columns(2),
-                Tables\Filters\Filter::make('net_salary')
-                    ->label('Net Salary')
-                    ->form([
-                        Forms\Components\TextInput::make('min')
-                            ->numeric()
-                            ->label('Minimum')
-                            ->placeholder('0'),
-                        Forms\Components\TextInput::make('max')
-                            ->numeric()
-                            ->label('Maximum')
-                            ->placeholder('1000000'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min'],
-                                fn(Builder $query, $min): Builder => $query->where('net_salary', '>=', $min),
-                            )
-                            ->when(
-                                $data['max'],
-                                fn(Builder $query, $max): Builder => $query->where('net_salary', '<=', $max),
-                            );
-                    })->columns(2),
-                Tables\Filters\SelectFilter::make('payment_status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'paid' => 'Paid',
-                    ]),
-                Tables\Filters\SelectFilter::make('payment_method')
-                    ->multiple()
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\Filter::make('payment_date')
-                    ->form([
-                        Forms\Components\DatePicker::make('date'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['date'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('payment_date', $date)
-                            );
-                    })->columns(2),
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from'),
-                        Forms\Components\DatePicker::make('created_until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    })->columns(2),
-            ])
+            ->filters([])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\Action::make('markAsPaid')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->requiresConfirmation()
-                        ->visible(fn(Payroll $record) => $record->payment_status === 'pending')
-                        ->action(function (Payroll $record) {
-                            $record->update(['payment_status' => 'paid']);
-                            Notification::make()
-                                ->title('Payroll marked as paid')
-                                ->success()
-                                ->send();
-                        }),
-                    Tables\Actions\Action::make('downloadPayslip')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->url(fn(Payroll $record) => route('filament.admin.resources.payrolls.download-payslip', $record))
-                        ->openUrlInNewTab(),
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                // CreateAction::make()->icon('heroicon-o-plus'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                //     Tables\Actions\ForceDeleteBulkAction::make(),
+                //     Tables\Actions\RestoreBulkAction::make(),
+                // ]),
             ])
             ->emptyStateActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
-            ]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
+                // CreateAction::make()->icon('heroicon-o-plus'),
             ]);
     }
 }

@@ -9,6 +9,7 @@ use App\Policies\ActivityPolicy;
 use App\Models\ManagementCRM\Sale;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
+use App\Observers\EmployeeObserver;
 use Illuminate\Support\Facades\Gate;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementCRM\Customer;
@@ -112,6 +113,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('viewPulse', function (User $user) {
             return $user->usertype === 'dev';
         });
+
+        //Management SDM -> Employee
+        Employee::observe(EmployeeObserver::class);
 
         // Gate::policy(Activity::class, ActivityPolicy::class);
 

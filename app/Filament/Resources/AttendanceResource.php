@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Filament\Clusters\Employee;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ManagementSDM\Schedule;
 use App\Models\ManagementSDM\Attendance;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -33,7 +34,7 @@ class AttendanceResource extends Resource
     protected static ?string $navigationLabel = 'Absensi';
 
     protected static ?string $modelLabel = 'Absensi';
-    
+
     protected static ?string $pluralModelLabel = 'Absensi';
 
     protected static ?string $cluster = Employee::class;
@@ -58,75 +59,96 @@ class AttendanceResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('user_id')
                             ->relationship('user', 'name')
+                            ->label('Pengguna')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('employee_id')
-                            ->relationship('employee', 'first_name, last_name')
-                            ->required()
+                            ->relationship('employee', 'first_name')
+                            ->label('Karyawan')
+                            ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('schedule_id')
                             ->relationship('schedule', 'date')
+                            ->label('Jadwal')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\DatePicker::make('date')
+                            ->label('Tanggal')
                             ->date()
                             ->required(),
                         Forms\Components\TimePicker::make('schedules_check_in')
+                            ->label('Jadwal Masuk')
                             ->nullable(),
                         Forms\Components\TimePicker::make('schedules_check_out')
+                            ->label('Jadwal Keluar')
                             ->nullable(),
                         Forms\Components\TextInput::make('schedules_latitude')
+                            ->label('Latitude Jadwal')
                             ->numeric()
                             ->required(),
                         Forms\Components\TextInput::make('schedules_longitude')
+                            ->label('Longitude Jadwal')
                             ->numeric()
                             ->required(),
                         Forms\Components\TimePicker::make('check_in')
+                            ->label('Waktu Masuk')
                             ->nullable(),
                         Forms\Components\TimePicker::make('check_out')
+                            ->label('Waktu Keluar')
                             ->nullable(),
-                        Forms\Components\TextInput::make('latitude')
+                        Forms\Components\TextInput::make('latitude_check_in')
+                            ->label('Latitude Check In')
                             ->numeric()
-                            ->required(),
-                        Forms\Components\TextInput::make('longitude')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('longitude_check_in')
+                            ->label('Longitude Check In')
                             ->numeric()
-                            ->required(),
+                            ->nullable(),
+                        Forms\Components\TextInput::make('latitude_check_out')
+                            ->label('Latitude Check Out')
+                            ->numeric()
+                            ->nullable(),
+                        Forms\Components\TextInput::make('longitude_check_out')
+                            ->label('Longitude Check Out')
+                            ->numeric()
+                            ->nullable(),
                         Forms\Components\Select::make('status')
+                            ->label('Status')
                             ->options([
-                                'present' => 'Present',
-                                'absent' => 'Absent',
-                                'late' => 'Late',
-                                'on_leave' => 'On Leave',
+                                'present' => 'Hadir',
+                                'absent' => 'Tidak Hadir',
+                                'late' => 'Terlambat',
+                                'on_leave' => 'Cuti',
                             ])
                             ->required()
                             ->default('present'),
                         Forms\Components\Textarea::make('note')
+                            ->label('Catatan')
                             ->maxLength(255)
                             ->nullable()
                             ->columnSpanFull(),
                     ])->columns(2),
-
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
                     ->collapsible(),
-
             ])->columns(2);
     }
 
@@ -137,80 +159,121 @@ class AttendanceResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->iconColor('primary')
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('employee.first_name')
                     ->searchable()
                     ->sortable()
                     ->toggleable()
-                    ->label('Employee'),
+                    ->label('Karyawan')
+                    ->icon('heroicon-m-user')
+                    ->iconColor('success')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('date')
                     ->date('Y-m-d')
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-m-calendar')
+                    ->label('Tanggal')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('is_late')
-                    ->label('Description')
+                    ->label('Keterangan')
                     ->badge()
                     ->getStateUsing(function ($record) {
-                        return $record->isLate() ? 'Terlambat' : 'Tepat Waktu';
+                        $late = $record->isLate();
+                        return $late['status'] ? 'Terlambat' : 'Tepat Waktu';
                     })
                     ->color(fn(string $state): string => match ($state) {
                         'Tepat Waktu' => 'success',
                         'Terlambat' => 'danger',
                     })
-                    ->description(fn(Attendance $record): string => 'Durasi : ' . $record->workDuration()),
+                    ->description(function ($record) {
+                        $late = $record->isLate();
+                        if ($late['status']) {
+                            return 'Terlambat: ' . $late['duration'];
+                        }
+                        return $record->check_in && $record->check_out ?
+                            'Durasi Kerja: ' . $record->workDuration() :
+                            'Belum Check Out';
+                    })
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('schedules_check_in')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Scheduled Check In'),
+                    ->label('Jadwal Masuk')
+                    ->icon('heroicon-m-clock')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('schedules_check_out')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Scheduled Check Out'),
+                    ->label('Jadwal Pulang')
+                    ->icon('heroicon-m-clock')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('check_in')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Actual Check In'),
+                    ->label('Waktu Masuk')
+                    ->icon('heroicon-m-arrow-right-circle')
+                    ->iconColor('success')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('check_out')
                     ->time('H:i')
                     ->toggleable()
-                    ->label('Actual Check Out'),
+                    ->label('Waktu Pulang')
+                    ->icon('heroicon-m-arrow-left-circle')
+                    ->iconColor('danger')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->toggleable()
+                    ->label('Status')
                     ->colors([
                         'success' => 'present',
                         'danger' => 'absent',
                         'warning' => 'late',
                         'secondary' => 'on_leave',
-                    ]),
+                    ])
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('note')
                     ->limit(30)
                     ->toggleable()
+                    ->label('Catatan')
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         if (strlen($state) <= 30) {
                             return null;
                         }
                         return $state;
-                    }),
+                    })
+                    ->icon('heroicon-m-document-text')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('schedule.date')
                     ->searchable()
                     ->sortable()
                     ->toggleable()
-                    ->label('Schedule'),
+                    ->label('Jadwal')
+                    ->icon('heroicon-m-calendar-days')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Dibuat Pada')
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->label('Terakhir Diubah')
+                    ->size('sm')
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -218,14 +281,14 @@ class AttendanceResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('employee')
                     ->relationship('employee', 'first_name')
                     ->searchable()
                     ->preload()
-                    ->label('Employee'),
+                    ->label('Karyawan'),
                 Tables\Filters\Filter::make('date')
-                    ->label('Date')
+                    ->label('Tanggal')
                     ->form([
                         DatePicker::make('date')
                             ->label('Tanggal')
@@ -240,78 +303,13 @@ class AttendanceResource extends Resource
                     }),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'present' => 'Present',
-                        'absent' => 'Absent',
-                        'late' => 'Late',
-                        'on_leave' => 'On Leave',
+                        'present' => 'Hadir',
+                        'absent' => 'Tidak Hadir',
+                        'late' => 'Terlambat',
+                        'on_leave' => 'Cuti',
                     ])
                     ->multiple()
                     ->label('Status'),
-                Tables\Filters\Filter::make('check_in')
-                    ->form([
-                        Forms\Components\TimePicker::make('check_in_from')
-                            ->label('Check In From'),
-                        Forms\Components\TimePicker::make('check_in_until')
-                            ->label('Check In Until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['check_in_from'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('check_in', '>=', $date),
-                            )
-                            ->when(
-                                $data['check_in_until'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('check_in', '<=', $date),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['check_in_from'] ?? null) {
-                            $indicators['check_in_from'] = 'Check in from ' . $data['check_in_from'];
-                        }
-                        if ($data['check_in_until'] ?? null) {
-                            $indicators['check_in_until'] = 'Check in until ' . $data['check_in_until'];
-                        }
-                        return $indicators;
-                    })->columns(2),
-                Tables\Filters\Filter::make('check_out')
-                    ->form([
-                        Forms\Components\TimePicker::make('check_out_from')
-                            ->label('Check Out From'),
-                        Forms\Components\TimePicker::make('check_out_until')
-                            ->label('Check Out Until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['check_out_from'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('check_out', '>=', $date),
-                            )
-                            ->when(
-                                $data['check_out_until'],
-                                fn(Builder $query, $date): Builder => $query->whereTime('check_out', '<=', $date),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['check_out_from'] ?? null) {
-                            $indicators['check_out_from'] = 'Check out from ' . $data['check_out_from'];
-                        }
-                        if ($data['check_out_until'] ?? null) {
-                            $indicators['check_out_until'] = 'Check out until ' . $data['check_out_until'];
-                        }
-                        return $indicators;
-                    })->columns(2),
-                Tables\Filters\TernaryFilter::make('has_note')
-                    ->label('Has Note')
-                    ->placeholder('All')
-                    ->trueLabel('With Notes')
-                    ->falseLabel('Without Notes')
-                    ->queries(
-                        true: fn(Builder $query) => $query->whereNotNull('note'),
-                        false: fn(Builder $query) => $query->whereNull('note'),
-                    ),
             ])
             ->actions([
                 tables\Actions\ActionGroup::make([
@@ -320,58 +318,10 @@ class AttendanceResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\Action::make('check_in')
-                        ->icon('letsicon-in')
-                        ->color('success')
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\DatePicker::make('date')
-                                ->default(now())
-                                ->required(),
-                            Forms\Components\TimePicker::make('check_in')
-                                ->default(now())
-                                ->required(),
-                            Forms\Components\Select::make('status')
-                                ->options([
-                                    'present' => 'Present',
-                                    'late' => 'Late',
-                                ])
-                                ->default('present')
-                                ->required(),
-                            Forms\Components\Textarea::make('note')
-                                ->rows(3),
-                        ])
-                        ->action(function (array $data, Attendance $record): void {
-                            $record->update($data);
-                            Notification::make()
-                                ->title('Checked In Successfully')
-                                ->success()
-                                ->send();
-                        })
-                        ->visible(fn(Attendance $record): bool => $record->check_in === null),
-                    Tables\Actions\Action::make('check_out')
-                        ->icon('letsicon-out')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\TimePicker::make('check_out')
-                                ->default(now())
-                                ->required(),
-                            Forms\Components\Textarea::make('note')
-                                ->rows(3),
-                        ])
-                        ->action(function (array $data, Attendance $record): void {
-                            $record->update($data);
-                            Notification::make()
-                                ->title('Checked Out Successfully')
-                                ->success()
-                                ->send();
-                        })
-                        ->visible(fn(Attendance $record): bool => $record->check_in !== null && $record->check_out === null),
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Absensi Baru'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(AttendanceExporter::class)
@@ -379,7 +329,7 @@ class AttendanceResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Attendances exported successfully.' . ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Absensi berhasil diekspor.' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -389,7 +339,7 @@ class AttendanceResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Attendances imported successfully.' .  ' ' . now()->format('Y-m-d H:i:s'))
+                                ->title('Absensi berhasil diimpor.' .  ' ' . now()->format('Y-m-d H:i:s'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -406,7 +356,7 @@ class AttendanceResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Attendances exported successfully.')
+                                ->title('Absensi berhasil diekspor.' . ' ' . now()->format('Y-m-d H:i:s'))
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
@@ -415,6 +365,7 @@ class AttendanceResource extends Resource
             ->emptyStateActions([
                 CreateAction::make()
                     ->icon('heroicon-o-plus')
+                    ->label('Buat Absensi Baru'),
             ]);
     }
 

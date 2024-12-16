@@ -18,9 +18,10 @@ class ListSchedules extends ListRecords
             Action::make('present-check')
                 ->icon('heroicon-o-check-circle')
                 ->url(route('present-check'))
-                ->color('success'),
+                ->color('success')
+                ->openUrlInNewTab(),
             Actions\CreateAction::make()
-                ->icon('heroicon-o-plus'),
+                ->icon('heroicon-o-plus')->icon('heroicon-o-plus')->label('Buat Jadwal Baru'),
         ];
     }
 

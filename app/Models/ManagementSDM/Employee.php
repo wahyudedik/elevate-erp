@@ -49,10 +49,10 @@ class Employee extends BaseModel
         'employment_status',
         'manager_id',
         'address',
-        'city',
-        'state',
+        'province_id',
+        'city_id',
+        'district_id',
         'postal_code',
-        'country',
         'status',
         'profile_picture',
         'contract'
@@ -80,10 +80,10 @@ class Employee extends BaseModel
                 'employment_status',
                 'manager_id',
                 'address',
-                'city',
-                'state',
+                'province_id',
+                'city_id',
+                'district_id',
                 'postal_code',
-                'country',
                 'status',
                 'profile_picture',
                 'contract'
@@ -110,10 +110,10 @@ class Employee extends BaseModel
         'employment_status' => 'string',
         'manager_id' => 'integer',
         'address' => 'string',
-        'city' => 'string',
-        'state' => 'string',
+        'province_id' => 'string',
+        'city_id' => 'string',
+        'district_id' => 'string',
         'postal_code' => 'string',
-        'country' => 'string',
         'status' => 'string',
         'profile_picture' => 'string',
         'contract' => 'string',
@@ -160,36 +160,6 @@ class Employee extends BaseModel
     public function employeePosition()
     {
         return $this->hasMany(EmployeePosition::class, 'employee_id');
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($employee) {
-            EmployeePosition::create([
-                'company_id' => Filament::getTenant()->id,
-                'employee_id' => $employee->id,
-                'position' => $employee->position,
-                'start_date' => $employee->date_of_joining,
-            ]);
-        });
-
-        static::updated(function ($employee) {
-            if ($employee->isDirty('position') || $employee->isDirty('department')) {
-
-                EmployeePosition::where('employee_id', $employee->id)
-                    ->whereNull('end_date')
-                    ->update(['end_date' => now()]);
-
-                EmployeePosition::create([
-                    'company_id' => Filament::getTenant()->id,
-                    'employee_id' => $employee->id,
-                    'position' => $employee->position,
-                    'start_date' => now(),
-                ]);
-            }
-        });
     }
 
     public function attendance(): HasMany

@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Scopes\CompanyScope;
@@ -13,14 +14,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class EmployeePosition extends Model
+class EmployeePosition extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
-
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
 
     // Nama tabel yang digunakan oleh model ini 
     protected $table = 'employee_positions';
@@ -30,6 +26,7 @@ class EmployeePosition extends Model
         'company_id',
         'branch_id',
         'employee_id',
+        'department',
         'position',
         'start_date',
         'end_date',
@@ -42,6 +39,7 @@ class EmployeePosition extends Model
                 'company_id',
                 'branch_id',
                 'employee_id',
+                'department',
                 'position',
                 'start_date',
                 'end_date',
@@ -53,7 +51,8 @@ class EmployeePosition extends Model
         'company_id' => 'integer',
         'branch_id' => 'integer',
         'employee_id' => 'integer',
-        'position' => 'string',
+        'department' => 'array',
+        'position' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
     ];

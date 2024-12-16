@@ -23,6 +23,8 @@ class EmployeePositionExporter extends Exporter
                 ->label('Branch'),
             ExportColumn::make('employee.name')
                 ->label('Employee Name'),
+            ExportColumn::make('department')
+                ->label('Department'),
             ExportColumn::make('position')
                 ->label('Position'),
             ExportColumn::make('start_date')
@@ -34,7 +36,8 @@ class EmployeePositionExporter extends Exporter
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),        ];
+                ->label('Updated At'),
+        ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string

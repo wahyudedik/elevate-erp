@@ -16,19 +16,24 @@ class ScheduleImporter extends Importer
         return [
             ImportColumn::make('company_id')
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->relationship('company'),
             ImportColumn::make('branch_id')
                 ->numeric()
-                ->nullable(),
+                ->nullable()
+                ->relationship('branch'),
             ImportColumn::make('user_id')
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->relationship('user'),
             ImportColumn::make('employee_id')
                 ->numeric()
-                ->nullable(),
+                ->nullable()
+                ->relationship('employee'),
             ImportColumn::make('shift_id')
                 ->numeric()
-                ->nullable(),
+                ->nullable()
+                ->relationship('shift'),
             ImportColumn::make('date')
                 ->required()
                 ->date(),

@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Company;
@@ -15,15 +16,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Attendance extends Model
+class Attendance extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
-    // Nama tabel yang digunakan oleh model ini
-
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
 
     protected $table = 'attendances';
 
@@ -77,12 +72,12 @@ class Attendance extends Model
     // Atribut yang harus di-cast ke tipe data tertentu
     protected $casts = [
         'date' => 'date',
-        'schedules_check_in' => 'time',
-        'schedules_check_out' => 'time',
+        'schedules_check_in' => 'datetime:H:i',
+        'schedules_check_out' => 'datetime:H:i',
         'schedules_latitude' => 'double',
         'schedules_longitude' => 'double',
-        'check_in' => 'datetime',
-        'check_out' => 'datetime',
+        'check_in' => 'datetime:H:i',
+        'check_out' => 'datetime:H:i',
         'latitude_check_in' => 'double',
         'longitude_check_in' => 'double',
         'latitude_check_out' => 'double',
@@ -120,16 +115,24 @@ class Attendance extends Model
 
     public function isLate()
     {
-        $scheduleStartTime = Carbon::parse($this->schedule_start_time);
-        $startTime = Carbon::parse($this->start_time);
+        $scheduleStartTime = Carbon::parse($this->schedules_check_in);
+        $startTime = Carbon::parse($this->check_in);
 
-        return $startTime->greaterThan($scheduleStartTime);
+        if ($startTime->greaterThan($scheduleStartTime)) {
+            $duration = $scheduleStartTime->diff($startTime);
+            return [
+                'status' => true,
+                'duration' => "{$duration->h} jam {$duration->i} menit"
+            ];
+        }
+
+        return ['status' => false];
     }
 
     public function workDuration()
     {
-        $startTime = Carbon::parse($this->start_time);
-        $endTime = Carbon::parse($this->end_time);
+        $startTime = Carbon::parse($this->check_in);
+        $endTime = Carbon::parse($this->check_out);
 
         $duration = $startTime->diff($endTime);
 

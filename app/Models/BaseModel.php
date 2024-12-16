@@ -11,8 +11,14 @@ class BaseModel extends Model
 {
     protected static function booted()
     {
-        static::addGlobalScope('tenant', function (Builder $builder) {
-            $builder->where('company_id', Filament::getTenant()->id);
+        // static::addGlobalScope('tenant', function (Builder $builder) {
+        //     $builder->where('company_id', Filament::getTenant()->id);
+        // });
+
+        static::addGlobalScope('company', function (Builder $builder) {
+            if (Filament::getTenant() && request()->is('filament/*')) {
+                $builder->where('company_id', Filament::getTenant()->id);
+            }
         });
     }
 }

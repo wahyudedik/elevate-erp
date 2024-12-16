@@ -22,6 +22,13 @@ Perbaikan :
 -   [x] bug dan bahasa indonesia => laporan keuangan
 -   [x] bug => role permission
 -   [x] Email Verification port .env dan .env.example
+-   [x] bug dan bahasa indonesia => daftar karyawan
+-   [x] bug dan bahasa indonesia => daftar jabatan karyawan
+-   [x] bug fitur auto create dan update jabatan karyawan
+-   [x] bug dan bahasa indonesia => shift
+-   [x] bug dan bahasa indonesia => jadwal shift
+-   [x] bug dan bahasa indonesia => absensi
+-   [x] bug dan bahasa indonesia => cuti
 
 Fitur Admin :
 
@@ -43,9 +50,115 @@ Fitur Admin :
 -   [x] fitur bukuu besar dan transaksi
 -   [x] fitur laporan keuangan -> laporan laba rugi, laporan neraca, laporan arus kas
 -   [x] fitur role permission
+-   [x] fitur daftar karyawan
+-   [x] fitur daftar jabatan karyawan
+-   [x] fitur shift
+-   [x] fitur jadwal shift
+-   [x] fitur absensi
+-   [x] fitur ijin cuti
 
 bug :
 
 -   [] Deployment error fitur permission super-admin dan register/login
--   [] Actifyti log error belum setting per company
+-   [] Activity log error belum setting per company
 -   [] laporan keuangan belum otomatis
+
+Berikut perbedaan komponen-komponen Laravel dalam bahasa Indonesia:
+
+## Laravel Components
+
+### Job
+- Background/queue tasks
+- Suitable for heavy processes like sending emails, generating PDFs
+- Can run asynchronously and delayed
+
+### Service
+- Classes that handle business logic
+- Separates logic from controllers
+- Reusable across different parts
+- Focuses on single business feature/domain
+
+### Trait
+- Collection of reusable methods
+- More flexible than inheritance
+- Can be added to various classes
+- Examples: HasFactory, Notifiable
+
+### Scope
+- Custom query builder for models
+- Simplifies commonly used data filters
+- Examples: whereActive(), latest()
+
+### Observer
+- Handles model lifecycle events
+- Automatically called on create/update/delete
+- Suitable for triggers/hooks
+
+### Request
+- Validates user input
+- Separates validation logic from controllers
+- Supports custom rules and messages
+
+### Event
+- Notifications when something occurs
+- Can trigger multiple listeners
+- Enables loose coupling between components
+
+### Rule
+- Custom validation rules
+- Extends Laravel's built-in validation
+- Reusable across different forms
+
+### Middleware
+- Filters/validates requests before reaching controller
+- Examples: auth, throttle, cors
+
+### Provider
+- Service container registration
+- Application bootstrap
+- Global configuration
+
+### Factory
+- Generates dummy data for testing
+- Simplifies database seeding
+
+### Channel
+- Manages realtime broadcasting
+- Websocket and private channels
+
+### Resource
+- Transforms model data to JSON/API
+- Consistent response formatting
+
+### Policy
+- Manages authorization/permissions
+- Validates user access rights
+
+### Interface
+- Contract for implementation
+- Dependency injection
+
+### Repository
+- Database access abstraction
+- Separates queries from models
+
+### Action
+- Single action classes
+- Reusable business logic
+- Lighter than services
+
+### Helper
+- Global functions
+- Utility functions
+
+### Macro
+- Extends Laravel's built-in functions
+- Custom methods for facades
+
+### Collection
+- Array/data manipulation
+- Method chaining
+
+### Presenter
+- Data display formatting
+- View logic
