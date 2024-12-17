@@ -191,4 +191,9 @@ class Employee extends BaseModel
     {
         return $this->hasMany(PurchaseTransaction::class, 'purchasing_agent_id');
     }
+
+    public function interviewer()
+    {
+        return $this->hasMany(CandidateInterview::class, 'interviewer_id');
+    }
 }

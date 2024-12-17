@@ -23,7 +23,7 @@ class InterviewsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Candidate Interview Information')
+                Forms\Components\Section::make('Informasi Wawancara Kandidat')
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
@@ -31,23 +31,25 @@ class InterviewsRelationManager extends RelationManager
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
                             ->searchable()
+                            ->label('Cabang')
                             ->preload(),
                         Forms\Components\Select::make('candidate_id')
                             ->relationship('candidate', 'first_name')
                             ->required()
+                            ->label('Nama Kandidat')
                             ->searchable()
                             ->preload(),
                         Forms\Components\DatePicker::make('interview_date')
                             ->required()
-                            ->label('Interview Date'),
+                            ->label('Tanggal Wawancara'),
                         Forms\Components\Select::make('interviewer')
                             ->options(function () {
                                 return Employee::all()->pluck('first_name', 'first_name');
                             })
                             ->searchable()
                             ->preload()
-                            ->label('Interviewer Name')
-                            ->placeholder('Enter interviewer name')
+                            ->label('Nama Pewawancara')
+                            ->placeholder('Masukkan nama pewawancara')
                             ->afterStateUpdated(function ($state, $set, $get, $record) {
                                 $user = User::where('employee_id', Auth::user()->id)->first();
                                 if ($record) {
@@ -66,49 +68,33 @@ class InterviewsRelationManager extends RelationManager
                             }),
                         Forms\Components\Select::make('interview_type')
                             ->options([
-                                'phone' => 'Phone',
+                                'phone' => 'Telepon',
                                 'video' => 'Video',
-                                'in_person' => 'In Person',
+                                'in_person' => 'Tatap Muka',
                             ])
                             ->required()
                             ->default('in_person'),
                         Forms\Components\Textarea::make('interview_notes')
-                            ->label('Interview Notes')
-                            ->placeholder('Enter interview notes here')
+                            ->label('Catatan Wawancara')
+                            ->placeholder('Masukkan catatan wawancara disini')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('result')
                             ->options([
-                                'passed' => 'Passed',
-                                'failed' => 'Failed',
-                                'pending' => 'Pending',
+                                'passed' => 'Lulus',
+                                'failed' => 'Gagal',
+                                'pending' => 'Tertunda',
                             ])
                             ->required()
                             ->default('pending')
-                            ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                $user = User::where('employee_id', Auth::user()->id)->first();
-                                if ($record) {
-                                    Notification::make()
-                                        ->title('Assigned New Candidate')
-                                        ->body('You have been assigned a new candidate')
-                                        ->icon('heroicon-o-user-group')
-                                        ->actions([
-                                            \Filament\Notifications\Actions\Action::make('view')
-                                                ->button()
-                                                ->url(fn() => route('filament.admin.resources.candidate-interviews.edit', ['record' => $record->id]), shouldOpenInNewTab: true)
-                                        ])
-                                        ->success()
-                                        ->sendToDatabase($user);
-                                }
-                            })
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -126,49 +112,65 @@ class InterviewsRelationManager extends RelationManager
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('candidate.first_name')
-                    ->label('Candidate')
+                    ->label('Nama Kandidat')
                     ->toggleable()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('interview_date')
-                    ->label('Interview Date')
+                    ->label('Tanggal Wawancara')
                     ->toggleable()
                     ->date('d M Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-m-calendar'),
                 Tables\Columns\TextColumn::make('interviewer')
-                    ->label('Interviewer')
+                    ->label('Pewawancara')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->icon('heroicon-m-user'),
                 Tables\Columns\TextColumn::make('interview_type')
                     ->badge()
-                    ->label('Interview Type')
+                    ->label('Tipe Wawancara')
                     ->toggleable()
                     ->colors([
-                        'primary' => 'phone',
-                        'success' => 'video',
-                        'warning' => 'in_person',
-                    ]),
+                        'primary' => fn($state) => $state === 'phone',
+                        'success' => fn($state) => $state === 'video',
+                        'warning' => fn($state) => $state === 'in_person',
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'phone' => 'Telepon',
+                        'video' => 'Video',
+                        'in_person' => 'Tatap Muka',
+                        default => $state
+                    }),
                 Tables\Columns\TextColumn::make('interview_notes')
-                    ->label('Notes')
+                    ->label('Catatan')
                     ->limit(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('result')
                     ->badge()
-                    ->label('Result')
+                    ->label('Hasil')
                     ->toggleable()
                     ->colors([
-                        'success' => 'passed',
-                        'danger' => 'failed',
-                        'warning' => 'pending',
-                    ]),
+                        'success' => fn($state) => $state === 'passed',
+                        'danger' => fn($state) => $state === 'failed',
+                        'warning' => fn($state) => $state === 'pending',
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'passed' => 'Lulus',
+                        'failed' => 'Gagal',
+                        'pending' => 'Tertunda',
+                        default => $state
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
             ])

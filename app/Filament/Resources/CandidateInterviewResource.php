@@ -32,7 +32,7 @@ class CandidateInterviewResource extends Resource
     protected static ?string $navigationLabel = 'Interview';
 
     protected static ?string $modelLabel = 'Interview';
-    
+
     protected static ?string $pluralModelLabel = 'Interview';
 
     protected static ?string $cluster = cluster::class;
@@ -53,40 +53,42 @@ class CandidateInterviewResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Candidate Interview Information')
+                Forms\Components\Section::make('Informasi Wawancara Kandidat')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->nullable()
+                            ->label('Cabang')
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('candidate_id')
                             ->relationship('candidate', 'first_name')
                             ->required()
+                            ->label('Nama Kandidat')
                             ->searchable()
                             ->preload(),
                         Forms\Components\DatePicker::make('interview_date')
                             ->required()
-                            ->label('Interview Date'),
-                        Forms\Components\Select::make('interviewer')
-                            ->options(function () {
-                                return Employee::all()->pluck('first_name', 'first_name');
-                            })
+                            ->label('Tanggal Wawancara'),
+                        Forms\Components\Select::make('interviewer_id')
+                            ->label('Pewawancara')
+                            ->relationship('interviewer', 'first_name')
                             ->searchable()
                             ->preload()
-                            ->label('Interviewer Name')
-                            ->placeholder('Enter interviewer name')
                             ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                $user = User::where('employee_id', Auth::user()->id)->first();
-                                if ($record) {
+                                $employee = Employee::find($state);
+                                $user = $employee?->user;
+
+                                if ($record && $user) {
                                     Notification::make()
-                                        ->title('Assigned New Candidate')
-                                        ->body('You have been assigned a new candidate')
+                                        ->title('Ditugaskan Kandidat Baru')
+                                        ->body('Anda telah ditugaskan kandidat baru')
                                         ->icon('heroicon-o-user-group')
                                         ->actions([
                                             \Filament\Notifications\Actions\Action::make('view')
                                                 ->button()
-                                                ->url(fn() => route('filament.admin.resources.candidate-interviews.edit', ['record' => $record->id]), shouldOpenInNewTab: true)
+                                                ->url(CandidateInterviewResource::getUrl('edit', ['record' => $record]))
+                                                ->openUrlInNewTab()
                                         ])
                                         ->success()
                                         ->sendToDatabase($user);
@@ -94,49 +96,35 @@ class CandidateInterviewResource extends Resource
                             }),
                         Forms\Components\Select::make('interview_type')
                             ->options([
-                                'phone' => 'Phone',
+                                'phone' => 'Telepon',
                                 'video' => 'Video',
-                                'in_person' => 'In Person',
+                                'in_person' => 'Tatap Muka',
                             ])
+                            ->label('Jenis Wawancara')
                             ->required()
                             ->default('in_person'),
                         Forms\Components\Textarea::make('interview_notes')
-                            ->label('Interview Notes')
-                            ->placeholder('Enter interview notes here')
+                            ->label('Catatan Wawancara')
+                            ->placeholder('Masukkan catatan wawancara di sini')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('result')
                             ->options([
-                                'passed' => 'Passed',
-                                'failed' => 'Failed',
-                                'pending' => 'Pending',
+                                'passed' => 'Lulus',
+                                'failed' => 'Gagal',
+                                'pending' => 'Tertunda',
                             ])
                             ->required()
                             ->default('pending')
-                            ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                $user = User::where('employee_id', Auth::user()->id)->first();
-                                if ($record) {
-                                    Notification::make()
-                                        ->title('Assigned New Candidate')
-                                        ->body('You have been assigned a new candidate')
-                                        ->icon('heroicon-o-user-group')
-                                        ->actions([
-                                            \Filament\Notifications\Actions\Action::make('view')
-                                                ->button()
-                                                ->url(fn() => route('filament.admin.resources.candidate-interviews.edit', ['record' => $record->id]), shouldOpenInNewTab: true)
-                                        ])
-                                        ->success()
-                                        ->sendToDatabase($user);
-                                }
-                            })
+                            ->label('Hasil Wawancara'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah pada')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -153,56 +141,73 @@ class CandidateInterviewResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
+                    ->color('primary')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('candidate.first_name')
-                    ->label('Candidate')
+                    ->label('Kandidat')
                     ->toggleable()
                     ->searchable()
+                    ->icon('heroicon-o-user')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('interview_date')
-                    ->label('Interview Date')
+                    ->label('Tanggal Wawancara')
                     ->toggleable()
-                    ->icon('heroicon-o-calendar')
+                    ->icon('heroicon-o-calendar-days')
                     ->date('d M Y')
+                    ->color('success')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('interviewer')
-                    ->label('Interviewer')
+                Tables\Columns\TextColumn::make('interviewer.first_name')
+                    ->label('Pewawancara')
                     ->searchable()
+                    ->icon('heroicon-o-user-circle')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('interview_type')
                     ->badge()
-                    ->label('Interview Type')
+                    ->label('Jenis Wawancara')
                     ->toggleable()
                     ->colors([
                         'primary' => 'phone',
                         'success' => 'video',
                         'warning' => 'in_person',
-                    ]),
+                    ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'phone' => 'Telepon',
+                        'video' => 'Video',
+                        'in_person' => 'Tatap Muka',
+                    }),
                 Tables\Columns\TextColumn::make('interview_notes')
-                    ->label('Notes')
+                    ->label('Catatan')
                     ->limit(50)
+                    ->icon('heroicon-o-clipboard-document-list')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('result')
                     ->badge()
-                    ->label('Result')
+                    ->label('Hasil')
                     ->toggleable()
                     ->colors([
                         'success' => 'passed',
                         'danger' => 'failed',
                         'warning' => 'pending',
-                    ]),
+                    ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'passed' => 'Lulus',
+                        'failed' => 'Gagal',
+                        'pending' => 'Tertunda',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
+                    ->icon('heroicon-o-clock')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Diperbarui Pada')
                     ->dateTime()
                     ->sortable()
+                    ->icon('heroicon-o-arrow-path')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])->defaultSort('created_at', 'desc')
             ->filters([
@@ -211,29 +216,29 @@ class CandidateInterviewResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('interview_type')
                     ->options([
-                        'phone' => 'Phone',
+                        'phone' => 'Telepon',
                         'video' => 'Video',
-                        'in_person' => 'In Person',
+                        'in_person' => 'Tatap Muka',
                     ])
-                    ->label('Interview Type')
+                    ->label('Jenis Wawancara')
                     ->multiple(),
                 Tables\Filters\SelectFilter::make('result')
                     ->options([
-                        'passed' => 'Passed',
-                        'failed' => 'Failed',
-                        'pending' => 'Pending',
+                        'passed' => 'Lulus',
+                        'failed' => 'Gagal',
+                        'pending' => 'Tertunda',
                     ])
-                    ->label('Result')
+                    ->label('Hasil')
                     ->multiple(),
                 Tables\Filters\Filter::make('interview_date')
                     ->form([
                         Forms\Components\DatePicker::make('from_date')
-                            ->label('From Date'),
+                            ->label('Dari Tanggal'),
                         Forms\Components\DatePicker::make('to_date')
-                            ->label('To Date'),
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -247,7 +252,7 @@ class CandidateInterviewResource extends Resource
                             );
                     })->columns(2),
                 Tables\Filters\TernaryFilter::make('has_notes')
-                    ->label('Has Notes')
+                    ->label('Ada Catatan')
                     ->queries(
                         true: fn(Builder $query) => $query->whereNotNull('interview_notes'),
                         false: fn(Builder $query) => $query->whereNull('interview_notes'),
@@ -261,69 +266,69 @@ class CandidateInterviewResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('changeResult')
-                        ->label('Change Result')
+                        ->label('Ubah Hasil')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->form([
                             Forms\Components\Select::make('result')
-                                ->label('Result')
+                                ->label('Hasil')
                                 ->options([
-                                    'passed' => 'Passed',
-                                    'failed' => 'Failed',
-                                    'pending' => 'Pending',
+                                    'passed' => 'Lulus',
+                                    'failed' => 'Gagal',
+                                    'pending' => 'Tertunda',
                                 ])
                                 ->required(),
                         ])
                         ->action(function (CandidateInterview $record, array $data) {
                             $record->update(['result' => $data['result']]);
                             Notification::make()
-                                ->title('Interview result updated successfully')
+                                ->title('Hasil wawancara berhasil diperbarui')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('addNotes')
-                        ->label('Add Notes')
+                        ->label('Tambah Catatan')
                         ->icon('heroicon-o-pencil')
                         ->color('warning')
                         ->form([
                             Forms\Components\Textarea::make('interview_notes')
-                                ->label('Interview Notes')
+                                ->label('Catatan Wawancara')
                                 ->required(),
                         ])
                         ->action(function (CandidateInterview $record, array $data) {
                             $record->update(['interview_notes' => $data['interview_notes']]);
                             Notification::make()
-                                ->title('Interview notes added successfully')
+                                ->title('Catatan wawancara berhasil ditambahkan')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('reschedule')
-                        ->label('Reschedule')
+                        ->label('Jadwal Ulang')
                         ->icon('heroicon-o-calendar')
                         ->color('primary')
                         ->form([
                             Forms\Components\DatePicker::make('interview_date')
-                                ->label('New Interview Date')
+                                ->label('Tanggal Wawancara Baru')
                                 ->required(),
                         ])
                         ->action(function (CandidateInterview $record, array $data) {
                             $record->update(['interview_date' => $data['interview_date']]);
                             Notification::make()
-                                ->title('Interview rescheduled successfully')
+                                ->title('Jadwal wawancara berhasil diubah')
                                 ->success()
                                 ->send();
                         }),
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Wawancara Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(CandidateInterviewExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor data selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -332,7 +337,7 @@ class CandidateInterviewResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import department completed' . ' ' . now())
+                                ->title('Impor data selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -346,7 +351,7 @@ class CandidateInterviewResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor data selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -354,7 +359,8 @@ class CandidateInterviewResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->label('Buat Wawancara Baru'),
             ]);
     }
 

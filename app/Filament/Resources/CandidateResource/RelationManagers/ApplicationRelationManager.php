@@ -30,20 +30,24 @@ class ApplicationRelationManager extends RelationManager
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('recruitment_id')
                             ->relationship('recruitment', 'job_title')
+                            ->label('Lowongan')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('candidate_id')
                             ->relationship('candidate', 'first_name')
+                            ->label('Kandidat')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\FileUpload::make('resume')
+                            ->label('Resume')
                             ->acceptedFileTypes(['application/pdf'])
                             ->maxSize(500000)
                             ->directory('resumes')
@@ -52,11 +56,11 @@ class ApplicationRelationManager extends RelationManager
                             ->openable()
                             ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('created_at')
-                            ->label('Application Date')
+                            ->label('Tanggal Lamaran')
                             ->required()
                             ->default(now()),
                         Forms\Components\DateTimePicker::make('updated_at')
-                            ->label('Last Updated')
+                            ->label('Terakhir Diperbarui')
                             ->required()
                             ->default(now()),
                     ])->columns(2),
@@ -85,20 +89,25 @@ class ApplicationRelationManager extends RelationManager
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
+                    ->color('primary')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('recruitment.job_title')
-                    ->label('Recruitment')
+                    ->label('Lowongan')
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->icon('heroicon-m-briefcase')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('candidate.first_name')
-                    ->label('Candidate')
+                    ->label('Kandidat')
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->icon('heroicon-m-user')
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->toggleable()
@@ -107,30 +116,40 @@ class ApplicationRelationManager extends RelationManager
                         'warning' => 'applied',
                         'success' => 'hired',
                         'primary' => ['review', 'interview'],
-                    ]),
+                    ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'applied' => 'Melamar',
+                        'review' => 'Ditinjau',
+                        'interview' => 'Wawancara',
+                        'hired' => 'Diterima',
+                        'rejected' => 'Ditolak',
+                        default => $state,
+                    }),
                 Tables\Columns\TextColumn::make('resume')
                     ->label('Resume')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-m-document'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Application Date')
-                    ->dateTime()
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Last Updated')
+                    ->label('Tanggal Lamaran')
                     ->dateTime()
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-m-calendar'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime()
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-m-clock')
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch_id')
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'applied' => 'Applied',
@@ -141,79 +160,32 @@ class ApplicationRelationManager extends RelationManager
                     ])
                     ->multiple()
                     ->label('Application Status'),
-                Tables\Filters\SelectFilter::make('recruitment')
-                    ->relationship('recruitment', 'job_title')
-                    ->label('Recruitment'),
-                Tables\Filters\SelectFilter::make('candidate')
-                    ->relationship('candidate', 'first_name')
-                    ->label('Candidate'),
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from')
-                            ->label('Applied From'),
-                        Forms\Components\DatePicker::make('created_until')
-                            ->label('Applied Until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Applied from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
-                        }
-                        if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Applied until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
-                        }
-                        return $indicators;
-                    })->columns(2),
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
+                    Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('view_resume')
-                        ->label('View Resume')
+                        ->label('Lihat Resume')
                         ->icon('heroicon-o-document-text')
                         ->color('info')
                         ->url(fn(Applications $record) => $record->resume ? Storage::url($record->resume) : '#')
                         ->openUrlInNewTab()
                         ->modalWidth('lg'),
-                    Tables\Actions\DeleteAction::make(),
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
-
+                // CreateAction::make()->icon('heroicon-o-plus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus')
-            ]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
+                // Tables\Actions\CreateAction::make()
+                //     ->icon('heroicon-o-plus')
             ]);
     }
 }

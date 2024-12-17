@@ -16,18 +16,24 @@ class CandidateExporter extends Exporter
     {
         return [
             ExportColumn::make('id'),
-            ExportColumn::make('company_id'),
-            ExportColumn::make('branch_id'),
+            ExportColumn::make('company_id')
+                ->label('Company'),
+            ExportColumn::make('branch_id')
+                ->label('Branch'),
             ExportColumn::make('first_name'),
             ExportColumn::make('last_name'),
             ExportColumn::make('email'),
             ExportColumn::make('phone'),
             ExportColumn::make('date_of_birth'),
-            ExportColumn::make('gender'),
-            ExportColumn::make('national_id_number'),
+            ExportColumn::make('gender')
+                ->state(fn(Candidate $record): string => ucfirst($record->gender)),
+            ExportColumn::make('national_id_number')
+                ->label('National ID'),
             ExportColumn::make('position_applied'),
-            ExportColumn::make('status'),
-            ExportColumn::make('recruiter_id'),
+            ExportColumn::make('status')
+                ->state(fn(Candidate $record): string => ucfirst($record->status)),
+            ExportColumn::make('recruiter_id')
+                ->label('Recruiter'),
             ExportColumn::make('application_date'),
             ExportColumn::make('resume'),
             ExportColumn::make('address'),

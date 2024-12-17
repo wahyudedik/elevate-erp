@@ -10,6 +10,7 @@ use App\Models\ManagementCRM\Sale;
 use App\Models\ManagementSDM\Leave;
 use App\Models\ManagementSDM\Shift;
 use App\Observers\EmployeeObserver;
+use App\Observers\CandidateObserver;
 use Illuminate\Support\Facades\Gate;
 use App\Models\ManagementSDM\Payroll;
 use App\Models\ManagementCRM\Customer;
@@ -38,6 +39,7 @@ use App\Models\ManagementStock\PurchaseItem;
 use App\Models\ManagementCRM\CustomerSupport;
 use App\Models\ManagementCRM\OrderProcessing;
 use App\Models\ManagementProject\ProjectTask;
+use App\Observers\CandidateInterviewObserver;
 use App\Policies\ManagementSDM\PayrollPolicy;
 use App\Models\ManagementFinancial\Accounting;
 use App\Models\ManagementSDM\EmployeePosition;
@@ -116,6 +118,10 @@ class AppServiceProvider extends ServiceProvider
 
         //Management SDM -> Employee
         Employee::observe(EmployeeObserver::class);
+
+        //Management SDM -> candidate dan interview
+        Candidate::observe(CandidateObserver::class);
+        CandidateInterview::observe(CandidateInterviewObserver::class);
 
         // Gate::policy(Activity::class, ActivityPolicy::class);
 

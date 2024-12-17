@@ -16,23 +16,28 @@ class RecruitmentImporter extends Importer
         return [
             ImportColumn::make('company_id')
                 ->label('Company ID')
-                ->required(),
+                ->required()
+                ->numeric(),
             ImportColumn::make('branch_id')
                 ->label('Branch ID')
-                ->nullable(),
+                ->nullable()
+                ->numeric(),
             ImportColumn::make('job_title')
                 ->label('Job Title')
-                ->required(),
+                ->required()
+                ->string(),
             ImportColumn::make('job_description')
                 ->label('Job Description')
-                ->required(),
+                ->required()
+                ->string(),
             ImportColumn::make('employment_type')
                 ->label('Employment Type')
                 ->required()
                 ->acceptsOnly(['full_time', 'part_time', 'contract', 'internship']),
             ImportColumn::make('location')
                 ->label('Location')
-                ->required(),
+                ->required()
+                ->string(),
             ImportColumn::make('posted_date')
                 ->label('Posted Date')
                 ->required()
@@ -43,7 +48,8 @@ class RecruitmentImporter extends Importer
                 ->date(),
             ImportColumn::make('status')
                 ->label('Status')
-                ->default('open'),
+                ->default('open')
+                ->string(),
         ];
     }
 

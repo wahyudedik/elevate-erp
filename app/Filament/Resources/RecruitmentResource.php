@@ -272,7 +272,7 @@ class RecruitmentResource extends Resource
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\Action::make('close')
-                        ->label('Close Recruitment')
+                        ->label('Tutup Rekrutmen')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
@@ -281,7 +281,7 @@ class RecruitmentResource extends Resource
                         })
                         ->visible(fn(Recruitment $record): bool => $record->status === 'open'),
                     Tables\Actions\Action::make('reopen')
-                        ->label('Reopen Recruitment')
+                        ->label('Buka Kembali Rekrutmen')
                         ->icon('heroicon-o-arrow-path')
                         ->color('success')
                         ->requiresConfirmation()
@@ -290,7 +290,7 @@ class RecruitmentResource extends Resource
                         })
                         ->visible(fn(Recruitment $record): bool => $record->status === 'closed'),
                     Tables\Actions\Action::make('Link to Application Form')
-                        ->label('Link to Application Form')
+                        ->label('Tautan ke Formulir Lamaran')
                         ->icon('heroicon-o-map')
                         ->color('primary')
                         ->url(fn(Recruitment $record): string => route('candidate.apply', $record))
@@ -298,20 +298,19 @@ class RecruitmentResource extends Resource
                 ]),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('generate-poster')
-                        ->label('Generate Poster')
+                        ->label('Buat Poster')
                         ->icon('heroicon-o-document')
                         ->color('warning')
                         ->url(fn(Recruitment $record): string => route('recruitment.generate-poster', $record))
                         ->openUrlInNewTab(),
                     Tables\Actions\Action::make('generate-poster-pdf')
-                        ->label('Download as PDF')
+                        ->label('Unduh sebagai PDF')
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('warning')
                         ->url(fn(Recruitment $record): string => route('recruitment.generate-poster', ['recruitment' => $record, 'format' => 'pdf']))
                         ->openUrlInNewTab(),
-                ])->label('Download Poster')
+                ])->label('Unduh Poster')
                     ->icon('heroicon-o-document')
-
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -319,7 +318,7 @@ class RecruitmentResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('close')
-                        ->label('Close Selected')
+                        ->label('Tutup Terpilih')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
@@ -328,7 +327,7 @@ class RecruitmentResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('reopen')
-                        ->label('Reopen Selected')
+                        ->label('Buka Kembali Terpilih')
                         ->icon('heroicon-o-arrow-path')
                         ->color('success')
                         ->requiresConfirmation()
@@ -342,21 +341,21 @@ class RecruitmentResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export recruitment completed' . ' ' . now())
+                                ->title('Ekspor rekrutmen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                 ]),
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Rekrutmen Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(RecruitmentExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export recruitment completed' . ' ' . now())
+                                ->title('Ekspor rekrutmen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -365,7 +364,7 @@ class RecruitmentResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import recruitment completed' . ' ' . now())
+                                ->title('Impor rekrutmen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -373,7 +372,7 @@ class RecruitmentResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')->label('Buat Rekrutmen Baru'),
             ]);
     }
 

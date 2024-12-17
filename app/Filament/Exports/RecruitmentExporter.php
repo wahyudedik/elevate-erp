@@ -16,10 +16,10 @@ class RecruitmentExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
-            ExportColumn::make('company_id')
-                ->label('Company ID'),
-            ExportColumn::make('branch_id')
-                ->label('Branch ID'),
+            ExportColumn::make('company.name')
+                ->label('Company'),
+            ExportColumn::make('branch.name')
+                ->label('Branch'),
             ExportColumn::make('job_title')
                 ->label('Job Title'),
             ExportColumn::make('job_description')

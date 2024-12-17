@@ -2,6 +2,7 @@
 
 namespace App\Models\ManagementSDM;
 
+use App\Models\BaseModel;
 use App\Models\Branch;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class CandidateInterview extends Model
+class CandidateInterview extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
@@ -25,7 +26,7 @@ class CandidateInterview extends Model
         'branch_id',
         'candidate_id',
         'interview_date',
-        'interviewer',
+        'interviewer_id',
         'interview_type',  // phone, video, in_person
         'interview_notes',
         'result',  // passed, failed, pending 
@@ -39,7 +40,7 @@ class CandidateInterview extends Model
                 'branch_id',
                 'candidate_id',
                 'interview_date',
-                'interviewer',
+                'interviewer_id',
                 'interview_type',  // phone, video, in_person
                 'interview_notes',
                 'result',  // passed, failed, pending 
@@ -71,5 +72,10 @@ class CandidateInterview extends Model
     public function candidate()
     {
         return $this->belongsTo(Candidate::class, 'candidate_id');
+    }
+
+    public function interviewer()
+    {
+        return $this->belongsTo(Employee::class, 'interviewer_id');
     }
 }

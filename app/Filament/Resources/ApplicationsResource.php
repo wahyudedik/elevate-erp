@@ -33,7 +33,7 @@ class ApplicationsResource extends Resource
     protected static ?string $navigationLabel = 'Curiculum Vitae';
 
     protected static ?string $modelLabel = 'Curiculum Vitae';
-    
+
     protected static ?string $pluralModelLabel = 'Curiculum Vitae';
 
     protected static ?string $cluster = Employee::class;
@@ -58,20 +58,24 @@ class ApplicationsResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
+                            ->label('Cabang')
                             ->nullable()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('recruitment_id')
                             ->relationship('recruitment', 'job_title')
+                            ->label('Lowongan Kerja')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\Select::make('candidate_id')
                             ->relationship('candidate', 'first_name')
+                            ->label('Kandidat')
                             ->required()
                             ->searchable()
                             ->preload(),
                         Forms\Components\FileUpload::make('resume')
+                            ->label('Resume')
                             ->acceptedFileTypes(['application/pdf'])
                             ->maxSize(500000)
                             ->directory('resumes')
@@ -80,22 +84,22 @@ class ApplicationsResource extends Resource
                             ->openable()
                             ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('created_at')
-                            ->label('Application Date')
+                            ->label('Tanggal Lamaran')
                             ->required()
                             ->default(now()),
                         Forms\Components\DateTimePicker::make('updated_at')
-                            ->label('Last Updated')
+                            ->label('Terakhir Diperbarui')
                             ->required()
                             ->default(now()),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir dimodifikasi')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -110,46 +114,69 @@ class ApplicationsResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
-                    ->sortable(),
+                    ->iconColor('primary')
+                    ->sortable()
+                    ->size('sm')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('recruitment.job_title')
-                    ->label('Recruitment')
+                    ->label('Lowongan')
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-m-briefcase')
+                    ->iconColor('success'),
                 Tables\Columns\TextColumn::make('candidate.first_name')
-                    ->label('Candidate')
+                    ->label('Kandidat')
                     ->toggleable()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->size('sm')
+                    ->weight('medium')
+                    ->icon('heroicon-m-user')
+                    ->iconColor('info'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->toggleable()
+                    ->size('sm')
                     ->colors([
                         'danger' => 'rejected',
                         'warning' => 'applied',
                         'success' => 'hired',
                         'primary' => ['review', 'interview'],
-                    ]),
+                    ])
+                    ->icon('heroicon-m-flag'),
                 Tables\Columns\TextColumn::make('resume')
                     ->label('Resume')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-document')
+                    ->iconColor('gray'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Application Date')
-                    ->dateTime()
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Last Updated')
+                    ->label('Tanggal Lamaran')
                     ->dateTime()
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-calendar')
+                    ->iconColor('warning'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime()
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('sm')
+                    ->icon('heroicon-m-clock')
+                    ->iconColor('secondary')
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -157,29 +184,23 @@ class ApplicationsResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'applied' => 'Applied',
-                        'review' => 'Review',
-                        'interview' => 'Interview',
-                        'hired' => 'Hired',
-                        'rejected' => 'Rejected',
+                        'applied' => 'Diajukan',
+                        'review' => 'Ditinjau',
+                        'interview' => 'Wawancara',
+                        'hired' => 'Diterima',
+                        'rejected' => 'Ditolak',
                     ])
                     ->multiple()
-                    ->label('Application Status'),
-                Tables\Filters\SelectFilter::make('recruitment')
-                    ->relationship('recruitment', 'job_title')
-                    ->label('Recruitment'),
-                Tables\Filters\SelectFilter::make('candidate')
-                    ->relationship('candidate', 'first_name')
-                    ->label('Candidate'),
+                    ->label('Status Lamaran'),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label('Applied From'),
+                            ->label('Tanggal Mulai'),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label('Applied Until'),
+                            ->label('Tanggal Akhir'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -195,10 +216,10 @@ class ApplicationsResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Applied from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators['created_from'] = 'Diajukan dari ' . Carbon::parse($data['created_from'])->toFormattedDateString();
                         }
                         if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Applied until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators['created_until'] = 'Diajukan sampai ' . Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
                         return $indicators;
                     })->columns(2),
@@ -210,7 +231,7 @@ class ApplicationsResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\Action::make('view_resume')
-                        ->label('View Resume')
+                        ->label('Lihat Resume')
                         ->icon('heroicon-o-document-text')
                         ->color('info')
                         ->url(fn(Applications $record) => $record->resume ? Storage::url($record->resume) : '#')
@@ -220,14 +241,14 @@ class ApplicationsResource extends Resource
                 ])
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Lamaran Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(ApplicationsExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export applications completed' . ' ' . now())
+                                ->title('Ekspor lamaran selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -236,7 +257,7 @@ class ApplicationsResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import applications completed' . ' ' . now())
+                                ->title('Impor lamaran selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -252,7 +273,7 @@ class ApplicationsResource extends Resource
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export applications completed' . ' ' . now())
+                                ->title('Ekspor lamaran selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -261,6 +282,7 @@ class ApplicationsResource extends Resource
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->icon('heroicon-o-plus')
+                    ->label('Buat Lamaran Baru'),
             ]);
     }
 

@@ -10,25 +10,28 @@ class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
 
+    protected static ?string $heading = 'Recruitment Statistics';
+
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Recruitments', Recruitment::count())->icon('heroicon-o-briefcase')
+            Stat::make('Total Rekrutmen', Recruitment::count())->icon('heroicon-o-briefcase')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('Active job postings')
+                ->description('Lowongan kerja aktif')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Open Positions', Recruitment::where('status', 'open')->count())->icon('heroicon-o-document-text')
-                ->description('Currently accepting applications')
+            Stat::make('Posisi Terbuka', Recruitment::where('status', 'open')->count())->icon('heroicon-o-document-text')
+                ->description('Sedang menerima lamaran')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('warning'),
-            Stat::make('Closing Soon', Recruitment::whereDate('closing_date', '<=', now()->addDays(7))->where('status', 'open')->count())->icon('heroicon-o-clock')
-                ->description("Positions closing within 7 days")
+            Stat::make('Segera Ditutup', Recruitment::whereDate('closing_date', '<=', now()->addDays(7))->where('status', 'open')->count())->icon('heroicon-o-clock')
+                ->description("Posisi yang ditutup dalam 7 hari")
                 ->descriptionIcon('heroicon-o-chevron-down', 'before')
                 ->descriptionColor('danger')
-                ->iconColor('danger')        ];
+                ->iconColor('danger')
+        ];
     }
 }

@@ -10,32 +10,34 @@ class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
 
+    protected static ?string $heading = 'Interview Statistics';
+
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Interviews', CandidateInterview::count())
+            Stat::make('Total Wawancara', CandidateInterview::count())
                 ->icon('heroicon-o-user-group')
                 ->chartColor('success')
                 ->iconPosition('start')
-                ->description('All interviews conducted')
+                ->description('Semua wawancara yang dilakukan')
                 ->descriptionIcon('heroicon-o-clipboard-document-list', 'before')
                 ->descriptionColor('success')
                 ->iconColor('success'),
-            Stat::make('Passed Interviews', CandidateInterview::where('result', 'passed')->count())
+            Stat::make('Wawancara Lulus', CandidateInterview::where('result', 'passed')->count())
                 ->icon('heroicon-o-check-circle')
-                ->description('Successful interviews')
+                ->description('Wawancara berhasil')
                 ->descriptionIcon('heroicon-o-chevron-up', 'before')
                 ->descriptionColor('primary')
                 ->iconColor('primary'),
-            Stat::make('Failed Interviews', CandidateInterview::where('result', 'failed')->count())
+            Stat::make('Wawancara Gagal', CandidateInterview::where('result', 'failed')->count())
                 ->icon('heroicon-o-x-circle')
-                ->description("Unsuccessful interviews")
+                ->description("Wawancara tidak berhasil")
                 ->descriptionIcon('heroicon-o-chevron-down', 'before')
                 ->descriptionColor('danger')
                 ->iconColor('danger'),
-            Stat::make('Pending Interviews', CandidateInterview::where('result', 'pending')->count())
+            Stat::make('Wawancara Tertunda', CandidateInterview::where('result', 'pending')->count())
                 ->icon('heroicon-o-clock')
-                ->description("Awaiting results")
+                ->description("Menunggu hasil")
                 ->descriptionIcon('heroicon-o-arrow-path', 'before')
                 ->descriptionColor('warning')
                 ->iconColor('warning')

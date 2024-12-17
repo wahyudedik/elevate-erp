@@ -15,33 +15,34 @@ class CandidateInterviewImporter extends Importer
     {
         return [
             ImportColumn::make('company_id')
-                ->label('Company ID')
-                ->requiredMapping()
-                ->rules(['required', 'exists:companies,id']),
+                ->required()
+                ->relationship(),
             ImportColumn::make('branch_id')
-                ->label('Branch ID')
-                ->rules(['nullable', 'exists:branches,id']),
+                ->relationship(),
             ImportColumn::make('candidate_id')
-                ->label('Candidate ID')
-                ->rules(['nullable', 'exists:candidates,id']),
+                ->relationship(),
             ImportColumn::make('interview_date')
-                ->label('Interview Date')
-                ->requiredMapping()
-                ->rules(['required', 'date']),
-            ImportColumn::make('interviewer')
-                ->label('Interviewer')
-                ->rules(['nullable', 'string']),
+                ->required()
+                ->date(),
+            ImportColumn::make('interviewer_id')
+                ->relationship(),
             ImportColumn::make('interview_type')
-                ->label('Interview Type')
-                ->rules(['required', 'in:phone,video,in_person'])
+                ->required()
+                ->enum([
+                    'phone' => 'Phone',
+                    'video' => 'Video',
+                    'in_person' => 'In Person',
+                ])
                 ->default('in_person'),
-            ImportColumn::make('interview_notes')
-                ->label('Interview Notes')
-                ->rules(['nullable', 'string']),
+            ImportColumn::make('interview_notes'),
             ImportColumn::make('result')
-                ->label('Result')
-                ->rules(['required', 'in:passed,failed,pending'])
-                ->default('pending'),
+                ->required()
+                ->enum([
+                    'passed' => 'Passed',
+                    'failed' => 'Failed',
+                    'pending' => 'Pending',
+                ])
+                ->default('pending')
         ];
     }
 

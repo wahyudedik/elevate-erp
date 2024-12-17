@@ -16,32 +16,43 @@ class CandidateImporter extends Importer
     {
         return [
             ImportColumn::make('id'),
-            ImportColumn::make('company_id'),
+            ImportColumn::make('company_id')
+                ->rules(['required']),
             ImportColumn::make('branch_id'),
-            ImportColumn::make('first_name'),
-            ImportColumn::make('last_name'),
+            ImportColumn::make('first_name')
+                ->rules(['required']),
+            ImportColumn::make('last_name')
+                ->rules(['required']),
             ImportColumn::make('email')
-                ->rules(['email', 'unique:candidates,email']),
+                ->rules(['required', 'email', 'unique:candidates,email']),
             ImportColumn::make('phone'),
-            ImportColumn::make('date_of_birth'),
+            ImportColumn::make('date_of_birth')
+                ->date(),
             ImportColumn::make('gender')
-                ->rules(['in:male,female,other']),
+                ->rules(['nullable', 'in:male,female,other']),
             ImportColumn::make('national_id_number')
-                ->rules(['unique:candidates,national_id_number']),
-            ImportColumn::make('position_applied'),
+                ->rules(['nullable', 'unique:candidates,national_id_number']),
+            ImportColumn::make('position_applied')
+                ->rules(['required']),
             ImportColumn::make('status')
-                ->rules(['in:applied,interviewing,offered,hired,rejected']),
+                ->rules(['required', 'in:applied,interviewing,offered,hired,rejected'])
+                ->default('applied'),
             ImportColumn::make('recruiter_id'),
-            ImportColumn::make('application_date'),
+            ImportColumn::make('application_date')
+                ->date()
+                ->default(now()),
             ImportColumn::make('resume'),
             ImportColumn::make('address'),
             ImportColumn::make('city'),
             ImportColumn::make('state'),
             ImportColumn::make('postal_code'),
             ImportColumn::make('country'),
-            ImportColumn::make('deleted_at'),
-            ImportColumn::make('created_at'),
-            ImportColumn::make('updated_at'),
+            ImportColumn::make('deleted_at')
+                ->date(),
+            ImportColumn::make('created_at')
+                ->date(),
+            ImportColumn::make('updated_at')
+                ->date(),
         ];
     }
 

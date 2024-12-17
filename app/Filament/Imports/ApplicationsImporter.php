@@ -16,12 +16,10 @@ class ApplicationsImporter extends Importer
         return [
             ImportColumn::make('recruitment_id')
                 ->numeric()
-                ->nullable()
-                ->required(),
+                ->nullable(),
             ImportColumn::make('candidate_id')
                 ->numeric()
-                ->nullable()
-                ->required(),
+                ->nullable(),
             ImportColumn::make('status')
                 ->enum(['applied', 'interviewing', 'offered', 'hired', 'rejected'])
                 ->default('applied'),

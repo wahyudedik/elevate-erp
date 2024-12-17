@@ -43,7 +43,7 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->foreignId('candidate_id')->nullable()->constrained('candidates')->onDelete('cascade');
             $table->date('interview_date');  // Tanggal wawancara
-            $table->string('interviewer')->nullable();  // Nama pewawancara
+            $table->foreignId('interviewer_id')->nullable()->constrained('employees')->cascadeOnDelete();  // Nama pewawancara
             $table->enum('interview_type', ['phone', 'video', 'in_person'])->default('in_person');  // Jenis wawancara
             $table->text('interview_notes')->nullable();  // Catatan wawancara
             $table->enum('result', ['passed', 'failed', 'pending'])->default('pending');  // Hasil wawancara

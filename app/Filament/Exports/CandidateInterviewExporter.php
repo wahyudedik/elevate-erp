@@ -21,10 +21,10 @@ class CandidateInterviewExporter extends Exporter
             ExportColumn::make('branch.name')
                 ->label('Branch'),
             ExportColumn::make('candidate.name')
-                ->label('Candidate Name'),
+                ->label('Candidate'),
             ExportColumn::make('interview_date')
                 ->label('Interview Date'),
-            ExportColumn::make('interviewer')
+            ExportColumn::make('interviewer.first_name')
                 ->label('Interviewer'),
             ExportColumn::make('interview_type')
                 ->label('Interview Type'),
@@ -32,12 +32,10 @@ class CandidateInterviewExporter extends Exporter
                 ->label('Interview Notes'),
             ExportColumn::make('result')
                 ->label('Result'),
-            ExportColumn::make('deleted_at')
-                ->label('Deleted At'),
             ExportColumn::make('created_at')
                 ->label('Created At'),
             ExportColumn::make('updated_at')
-                ->label('Updated At'),
+                ->label('Updated At')
         ];
     }
 

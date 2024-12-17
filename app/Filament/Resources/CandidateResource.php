@@ -116,8 +116,10 @@ class CandidateResource extends Resource
                             ->searchable()
                             ->preload()
                             ->afterStateUpdated(function ($state, $set, $get, $record) {
-                                $user = User::where('employee_id', Auth::user()->id)->first();
-                                if ($record) {
+                                $employee = \App\Models\ManagementSDM\Employee::find($state);
+                                $user = $employee?->user;
+
+                                if ($record && $user) {
                                     Notification::make()
                                         ->title('Assigned New Candidate')
                                         ->body('You have been assigned a new candidate')
@@ -125,7 +127,8 @@ class CandidateResource extends Resource
                                         ->actions([
                                             \Filament\Notifications\Actions\Action::make('view')
                                                 ->button()
-                                                ->url(fn() => route('filament.admin.resources.candidates.edit', ['record' => $record->id]), shouldOpenInNewTab: true)
+                                                ->url(CandidateResource::getUrl('edit', ['record' => $record]))
+                                                ->openUrlInNewTab()
                                         ])
                                         ->success()
                                         ->sendToDatabase($user);
@@ -189,54 +192,72 @@ class CandidateResource extends Resource
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Branch')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-m-building-storefront')
+                    ->color('primary')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('first_name')
+                    ->label('Nama Depan')
                     ->searchable()
                     ->toggleable()
+                    ->icon('heroicon-o-user')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('last_name')
+                    ->label('Nama Belakang')
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->toggleable()
                     ->sortable()
                     ->icon('heroicon-o-envelope')
-                    ->searchable()
-                    ->toggleable()
-                    ->sortable(),
+                    ->copyable()
+                    ->copyMessage('Email berhasil disalin')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Telepon')
                     ->icon('heroicon-o-phone')
                     ->searchable()
                     ->toggleable()
-                    ->searchable()
-                    ->toggleable(),
+                    ->copyable()
+                    ->copyMessage('Nomor telepon berhasil disalin')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('date_of_birth')
-                    ->date()
+                    ->label('Tanggal Lahir')
+                    ->date('d M Y')
                     ->toggleable()
+                    ->icon('heroicon-o-calendar')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('gender')
+                    ->label('Jenis Kelamin')
                     ->badge()
                     ->toggleable()
                     ->colors([
                         'primary' => 'male',
-                        'secondary' => 'female',
+                        'pink-500' => 'female',
                         'warning' => 'other',
                     ])
                     ->icon('heroicon-o-user'),
                 Tables\Columns\TextColumn::make('national_id_number')
+                    ->label('Nomor KTP')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->icon('heroicon-o-identification')
+                    ->copyable()
+                    ->copyMessage('Nomor KTP berhasil disalin'),
                 Tables\Columns\TextColumn::make('position_applied')
+                    ->label('Posisi yang Dilamar')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-briefcase')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
+                    ->size('lg')
                     ->toggleable()
                     ->colors([
                         'danger' => 'rejected',
@@ -246,27 +267,38 @@ class CandidateResource extends Resource
                     ])
                     ->icon('heroicon-o-user-circle'),
                 Tables\Columns\TextColumn::make('recruiter.first_name')
-                    ->label('Recruiter')
+                    ->label('Perekrut')
                     ->searchable()
                     ->toggleable()
+                    ->icon('heroicon-o-user-group')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('application_date')
-                    ->date()
+                    ->label('Tanggal Lamaran')
+                    ->date('d M Y')
                     ->toggleable()
+                    ->icon('heroicon-o-calendar-days')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('city')
+                    ->label('Kota')
                     ->toggleable()
+                    ->icon('heroicon-o-map-pin')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('country')
+                    ->label('Negara')
                     ->toggleable()
+                    ->icon('heroicon-o-globe-alt')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
+                    ->icon('heroicon-o-clock')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
+                    ->icon('heroicon-o-arrow-path')
                     ->toggleable(isToggledHiddenByDefault: true)
             ])->defaultSort('created_at', 'desc')
             ->filters([
@@ -275,32 +307,32 @@ class CandidateResource extends Resource
                     ->relationship('branch', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Branch'),
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('gender')
                     ->options([
-                        'male' => 'Male',
-                        'female' => 'Female',
-                        'other' => 'Other',
+                        'male' => 'Laki-laki',
+                        'female' => 'Perempuan',
+                        'other' => 'Lainnya',
                     ])
-                    ->label('Gender')
-                    ->placeholder('All Genders'),
+                    ->label('Jenis Kelamin')
+                    ->placeholder('Semua Jenis Kelamin'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'applied' => 'Applied',
-                        'interviewing' => 'Interviewing',
-                        'offered' => 'Offered',
-                        'hired' => 'Hired',
-                        'rejected' => 'Rejected',
+                        'applied' => 'Melamar',
+                        'interviewing' => 'Wawancara',
+                        'offered' => 'Ditawari',
+                        'hired' => 'Diterima',
+                        'rejected' => 'Ditolak',
                     ])
                     ->label('Status')
-                    ->placeholder('All Statuses')
+                    ->placeholder('Semua Status')
                     ->multiple(),
                 Tables\Filters\Filter::make('application_date')
                     ->form([
                         Forms\Components\DatePicker::make('from')
-                            ->label('From Date'),
+                            ->label('Dari Tanggal'),
                         Forms\Components\DatePicker::make('until')
-                            ->label('Until Date'),
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -316,56 +348,28 @@ class CandidateResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Application from ' . Carbon::parse($data['from'])->toFormattedDateString();
+                            $indicators['from'] = 'Lamaran dari ' . Carbon::parse($data['from'])->toFormattedDateString();
                         }
                         if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Application until ' . Carbon::parse($data['until'])->toFormattedDateString();
+                            $indicators['until'] = 'Lamaran sampai ' . Carbon::parse($data['until'])->toFormattedDateString();
                         }
                         return $indicators;
                     })->columns(2),
                 Tables\Filters\SelectFilter::make('recruiter')
                     ->relationship('recruiter', 'first_name')
-                    ->label('Recruiter')
-                    ->placeholder('All Recruiters')
+                    ->label('Perekrut')
+                    ->placeholder('Semua Perekrut')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\TernaryFilter::make('has_resume')
-                    ->label('Has Resume')
-                    ->placeholder('All Candidates')
-                    ->trueLabel('With Resume')
-                    ->falseLabel('Without Resume')
+                    ->label('Memiliki Resume')
+                    ->placeholder('Semua Kandidat')
+                    ->trueLabel('Dengan Resume')
+                    ->falseLabel('Tanpa Resume')
                     ->queries(
                         true: fn(Builder $query) => $query->whereNotNull('resume'),
                         false: fn(Builder $query) => $query->whereNull('resume'),
                     ),
-                Tables\Filters\Filter::make('city_country')
-                    ->form([
-                        Forms\Components\TextInput::make('city')
-                            ->label('City'),
-                        Forms\Components\TextInput::make('country')
-                            ->label('Country'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['city'],
-                                fn(Builder $query, $city): Builder => $query->where('city', 'like', "%{$city}%"),
-                            )
-                            ->when(
-                                $data['country'],
-                                fn(Builder $query, $country): Builder => $query->where('country', 'like', "%{$country}%"),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['city'] ?? null) {
-                            $indicators['city'] = 'City: ' . $data['city'];
-                        }
-                        if ($data['country'] ?? null) {
-                            $indicators['country'] = 'Country: ' . $data['country'];
-                        }
-                        return $indicators;
-                    }),
             ])
             ->actions([
                 ActionGroup::make([
@@ -386,7 +390,7 @@ class CandidateResource extends Resource
                         ->requiresConfirmation()
                         ->hidden(fn(Candidate $record): bool => $record->resume === null),
                     Tables\Actions\Action::make('change_status')
-                        ->label('Change Status')
+                        ->label('Ubah Status')
                         ->icon('heroicon-o-arrow-path')
                         ->form([
                             Forms\Components\Select::make('status')
@@ -403,22 +407,12 @@ class CandidateResource extends Resource
                         ->action(function (Candidate $record, array $data): void {
                             $record->update(['status' => $data['status']]);
 
-                            if ($data['status'] === 'interviewing') {
-                                CandidateInterview::create([
-                                    'candidate_id' => $record->id,
-                                    'interview_date' => now(),
-                                    'interviewer' => null,
-                                    'interview_type' => 'in_person',
-                                    'interview_notes' => null,
-                                    'result' => 'pending'
-                                ]);
-                            }
+                            // The observer will handle interview creation automatically
 
-                            if (in_array($data['status'], ['applied', 'interviewing', 'offered', 'hired', 'rejected'])) {
-                                Applications::where('candidate_id', $record->id)->update([
-                                    'status' => $data['status'],
-                                ]);
-                            }
+                            // Update related applications
+                            Applications::where('candidate_id', $record->id)
+                                ->update(['status' => $data['status']]);
+
                             Notification::make()
                                 ->title('Status updated successfully')
                                 ->success()
@@ -428,14 +422,14 @@ class CandidateResource extends Resource
 
             ])
             ->headerActions([
-                CreateAction::make()->icon('heroicon-o-plus'),
+                CreateAction::make()->icon('heroicon-o-plus')->label('Buat Kandidat Baru'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(CandidateExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export candidate completed' . ' ' . now())
+                                ->title('Ekspor kandidat selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -444,7 +438,7 @@ class CandidateResource extends Resource
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import candidate completed' . ' ' . now())
+                                ->title('Impor kandidat selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
@@ -459,16 +453,18 @@ class CandidateResource extends Resource
                 ExportBulkAction::make()->exporter(CandidateExporter::class)
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
+                    ->label('Ekspor')
                     ->after(function () {
                         Notification::make()
-                            ->title('Export candidate completed' . ' ' . now())
+                            ->title('Ekspor kandidat selesai' . ' ' . now())
                             ->success()
                             ->sendToDatabase(Auth::user());
                     }),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->label('Buat Kandidat Baru'),
             ]);
     }
 
