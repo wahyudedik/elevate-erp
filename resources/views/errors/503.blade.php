@@ -89,7 +89,7 @@
         <div class="gear"></div>
         <h1>Situs Sedang Dalam Perbaikan</h1>
         <p>Kami sedang memperbarui sistem untuk memberikan pengalaman terbaik kepada Anda. Silakan kembali lagi nanti!</p>
-        <a href="wa.me/6281654932383" target="_blank">Hubungi Kami</a>
+        <a href="https://wa.me/6281654932383" target="_blank">Hubungi Kami</a>
     </div>
 </body>
 </html>
