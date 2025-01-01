@@ -9,68 +9,30 @@
 <p>php artisan shield:generate --all </p>
 <p>php artisan shield:super-admin </p>
 <p>apakah perlu menjalankan php artisan reverb:start </p>
+<p>Run queue worker: php artisan queue:work</p>
 
-Perbaikan :
+<h1>Fitur Aplikasi:</h1>
+<h2>1. Panel Admin:</h2>
+<ul>
+   <li>Multi Company</li>
+   <li>Login, Register</li>
+</ul>
 
--   [x] bug dan bahasa indonesia => branch/cabang
--   [x] bug dan bahasa indonesia => Departemen
--   [x] bug dan bahasa indonesia => Jabatan
--   [x] bug dan bahasa indonesia => Akuntansi
--   [x] bug dan bahasa indonesia => Jurnal
--   [x] bug dan bahasa indonesia => Buku Besar
--   [x] bug dan bahasa indonesia => laporan keuangan
--   [x] bug => role permission
--   [x] Email Verification port .env dan .env.example
--   [x] bug dan bahasa indonesia => daftar karyawan
--   [x] bug dan bahasa indonesia => daftar jabatan karyawan
--   [x] bug fitur auto create dan update jabatan karyawan
--   [x] bug dan bahasa indonesia => shift
--   [x] bug dan bahasa indonesia => jadwal shift
--   [x] bug dan bahasa indonesia => absensi
--   [x] bug dan bahasa indonesia => cuti
--   [x] bug dan bahasa indonesia => maps
--   [x] bug dan bahasa indonesia => rekruitment
--   [x] bug dan bahasa indonesia => cv
--   [x] bug dan bahasa indonesia => laporan kandidate
--   [x] bug dan bahasa indonesia => laporan kandidat interview
-
-Fitur Admin :
-
--   [x] fitur login = User untuk melakukan login yang berstatus active
--   [x] fitur register = User untuk melakukan register untuk menjadi user aktif dan masuk ke dalam sistem
--   [x] fitur forgot password = User untuk melakukan reset password
--   [x] fitur reset password = User untuk melakukan reset password
--   [x] fitur profile
--   [x] fitur logout
--   [x] fitur dashboard
--   [x] fitur company/tenant
--   [x] fitur global pencarian
--   [x] fitur cabang
--   [x] fitur departemen
--   [x] fitur jabatan
--   [x] fitur Akun Transfer ke akun lain
--   [x] fitur akutansi
--   [x] fitur jurnal
--   [x] fitur bukuu besar dan transaksi
--   [x] fitur laporan keuangan -> laporan laba rugi, laporan neraca, laporan arus kas
--   [x] fitur role permission
--   [x] fitur daftar karyawan
--   [x] fitur daftar jabatan karyawan
--   [x] fitur shift
--   [x] fitur jadwal shift
--   [x] fitur absensi
--   [x] fitur ijin cuti
--   [x] fitur maps
--   [x] fitur rekruitment
--   [x] fitur cv
--   [x] fitur laporan kandidate
--   [x] fitur laporan kandidat interview
+<h2>2. Panel Developer:</h2>
+<ul>
+   <li>Manajemen API dan dokumentasi</li>
+   <li>Monitoring performa sistem</li>
+</ul>
 
 bug :
 
 -   [] Deployment error fitur permission super-admin dan register/login
 -   [] Activity log error belum setting per company
--   [] laporan keuangan belum otomatis
+-   [] laporan keuangan belum otomatis tergenerate untuk laba rugi, neraca dan kas
+-   [] group data cabang di laporan keuangan seperti akun dan lain lainnya belum ke filter
+-   [] menu laporan masih kosong datanya
+-   [] setelah sebulan, menu laporan keuangan dan buku besar dan jurnal akan terkunci
+-   [] revisi porjek manajement disamakan dengan pbo
 
 Berikut perbedaan komponen-komponen Laravel dalam bahasa Indonesia:
 
