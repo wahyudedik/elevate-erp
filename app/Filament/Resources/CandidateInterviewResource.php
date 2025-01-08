@@ -395,7 +395,7 @@ class CandidateInterviewResource extends Resource
             'branch_id',
             'candidate_id',
             'interview_date',
-            'interviewer',
+            'interviewer_id',
             'interview_type',  // phone, video, in_person
             'interview_notes',
             'result',  // passed, failed, pending 

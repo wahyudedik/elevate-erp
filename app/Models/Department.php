@@ -16,11 +16,6 @@ class Department extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
-
     protected $table = 'departments';
 
     protected $fillable = [

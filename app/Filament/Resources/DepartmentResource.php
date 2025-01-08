@@ -48,31 +48,41 @@ class DepartmentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Department Details')
+                Forms\Components\Section::make('Informasi Departemen')
+                    ->description('Masukkan informasi departemen dengan lengkap')
+                    ->icon('heroicon-o-building-office-2')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
                             ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
                             ->required()
                             ->preload()
-                            ->nullable(),
+                            ->nullable()
+                            ->helperText('Pilih cabang tempat departemen berada'),
                         Forms\Components\TextInput::make('name')
+                            ->label('Nama Departemen')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->helperText('Masukkan nama departemen'),
                         Forms\Components\RichEditor::make('description')
+                            ->label('Deskripsi')
                             ->nullable()
                             ->maxLength(65535)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Berikan deskripsi lengkap tentang departemen'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Detail waktu pembuatan dan modifikasi')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -85,32 +95,40 @@ class DepartmentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('No.')
+                    ->label('No')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter()
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Cabang')
                     ->searchable()
                     ->icon('heroicon-o-building-storefront')
                     ->sortable()
                     ->toggleable()
                     ->weight('medium')
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Departemen')
                     ->searchable()
                     ->sortable()
                     ->toggleable()
                     ->weight('medium')
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->searchable()
                     ->sortable()
                     ->html()
                     ->limit(50)
                     ->toggleable()
                     ->wrap()
-                    ->size('sm'),
+                    ->size('sm')
+                    ->tooltip(fn($record) => $record->description),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -118,6 +136,7 @@ class DepartmentResource extends Resource
                     ->color('gray')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diubah')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -126,15 +145,22 @@ class DepartmentResource extends Resource
                     ->size('sm'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Terhapus'),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
+                    ->label('Cabang')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                     ->searchable()
                     ->preload(),
                 Tables\Filters\Filter::make('created_at')
+                    ->label('Tanggal Dibuat')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from'),
-                        Forms\Components\DatePicker::make('created_until'),
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Dari Tanggal')
+                            ->placeholder('Pilih tanggal awal'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Sampai Tanggal')
+                            ->placeholder('Pilih tanggal akhir'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -146,62 +172,101 @@ class DepartmentResource extends Resource
                                 $data['created_until'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
-                    })->columns(2),
+                    })
+                    ->columns(2)
+                    ->indicateUsing(function (array $data): ?string {
+                        if ($data['created_from'] && $data['created_until']) {
+                            return 'Dibuat dari ' . $data['created_from'] . ' sampai ' . $data['created_until'];
+                        }
+                        return null;
+                    }),
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                ])
+                    Tables\Actions\EditAction::make()
+                        ->label('Ubah')
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning'),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat')
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\ForceDeleteAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreAction::make()
+                        ->label('Pulihkan')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('success'),
+                ])->tooltip('Aksi')
+                    ->icon('heroicon-m-ellipsis-horizontal')
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Buat Departemen Baru')
-                    ->icon('heroicon-o-plus'),
+                    ->label('Tambah Departemen')
+                    ->icon('heroicon-m-plus')
+                    ->color('primary'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(DepartmentExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Ekspor Data')
+                        ->icon('heroicon-m-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor data departemen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()->importer(DepartmentImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
+                        ->label('Impor Data')
+                        ->icon('heroicon-m-arrow-up-tray')
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import department completed' . ' ' . now())
+                                ->title('Impor data departemen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                ])->label('Lainnya')
+                    ->icon('heroicon-m-cog-6-tooth')
+                    ->tooltip('Opsi Lainnya')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Hapus')
+                        ->icon('heroicon-m-trash')
+                        ->color('danger'),
+                    Tables\Actions\ForceDeleteBulkAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-m-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreBulkAction::make()
+                        ->label('Pulihkan')
+                        ->icon('heroicon-m-arrow-path')
+                        ->color('success'),
                     ExportBulkAction::make()->exporter(DepartmentExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Ekspor Data')
+                        ->icon('heroicon-m-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export department completed' . ' ' . now())
+                                ->title('Ekspor data departemen selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ]),
+                ])->tooltip('Aksi Massal'),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Buat Departemen Baru')
-                    ->icon('heroicon-o-plus'),
+                    ->label('Tambah Departemen')
+                    ->icon('heroicon-m-plus')
+                    ->color('primary'),
             ]);
     }
 
@@ -232,6 +297,8 @@ class DepartmentResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return [
+            'company_id',
+            'branch_id',
             'name',
             'description',
         ];

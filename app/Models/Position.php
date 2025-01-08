@@ -15,11 +15,6 @@ class Position extends BaseModel
 {
     use HasFactory,  SoftDeletes, Notifiable, LogsActivity;
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
-
     protected $table = 'positions';
 
     protected $fillable = [

@@ -54,11 +54,6 @@ class Branch extends BaseModel
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new CompanyScope);
-    // }
-
     protected $table = 'branches';
 
     protected $fillable = [

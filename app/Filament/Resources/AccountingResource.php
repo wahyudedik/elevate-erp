@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use OpenSpout\Writer\CSV\Writer;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
+use Filament\Tables\Grouping\Group;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -62,7 +63,9 @@ class AccountingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Account Information')
+                Forms\Components\Section::make('Informasi Akun')
+                    ->description('Masukkan informasi detail akun')
+                    ->icon('heroicon-o-document-text')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->label('Cabang')
@@ -70,27 +73,35 @@ class AccountingResource extends Resource
                             ->nullable()
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->helperText('Pilih cabang tempat akun ini berada')
+                            ->placeholder('Pilih cabang'),
                         Forms\Components\TextInput::make('account_name')
                             ->label('Nama Akun')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->placeholder('Masukkan nama akun')
+                            ->helperText('Masukkan nama akun yang mudah diidentifikasi'),
                         Forms\Components\TextInput::make('account_number')
                             ->label('Nomor Akun')
                             ->required()
                             ->unique(ignorable: fn($record) => $record)
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->placeholder('Masukkan nomor akun')
+                            ->helperText('Nomor akun harus unik'),
                         Forms\Components\Select::make('account_type')
-                            ->label('Tipe Akun')
+                            ->label('Jenis Akun')
                             ->required()
                             ->options([
-                                'asset' => 'Asset / Aset',
-                                'liability' => 'Liability / Kewajiban',
-                                'equity' => 'Equity / Modal',
-                                'revenue' => 'Revenue / Pendapatan',
-                                'expense' => 'Expense / Beban',
+                                'asset' => 'Aset',
+                                'liability' => 'Kewajiban',
+                                'equity' => 'Modal',
+                                'revenue' => 'Pendapatan',
+                                'expense' => 'Beban',
                                 'kas' => 'Kas',
-                            ]),
+                            ])
+                            ->placeholder('Pilih jenis akun')
+                            ->helperText('Pilih kategori akun yang sesuai'),
                         Forms\Components\TextInput::make('initial_balance')
                             ->label('Saldo Awal')
                             ->required()
@@ -100,6 +111,8 @@ class AccountingResource extends Resource
                             ->default(0)
                             ->reactive()
                             ->live(onBlur: true)
+                            ->placeholder('0')
+                            ->helperText('Masukkan saldo awal akun')
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set('current_balance', $state);
                             }),
@@ -111,26 +124,28 @@ class AccountingResource extends Resource
                             ->maxValue(999999999999999.99)
                             ->default(0)
                             ->reactive()
+                            ->placeholder('0')
+                            ->helperText('Saldo akhir akan terisi otomatis')
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set('initial_balance', $state);
                             }),
                     ])
                     ->columns(2),
                 Forms\Components\Section::make('Informasi Tambahan')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
                             ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Terakhir diubah pada')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
                     ->collapsible(),
             ]);
     }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -151,7 +166,8 @@ class AccountingResource extends Resource
                     ->limit(50)
                     ->wrap()
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->icon('heroicon-o-document-text'),
                 Tables\Columns\TextColumn::make('account_number')
                     ->searchable()
                     ->label('Nomor Akun')
@@ -161,7 +177,7 @@ class AccountingResource extends Resource
                 Tables\Columns\TextColumn::make('account_type')
                     ->icon('heroicon-o-currency-dollar')
                     ->badge()
-                    ->label('Tipe Akun')
+                    ->label('Jenis Akun')
                     ->toggleable()
                     ->colors([
                         'primary' => 'asset',
@@ -170,30 +186,54 @@ class AccountingResource extends Resource
                         'success' => 'revenue',
                         'info' => 'expense',
                     ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'asset' => 'Aset',
+                        'liability' => 'Kewajiban',
+                        'equity' => 'Modal',
+                        'revenue' => 'Pendapatan',
+                        'expense' => 'Beban',
+                        'kas' => 'Kas',
+                        default => $state,
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('initial_balance')
                     ->money('IDR')
                     ->toggleable()
                     ->label('Saldo Awal')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize([
+                        Tables\Columns\Summarizers\Sum::make()->money('IDR')
+                    ])
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('current_balance')
                     ->money('IDR')
                     ->toggleable()
                     ->label('Saldo Akhir')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize([
+                        Tables\Columns\Summarizers\Sum::make()->money('IDR')
+                    ])
+                    ->alignment('right'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->label('Dibuat pada')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->label('Terakhir diubah pada')
+                    ->label('Tanggal Dibuat')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-            ])->defaultSort('created_at', 'desc')
-            ->filters([
+                    ->icon('heroicon-o-calendar'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->label('Tanggal Diperbarui')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-clock')
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->groups([
+                Group::make('branch.name')
+                    ->label('Cabang')
+                    ->collapsible()
+            ])->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('branch')
                     ->relationship('branch', 'name')

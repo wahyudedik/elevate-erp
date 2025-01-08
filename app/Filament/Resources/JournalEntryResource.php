@@ -161,7 +161,10 @@ class JournalEntryResource extends Resource
                     ->searchable()
                     ->alignment('right')
                     ->size('sm')
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->summarize([
+                        'sum' => 'money',
+                    ]),
                 Tables\Columns\TextColumn::make('account.account_name')
                     ->label('Akun')
                     ->sortable()

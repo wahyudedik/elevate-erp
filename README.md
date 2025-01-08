@@ -9,33 +9,207 @@
 <p>php artisan shield:generate --all </p>
 <p>php artisan shield:super-admin </p>
 <p>apakah perlu menjalankan php artisan reverb:start </p>
-<p>Run queue worker: php artisan queue:work</p>
+<p>apakah perlu menjalankan Run queue worker: php artisan queue:work</p>
 
-<h1>Fitur Aplikasi:</h1>
-<h2>1. Panel Admin:</h2>
-<ul>
-   <li>Multi Company</li>
-   <li>Login, Register</li>
-</ul>
+Notes :
 
-<h2>2. Panel Developer:</h2>
-<ul>
-   <li>Manajemen API dan dokumentasi</li>
-   <li>Monitoring performa sistem</li>
-</ul>
+-   [] Setiap fitur role dan widget maupun page perlu di set permission pada role resource
 
 bug :
 
--   [] Deployment error fitur permission super-admin dan register/login
+-   [] Deployment error fitur permission super-admin dan register/login (ketika daftar auto superadmin)
 -   [] Activity log error belum setting per company
 -   [] laporan keuangan belum otomatis tergenerate untuk laba rugi, neraca dan kas
 -   [] group data cabang di laporan keuangan seperti akun dan lain lainnya belum ke filter
 -   [] menu laporan masih kosong datanya
 -   [] setelah sebulan, menu laporan keuangan dan buku besar dan jurnal akan terkunci
--   [] revisi porjek manajement disamakan dengan pbo
+-   [] revisi projek manajement disamakan dengan pbo
+-   [] menambahkan data saldo awal
+-   [] menambahkan jumlah di jurnal dan buku besar
+-   [] perbaikan responsive map pada mobile
+-   [] rename page themes
+-   [] perbaikan widget pada page analitics
+
+Kekurangan aplikasi :
+Priority 1 - Core Concrete Business Features:
+1. Production & Operations
+- Volume calculation system
+- Mix design management
+- Quality control workflows
+- Delivery scheduling
+- GPS tracking integration
+
+2. Financial Core
+- Automated journal entries
+- Distance-based pricing
+- Real-time cash flow
+- Basic financial reports
+
+3. Inventory & Materials
+- Raw material tracking
+- Stock alerts
+- Batch management
+- Quality checks
+
+Priority 2 - Business Enhancement:
+1. Fleet Management
+- Truck maintenance system
+- Fuel consumption tracking
+- Route optimization
+- Driver management
+
+2. Sales & Customer Management
+- Quote generation
+- Order processing
+- Customer portal
+- Delivery tracking
+
+3. Advanced Financial Features
+- Forecasting
+- Cost analysis
+- Multi-currency support
+- Tax management
+
+Priority 3 - System Enhancement:
+1. Integration & APIs
+- Mobile app development
+- External system connections
+- Weather API integration
+- Payment gateway integration
+
+2. Analytics & Reporting
+- Custom dashboards
+- Business intelligence
+- Performance metrics
+- Export capabilities
+
+3. Compliance & Documentation
+- Digital documentation
+- Audit trails
+- Regulatory compliance
+- Quality certifications
+
+### Integrasi Modul Keuangan:
+
+-   Tambahkan otomatisasi jurnal entry saat transaksi supplier terjadi
+-   Implementasi pelacakan arus kas secara real-time
+-   Buat template standar untuk laporan keuangan (neraca, laba rugi, arus kas)
+-   Tambahkan fitur perkiraan keuangan
+
+### Manajemen SDM:
+
+-   Integrasikan sistem penggajian dengan absensi
+-   Tambahkan modul manajemen kinerja
+-   Kembangkan fitur pelatihan & pengembangan
+-   Buat sistem perhitungan bonus dan insentif
+
+### Rantai Pasok:
+
+-   Tambahkan sistem manajemen persediaan
+-   Implementasi alur kerja pemesanan
+-   Buat sistem pelacakan pengiriman
+-   Tambahkan daftar periksa kendali mutu
+
+### Penjualan & Pemasaran:
+
+-   Implementasi sistem CRM
+-   Tambahkan manajemen alur penjualan
+-   Buat sistem penawaran dan penagihan
+-   Integrasikan dengan platform e-commerce
+
+### Pelaporan & Analisis:
+
+-   Tambahkan dasbor kecerdasan bisnis
+-   Implementasi analisis prediktif
+-   Buat pembuat laporan khusus
+-   Tambahkan ekspor dalam berbagai format
+
+### Sistem & Integrasi:
+
+-   Implementasi API untuk integrasi eksternal
+-   Tambahkan dukungan multi-mata uang
+-   Buat versi mobile
+-   Tingkatkan keamanan sistem
+
+### Kustomisasi:
+
+-   Buat sistem yang lebih fleksibel untuk berbagai jenis usaha
+-   Tambahkan pembuat bidang khusus
+-   Implementasi pembuat alur kerja
+-   Buat sistem manajemen template
+
+### Kepatuhan & Audit:
+
+-   Tambahkan jejak audit yang lebih detail
+-   Implementasi sistem manajemen pajak
+-   Buat sistem dokumentasi digital
+-   Tambahkan template pelaporan regulasi
+
+### Modul Produksi Beton:
+
+-   Sistem perhitungan volume per kubik
+-   Kalkulasi otomatis biaya berdasarkan jarak tempuh
+-   Formula campuran beton dengan berbagai mutu
+-   Daftar periksa kendali mutu khusus beton
+-   Pemantauan suhu dan waktu pengiriman
+
+### Manajemen Armada:
+
+-   Pelacakan lokasi truk mixer
+-   Penjadwalan pengiriman
+-   Perhitungan bahan bakar per kilometer
+-   Jadwal perawatan kendaraan
+-   Optimasi rute
+
+### Manajemen Bahan Baku:
+
+-   Kontrol stok untuk semen, pasir, agregat
+-   Peringatan stok minimum
+-   Pelacakan batch
+-   Metrik kinerja pemasok
+-   Pemeriksaan kualitas material
+
+### Sistem Harga:
+
+-   Harga dinamis berdasarkan:
+    -   Jarak tempuh
+    -   Volume pesanan
+    -   Mutu beton
+    -   Waktu pengiriman
+    -   Biaya tambahan (pompa, lembur)
+
+### Unit yang Dapat Disesuaikan:
+
+-   Konversi otomatis antar satuan (m³, ton, truk)
+-   Template satuan untuk berbagai industri
+-   Kalkulator unit khusus
+-   Kalkulator harga massal
+
+### Manajemen Proyek:
+
+-   Penjadwalan tanggal pengecoran
+-   Koordinasi lokasi
+-   Pemantauan cuaca
+-   Perencanaan urutan pengecoran
+-   Alokasi sumber daya
+
+### Jaminan Mutu:
+
+-   Pelacakan hasil pengujian
+-   Pencatatan uji slump
+-   Pemantauan pengembangan kekuatan
+-   Manajemen sampel
+-   Pelaporan kepatuhan
+
+### Portal Pelanggan:
+
+-   Pelacakan pengiriman real-time
+-   Sistem pemesanan online
+-   Data pengecoran historis
+-   Bukti pengiriman digital
+-   Sistem umpan balik
 
 Berikut perbedaan komponen-komponen Laravel dalam bahasa Indonesia:
-
 ## Laravel Components
 
 ### Job

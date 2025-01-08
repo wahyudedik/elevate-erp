@@ -103,7 +103,10 @@ class LedgerResource extends Resource
                             ->default(0)
                             ->required()
                             ->rule('decimal:0,2')
-                            ->label('Jumlah'),
+                            ->label('Jumlah')
+                            ->summarize([
+                                'sum' => 'money',
+                            ]),
                         Forms\Components\RichEditor::make('transaction_description')
                             ->nullable()
                             ->columnSpanFull()
@@ -374,7 +377,7 @@ class LedgerResource extends Resource
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                    ]),
+                ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()

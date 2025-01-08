@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
+            // ->registration()
             ->emailVerification()
             ->passwordReset()
             ->profile()
@@ -50,13 +50,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2rem')
             ->favicon(asset('home/assets/img/2.png'))
             ->colors([
-                'danger' => Color::Red,
-                'gray' => Color::Gray,
-                'info' => Color::Amber,
-                // 'primary' => '#34507c',
-                'primary' => 'rgb(52, 80, 124)',
-                'success' => Color::Green,
-                'warning' => Color::Yellow,
+                'danger' => Color::Rose,
+                'gray' => Color::Slate,
+                'info' => Color::Sky,
+                'primary' => Color::Indigo,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
             ])
             ->navigationGroups([
                 'Manajemen Pengguna',

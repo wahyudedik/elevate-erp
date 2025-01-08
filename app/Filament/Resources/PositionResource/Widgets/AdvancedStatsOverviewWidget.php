@@ -14,23 +14,39 @@ class AdvancedStatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Jabatan', $this->formatNumber(Position::count()))->icon('heroicon-o-briefcase')
-                ->chartColor('success')
+            Stat::make('Total Jabatan', $this->formatNumber(Position::count()))
+                ->icon('heroicon-o-briefcase')
+                ->chartColor('primary')
                 ->iconPosition('start')
                 ->description('Total posisi dalam sistem')
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
-                ->descriptionColor('success')
-                ->iconColor('success'),
-            Stat::make('Jabatan Berdasarkan Perusahaan', $this->formatNumber(Company::has('positions')->count()))->icon('heroicon-o-building-office')
-                ->description('Jabatan berdasarkan perusahaan')
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
+                ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('warning'),
-            Stat::make('Jabatan Berdasarkan Departemen', $this->formatNumber(Position::whereNotNull('department_id')->count()))->icon('heroicon-o-building-office-2')
-                ->description("Posisi yang terkait dengan departemen")
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
-                ->descriptionColor('success')
                 ->iconColor('primary')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-primary-50 dark:ring-primary-900 hover:shadow-lg transition-all duration-300 rounded-xl'
+                ]),
+
+            Stat::make('Jabatan Berdasarkan Perusahaan', $this->formatNumber(Company::has('positions')->count()))
+                ->icon('heroicon-o-building-office')
+                ->chartColor('warning')
+                ->description('Jabatan berdasarkan perusahaan')
+                ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
+                ->descriptionColor('warning')
+                ->iconColor('warning')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-warning-50 dark:ring-warning-900 hover:shadow-lg transition-all duration-300 rounded-xl'
+                ]),
+
+            Stat::make('Jabatan Berdasarkan Departemen', $this->formatNumber(Position::whereNotNull('department_id')->count()))
+                ->icon('heroicon-o-building-office-2')
+                ->chartColor('info')
+                ->description("Posisi yang terkait dengan departemen")
+                ->descriptionIcon('heroicon-o-arrow-trending-up', 'before')
+                ->descriptionColor('info')
+                ->iconColor('info')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-info-50 dark:ring-info-900 hover:shadow-lg transition-all duration-300 rounded-xl'
+                ])
         ];
     }
 

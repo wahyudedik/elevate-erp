@@ -9,27 +9,41 @@ use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
 class AdvancedStatsOverviewWidget extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
- 
+
     protected function getStats(): array
     {
         return [
-            Stat::make('Total Departemen', $this->formatNumber(Department::count()))->icon('heroicon-o-building-office-2')
-                ->chartColor('success')
+            Stat::make('Total Departemen', $this->formatNumber(Department::count()))
+                ->icon('heroicon-m-building-office-2')
+                ->chartColor('primary')
                 ->iconPosition('start')
-                ->description('Total Departemen Pada Sistem')
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
-                ->descriptionColor('success')
-                ->iconColor('success'),
-            Stat::make('Departemen Dengan Cabang', $this->formatNumber(Department::whereNotNull('branch_id')->count()))->icon('heroicon-o-building-storefront')
-                ->description('Departemen yang terkait dengan cabang')
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
+                ->description('Jumlah keseluruhan departemen dalam sistem')
+                ->descriptionIcon('heroicon-m-arrow-trending-up', 'before')
                 ->descriptionColor('primary')
-                ->iconColor('warning'),
-            Stat::make('Baru Ditambahkan', $this->formatNumber(Department::where('created_at', '>=', now()->subDays(30))->count()))->icon('heroicon-o-clock')
-                ->description("Departemen yang ditambahkan dalam 30 hari terakhir")
-                ->descriptionIcon('heroicon-o-chevron-up', 'before')
-                ->descriptionColor('success')
                 ->iconColor('primary')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-primary-50 hover:ring-primary-100 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md'
+                ]),
+            Stat::make('Departemen Terafiliasi', $this->formatNumber(Department::whereNotNull('branch_id')->count()))
+                ->icon('heroicon-m-building-storefront')
+                ->chartColor('warning')
+                ->description('Departemen yang terhubung dengan cabang')
+                ->descriptionIcon('heroicon-m-arrow-trending-up', 'before')
+                ->descriptionColor('warning')
+                ->iconColor('warning')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-warning-50 hover:ring-warning-100 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md'
+                ]),
+            Stat::make('Departemen Terbaru', $this->formatNumber(Department::where('created_at', '>=', now()->subDays(30))->count()))
+                ->icon('heroicon-m-clock')
+                ->chartColor('info')
+                ->description('Ditambahkan dalam 30 hari terakhir')
+                ->descriptionIcon('heroicon-m-arrow-trending-up', 'before')
+                ->descriptionColor('info')
+                ->iconColor('info')
+                ->extraAttributes([
+                    'class' => 'ring-2 ring-info-50 hover:ring-info-100 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md'
+                ])
         ];
     }
 
@@ -46,5 +60,4 @@ class AdvancedStatsOverviewWidget extends BaseWidget
         $formattedNumber = number_format($number, $suffixIndex > 0 ? 1 : 0, '.', ',');
         return $formattedNumber . $suffixes[$suffixIndex];
     }
-
 }

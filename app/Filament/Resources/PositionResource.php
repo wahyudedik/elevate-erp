@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Position;
@@ -11,17 +12,17 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Exports\PositionExporter;
 use App\Filament\Imports\PositionImporter;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\PositionResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PositionResource\RelationManagers;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\ExportBulkAction;
 
 class PositionResource extends Resource
 {
@@ -49,14 +50,20 @@ class PositionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Position Details')
+                Forms\Components\Section::make('Informasi Jabatan')
+                    ->description('Silakan isi informasi jabatan dengan lengkap')
+                    ->icon('heroicon-o-briefcase')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
+                            ->label('Cabang')
                             ->relationship('branch', 'name', fn(Builder $query) => $query->where('status', 'active'))
                             ->searchable()
                             ->preload()
-                            ->live(),
+                            ->live()
+                            ->native(false)
+                            ->helperText('Pilih cabang tempat jabatan ini berada'),
                         Forms\Components\Select::make('department_id')
+                            ->label('Departemen')
                             ->relationship(
                                 'department',
                                 'name',
@@ -65,22 +72,38 @@ class PositionResource extends Resource
                             )
                             ->searchable()
                             ->preload()
-                            ->disabled(fn(Forms\Get $get): bool => ! $get('branch_id')),
+                            ->native(false)
+                            ->hidden(fn(Forms\Get $get): bool => ! $get('branch_id'))
+                            ->helperText('Pilih departemen untuk jabatan ini'),
                         Forms\Components\TextInput::make('name')
+                            ->label('Nama Jabatan')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->placeholder('Masukkan nama jabatan')
+                            ->helperText('Contoh: Manager, Supervisor, Staff'),
                         Forms\Components\RichEditor::make('description')
+                            ->label('Deskripsi')
+                            ->placeholder('Tuliskan deskripsi atau keterangan tambahan tentang jabatan ini')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Detail waktu pembuatan dan modifikasi data')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -98,98 +121,177 @@ class PositionResource extends Resource
                     ->alignCenter()
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
+                    ->label('Cabang')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
                     ->toggleable()
                     ->size('sm')
-                    ->weight('medium'),
+                    ->weight('medium')
+                    ->tooltip('Lokasi Cabang')
+                    ->copyable()
+                    ->copyMessage('Nama cabang disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('department.name')
+                    ->label('Departemen')
                     ->searchable()
                     ->icon('heroicon-o-building-office-2')
                     ->sortable()
                     ->toggleable()
                     ->size('sm')
-                    ->weight('medium'),
+                    ->weight('medium')
+                    ->tooltip('Nama Departemen')
+                    ->copyable()
+                    ->copyMessage('Nama departemen disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Jabatan')
                     ->searchable()
                     ->icon('heroicon-o-briefcase')
                     ->sortable()
                     ->size('sm')
-                    ->weight('medium'),
+                    ->weight('medium')
+                    ->tooltip('Nama Posisi/Jabatan')
+                    ->copyable()
+                    ->copyMessage('Nama jabatan disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->limit(50)
                     ->html()
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->size('sm'),
+                    ->size('sm')
+                    ->tooltip('Deskripsi Jabatan'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat Pada')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('xs'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Terakhir Diubah')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('xs')
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Status Arsip'),
                 Tables\Filters\SelectFilter::make('branch')
                     ->relationship('branch', 'name')
                     ->preload()
                     ->multiple()
-                    ->label('Branch'),
+                    ->searchable()
+                    ->label('Cabang'),
                 Tables\Filters\SelectFilter::make('department')
                     ->relationship('department', 'name')
                     ->preload()
                     ->multiple()
-                    ->label('Department'),
+                    ->searchable()
+                    ->label('Departemen'),
+                Tables\Filters\Filter::make('created')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Dibuat Dari'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Dibuat Sampai'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = 'Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                        }
+
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = 'Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    })->columns(2),
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\ReplicateAction::make()
-                        ->excludeAttributes(['branch_id', 'department_id'])
-                        ->label('Duplicate')
-                        ->icon('heroicon-o-document-duplicate'),
-                ])
+                    Tables\Actions\EditAction::make()
+                        ->label('Ubah')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat')
+                        ->icon('heroicon-o-eye')
+                        ->color('info'),
+                    Tables\Actions\ForceDeleteAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreAction::make()
+                        ->label('Pulihkan')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('success'),
+                ])->tooltip('Aksi')
+                    ->color('gray')
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Buat Jabatan Baru')
-                    ->icon('heroicon-o-plus'),
+                    ->label('Tambah Data')
+                    ->icon('heroicon-m-plus')
+                    ->color('primary'),
                 ActionGroup::make([
                     ExportAction::make()->exporter(PositionExporter::class)
-                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Ekspor Data')
+                        ->icon('heroicon-m-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export Position completed' . ' ' . now())
+                                ->title('Ekspor data jabatan selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
                     ImportAction::make()->importer(PositionImporter::class)
-                        ->icon('heroicon-o-arrow-up-tray')
+                        ->label('Impor Data')
+                        ->icon('heroicon-m-arrow-up-tray')
                         ->color('info')
                         ->after(function () {
                             Notification::make()
-                                ->title('Import Position completed' . ' ' . now())
+                                ->title('Impor data jabatan selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ])->icon('heroicon-o-cog-6-tooth')
+                ])->icon('heroicon-m-cog-6-tooth')
+                    ->label('Lainnya')
+                    ->tooltip('Opsi Tambahan')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Hapus')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\ForceDeleteBulkAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreBulkAction::make()
+                        ->label('Pulihkan')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('success'),
                     Tables\Actions\BulkAction::make('updateDepartment')
                         ->action(function (Collection $records, array $data): void {
                             foreach ($records as $record) {
@@ -200,28 +302,31 @@ class PositionResource extends Resource
                         })
                         ->form([
                             Forms\Components\Select::make('department_id')
-                                ->label('Department')
+                                ->label('Departemen')
                                 ->relationship('department', 'name')
                                 ->required(),
                         ])
                         ->deselectRecordsAfterCompletion()
                         ->icon('heroicon-o-building-office')
-                        ->label('Update Department'),
+                        ->label('Perbarui Departemen')
+                        ->color('warning'),
                     ExportBulkAction::make()->exporter(PositionExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Ekspor Data')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Export Position completed' . ' ' . now())
+                                ->title('Ekspor data jabatan selesai' . ' ' . now())
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ]),
+                ])->tooltip('Aksi Massal'),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Buat Jabatan Baru')
-                    ->icon('heroicon-o-plus'),
+                    ->label('Tambah Jabatan')
+                    ->icon('heroicon-o-plus')
+                    ->color('primary'),
             ]);
     }
 
@@ -254,6 +359,9 @@ class PositionResource extends Resource
         return [
             'name',
             'description',
+            'company_id',
+            'branch_id',
+            'department_id',
         ];
     }
 }
