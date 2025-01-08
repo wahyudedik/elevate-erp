@@ -361,6 +361,20 @@ class RoleResource extends Resource implements HasShieldPermissions
                                     ->gridDirection('row')
                                     ->bulkToggleable()
                                     ->live()
+                                    ->afterStateHydrated(function ($component, $state, $record) use ($entity) {
+                                        if ($record) {
+                                            $permissions = $record->permissions->pluck('name')->toArray();
+                                            $selected = [];
+
+                                            foreach ($component->getOptions() as $value => $label) {
+                                                if (in_array($value, $permissions)) {
+                                                    $selected[] = $value;
+                                                }
+                                            }
+
+                                            $component->state($selected);
+                                        }
+                                    })
                                     ->dehydrated()
                                     ->columns(2)
                                     ->label($resources[$entity['fqcn']]);
