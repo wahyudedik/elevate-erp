@@ -29,6 +29,7 @@ bug :
 -   [] perbaikan responsive map pada mobile
 -   [] rename page themes
 -   [] perbaikan widget pada page analitics
+-   [] perbaikan role resource kenapa role sudah di pilih tidak tercentang
 
 Kekurangan aplikasi :
 Priority 1 - Core Concrete Business Features:
