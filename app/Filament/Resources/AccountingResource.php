@@ -151,14 +151,16 @@ class AccountingResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('No.')
+                    ->label('Nomor')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('branch.name')
                     ->label('Cabang')
                     ->searchable()
                     ->toggleable()
-                    ->icon('heroicon-o-building-storefront')
+                    ->icon('heroicon-o-building-office-2')
+                    ->iconColor('primary')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('account_name')
                     ->searchable()
@@ -167,31 +169,35 @@ class AccountingResource extends Resource
                     ->wrap()
                     ->toggleable()
                     ->sortable()
-                    ->icon('heroicon-o-document-text'),
+                    ->icon('heroicon-o-document-text')
+                    ->iconColor('success'),
                 Tables\Columns\TextColumn::make('account_number')
                     ->searchable()
                     ->label('Nomor Akun')
                     ->toggleable()
                     ->sortable()
-                    ->icon('heroicon-o-hashtag'),
+                    ->icon('heroicon-o-key')
+                    ->iconColor('warning'),
                 Tables\Columns\TextColumn::make('account_type')
-                    ->icon('heroicon-o-currency-dollar')
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('primary')
                     ->badge()
-                    ->label('Jenis Akun')
+                    ->label('Kategori Akun')
                     ->toggleable()
                     ->colors([
-                        'primary' => 'asset',
-                        'danger' => 'liability',
-                        'warning' => 'equity',
-                        'success' => 'revenue',
-                        'info' => 'expense',
+                        'emerald' => 'asset',
+                        'rose' => 'liability',
+                        'amber' => 'equity',
+                        'indigo' => 'revenue',
+                        'blue' => 'expense',
+                        'green' => 'kas',
                     ])
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'asset' => 'Aset',
                         'liability' => 'Kewajiban',
                         'equity' => 'Modal',
                         'revenue' => 'Pendapatan',
-                        'expense' => 'Beban',
+                        'expense' => 'Pengeluaran',
                         'kas' => 'Kas',
                         default => $state,
                     })
@@ -202,6 +208,7 @@ class AccountingResource extends Resource
                     ->toggleable()
                     ->label('Saldo Awal')
                     ->sortable()
+                    ->color('success')
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()->money('IDR')
                     ])
@@ -209,24 +216,27 @@ class AccountingResource extends Resource
                 Tables\Columns\TextColumn::make('current_balance')
                     ->money('IDR')
                     ->toggleable()
-                    ->label('Saldo Akhir')
+                    ->label('Saldo Saat Ini')
                     ->sortable()
+                    ->color('primary')
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()->money('IDR')
                     ])
                     ->alignment('right'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->label('Tanggal Dibuat')
+                    ->label('Tanggal Pembuatan')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->icon('heroicon-o-calendar'),
+                    ->icon('heroicon-o-calendar-days')
+                    ->iconColor('gray'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
-                    ->label('Tanggal Diperbarui')
+                    ->label('Terakhir Diperbarui')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->icon('heroicon-o-clock')
+                    ->iconColor('gray')
             ])
             ->defaultSort('created_at', 'desc')
             ->groups([
@@ -449,7 +459,9 @@ class AccountingResource extends Resource
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         })
-                ])->icon('heroicon-o-cog-6-tooth'),
+                ])->icon('heroicon-m-cog-6-tooth')
+                    ->label('Lainnya')
+                    ->tooltip('Opsi Tambahan')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

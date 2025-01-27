@@ -49,7 +49,7 @@ class DepartmentResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Informasi Departemen')
-                    ->description('Masukkan informasi departemen dengan lengkap')
+                    ->description('Lengkapi data departemen sesuai dengan ketentuan yang berlaku')
                     ->icon('heroicon-o-building-office-2')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
@@ -59,34 +59,52 @@ class DepartmentResource extends Resource
                             ->required()
                             ->preload()
                             ->nullable()
-                            ->helperText('Pilih cabang tempat departemen berada'),
+                            ->helperText('Pilih cabang tempat departemen beroperasi')
+                            ->native(false)
+                            ->searchPrompt('Cari cabang...')
+                            ->loadingMessage('Memuat data...')
+                            ->noSearchResultsMessage('Tidak ada hasil yang ditemukan'),
                         Forms\Components\TextInput::make('name')
                             ->label('Nama Departemen')
                             ->required()
                             ->maxLength(255)
-                            ->helperText('Masukkan nama departemen'),
+                            ->helperText('Masukkan nama resmi departemen')
+                            ->placeholder('Contoh: Departemen Keuangan')
+                            ->autocomplete(false)
+                            ->autofocus(),
                         Forms\Components\RichEditor::make('description')
                             ->label('Deskripsi')
                             ->nullable()
                             ->maxLength(65535)
                             ->columnSpanFull()
-                            ->helperText('Berikan deskripsi lengkap tentang departemen'),
-                    ])
-                    ->columns(2),
-                Forms\Components\Section::make('Informasi Tambahan')
-                    ->description('Detail waktu pembuatan dan modifikasi')
-                    ->icon('heroicon-o-information-circle')
-                    ->schema([
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Dibuat pada')
-                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
-
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Terakhir diubah')
-                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
+                            ->helperText('Jelaskan fungsi dan tanggung jawab utama departemen')
+                            ->placeholder('Deskripsikan peran dan fungsi departemen secara detail...')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                                'undo',
+                                'redo',
+                            ]),
                     ])
                     ->columns(2)
                     ->collapsible(),
+                Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Riwayat perubahan data departemen')
+                    ->icon('heroicon-o-clock')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Tanggal Pembuatan')
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->translatedFormat('d F Y, H:i') : '-'),
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Pembaruan Terakhir')
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->translatedFormat('d F Y, H:i') : '-'),
+                    ])
+                    ->columns(2)
+                    ->collapsible()
+                    ->collapsed(),
             ]);
     }
 
@@ -95,20 +113,20 @@ class DepartmentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('No')
+                    ->label('Nomor')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter()
                     ->size('sm')
-                    ->color('primary'),
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Cabang')
+                    ->label('Kantor Cabang')
                     ->searchable()
-                    ->icon('heroicon-o-building-storefront')
+                    ->icon('heroicon-o-building-office-2')
                     ->sortable()
                     ->toggleable()
                     ->weight('medium')
                     ->size('sm')
-                    ->color('success'),
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Departemen')
                     ->searchable()
@@ -116,9 +134,9 @@ class DepartmentResource extends Resource
                     ->toggleable()
                     ->weight('medium')
                     ->size('sm')
-                    ->color('info'),
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
+                    ->label('Keterangan')
                     ->searchable()
                     ->sortable()
                     ->html()
@@ -128,16 +146,16 @@ class DepartmentResource extends Resource
                     ->size('sm')
                     ->tooltip(fn($record) => $record->description),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->dateTime()
+                    ->label('Tanggal Pembuatan')
+                    ->dateTime('d F Y, H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->since()
                     ->color('gray')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Terakhir Diubah')
-                    ->dateTime()
+                    ->label('Tanggal Pembaruan')
+                    ->dateTime('d F Y, H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->since()

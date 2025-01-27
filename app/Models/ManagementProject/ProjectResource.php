@@ -14,7 +14,7 @@ use Spatie\Activitylog\LogOptions;
 
 class ProjectResource extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity; 
 
     // Nama tabel yang digunakan oleh model ini
     protected $table = 'project_resources';

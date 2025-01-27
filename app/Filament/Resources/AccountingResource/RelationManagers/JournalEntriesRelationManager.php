@@ -34,24 +34,35 @@ class JournalEntriesRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Journal Entry')
+                Forms\Components\Section::make('Entri Jurnal')
+                    ->description('Silakan lengkapi informasi entri jurnal berikut')
+                    ->icon('heroicon-o-document-text')
                     ->schema([
                         Forms\Components\Hidden::make('company_id')
                             ->default(Filament::getTenant()->id),
                         Forms\Components\Select::make('branch_id')
-                            ->label('Cabang')
+                            ->label('Cabang Perusahaan')
                             ->relationship('branch', 'name')
                             ->required()
                             ->searchable()
                             ->preload()
+                            ->helperText('Pilih cabang tempat transaksi berlangsung')
                             ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
-                            ->label('Tanggal Entri')
+                            ->label('Tanggal Transaksi')
                             ->default(now())
+                            ->helperText('Masukkan tanggal transaksi dilakukan')
                             ->columnSpanFull(),
                         Forms\Components\RichEditor::make('description')
-                            ->label('Deskripsi')
+                            ->label('Keterangan Transaksi')
+                            ->helperText('Tuliskan detail keterangan transaksi')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'bulletList',
+                                'orderedList',
+                            ])
                             ->columnSpanFull(),
                         Forms\Components\Select::make('entry_type')
                             ->options([
@@ -59,29 +70,40 @@ class JournalEntriesRelationManager extends RelationManager
                                 'credit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Jenis Entri'),
+                            ->label('Jenis Transaksi')
+                            ->helperText('Pilih jenis transaksi yang sesuai')
+                            ->icon('heroicon-m-calculator')
+                            ->native(false),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
                             ->default(0)
                             ->required()
-                            ->label('Jumlah')
-                            ->prefix('IDR')
+                            ->label('Nominal Transaksi')
+                            ->prefix('Rp')
                             ->maxValue(429496976772.95)
                             ->minValue(0)
-                            ->step(0.01),
+                            ->step(0.01)
+                            ->helperText('Masukkan jumlah nominal dalam Rupiah')
+                            ->icon('heroicon-m-banknotes'),
                     ])
-                    ->columns(2),
-                Forms\Components\Section::make('Additional Information')
+                    ->columns(2)
+                    ->collapsible(),
+                Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Detail waktu pembuatan dan perubahan data')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Di Buat Pada')
+                            ->label('Waktu Pembuatan')
                             ->default('-')
-                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
+                            ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-')
+                            ->icon('heroicon-o-clock'),
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Di Ubah Pada')
+                            ->label('Terakhir Diperbarui')
                             ->default('-')
-                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
-                    ])->columns(2)
+                            ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-')
+                            ->icon('heroicon-o-arrow-path'),
+                    ])
+                    ->columns(2)
                     ->collapsible()
             ]);
     }
@@ -94,78 +116,97 @@ class JournalEntriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Cabang')
+                    ->label('Cabang Perusahaan')
                     ->sortable()
-                    ->icon('heroicon-s-building-storefront')
+                    ->icon('heroicon-s-building-office-2')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('entry_date')
-                    ->label('Tanggal Entri')
-                    ->date()
-                    ->icon('heroicon-o-calendar')
+                    ->label('Tanggal Transaksi')
+                    ->date('d F Y')
+                    ->icon('heroicon-m-calendar-days')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
+                    ->label('Keterangan')
                     ->limit(50)
                     ->html()
                     ->searchable()
                     ->toggleable()
-                    ->wrap(),
+                    ->wrap()
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('entry_type')
-                    ->label('Jenis Entri')
+                    ->label('Jenis')
                     ->icon(fn(string $state): string => match ($state) {
-                        'credit' => 'heroicon-o-arrow-up-circle',
-                        'debit' => 'heroicon-o-arrow-down-circle',
-                        default => 'heroicon-o-question-mark-circle',
+                        'credit' => 'heroicon-m-arrow-trending-up',
+                        'debit' => 'heroicon-m-arrow-trending-down',
+                        default => 'heroicon-m-exclamation-circle',
                     })
                     ->colors([
                         'danger' => 'credit',
                         'success' => 'debit',
                     ])
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'credit' => 'Kredit',
+                        'debit' => 'Debit',
+                        default => 'Tidak Diketahui',
+                    })
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Jumlah')
-                    ->money('IDR')
+                    ->label('Nominal')
+                    ->money('IDR', true)
+                    ->alignment('right')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('account.account_name')
-                    ->label('Nama Akun')
+                    ->label('Akun')
                     ->sortable()
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat Pada')
-                    ->dateTime()
+                    ->dateTime('d F Y, H:i')
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
+                    ->toggledHiddenByDefault()
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Diubah Pada')
-                    ->dateTime()
+                    ->label('Diperbarui Pada')
+                    ->dateTime('d F Y, H:i')
                     ->sortable()
                     ->toggleable()
-                    ->toggledHiddenByDefault(),
+                    ->toggledHiddenByDefault()
+                    ->color('gray'),
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('entry_type')
-                    ->label('Jenis Entri')
+                    ->label('Filter Jenis Transaksi')
                     ->options([
                         'credit' => 'Kredit',
                         'debit' => 'Debit',
-                    ]),
+                    ])
+                    ->indicator('Jenis'),
                 Tables\Filters\Filter::make('entry_date')
-                    ->label('Tanggal Entri')
-                    ->indicator('Tanggal Entri')
+                    ->label('Filter Periode Transaksi')
+                    ->indicator('Periode')
                     ->form([
                         Forms\Components\DatePicker::make('from_date')
-                            ->label('Dari Tanggal'),
+                            ->label('Dari Tanggal')
+                            ->placeholder('Pilih tanggal awal')
+                            ->prefixIcon('heroicon-m-calendar-days'),
                         Forms\Components\DatePicker::make('until_date')
-                            ->label('Sampai Tanggal'),
+                            ->label('Hingga Tanggal')
+                            ->placeholder('Pilih tanggal akhir')
+                            ->prefixIcon('heroicon-m-calendar-days'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -180,26 +221,30 @@ class JournalEntriesRelationManager extends RelationManager
                     })->columns(2),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Lihat Rincian')
+                    ->tooltip('Tampilkan detail transaksi')
+                    ->icon('heroicon-m-eye')
+                    ->color('primary'),
             ]);
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
-    }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->withoutGlobalScopes([
+    //             SoftDeletingScope::class,
+    //         ]);
+    // }
 
-    public static function beforeCreate(array $data): array
-    {
-        if (!isset($data['company_id']) && Auth::check()) {
-            $data['company_id'] = DB::table('company_user')
-                ->where('user_id', Auth::user()->id)
-                ->value('company_id');
-        }
-        dd($data);
-        return $data;
-    }
+    // public static function beforeCreate(array $data): array
+    // {
+    //     if (!isset($data['company_id']) && Auth::check()) {
+    //         $data['company_id'] = DB::table('company_user')
+    //             ->where('user_id', Auth::user()->id)
+    //             ->value('company_id');
+    //     }
+    //     dd($data);
+    //     return $data;
+    // }
 }

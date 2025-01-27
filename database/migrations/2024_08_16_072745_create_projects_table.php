@@ -9,7 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void   
+    public function up(): void    
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('manager_id')->nullable()->constrained('employees')->onDelete('cascade');
             $table->enum('status', ['planning', 'in_progress', 'completed', 'on_hold', 'cancelled'])->default('planning');
             $table->softDeletes();  // Kolom untuk soft delete
-            $table->timestamps(); 
+            $table->timestamps();  
         });
 
         Schema::create('project_tasks', function (Blueprint $table) {

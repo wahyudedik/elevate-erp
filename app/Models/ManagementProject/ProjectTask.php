@@ -12,8 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
-
-class ProjectTask extends Model
+class ProjectTask extends Model 
 {
     use HasFactory, Notifiable, SoftDeletes, LogsActivity;
 

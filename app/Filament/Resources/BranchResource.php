@@ -55,67 +55,69 @@ class BranchResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Detail Cabang')
-                    ->description('Masukkan informasi detail cabang')
+                    ->description('Lengkapi informasi detail cabang perusahaan')
                     ->icon('heroicon-o-building-storefront')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Nama Cabang')
                             ->required()
-                            ->placeholder('Masukkan nama cabang')
+                            ->placeholder('Contoh: Cabang Pusat Jakarta')
                             ->columnSpanFull()
                             ->maxLength(255),
                         Forms\Components\RichEditor::make('address')
-                            ->label('Alamat')
-                            ->placeholder('Masukkan alamat lengkap')
+                            ->label('Alamat Lengkap')
+                            ->placeholder('Masukkan alamat lengkap cabang')
                             ->columnSpanFull()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->helperText('Sertakan nama jalan, nomor, kota, dan kode pos'),
                         Forms\Components\TextInput::make('phone')
                             ->label('Nomor Telepon')
                             ->tel()
-                            ->placeholder('81234567890')
+                            ->placeholder('Contoh: 81234567890')
                             ->prefix('+62')
-                            ->helperText('Contoh: 81234567890')
+                            ->helperText('Masukkan nomor tanpa tanda atau spasi')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
-                            ->label('Email')
+                            ->label('Alamat Email')
                             ->email()
-                            ->placeholder('contoh@email.com')
+                            ->placeholder('Contoh: cabang.jakarta@perusahaan.com')
                             ->maxLength(255),
                         Forms\Components\RichEditor::make('description')
-                            ->label('Deskripsi')
-                            ->placeholder('Masukkan deskripsi cabang')
+                            ->label('Deskripsi Cabang')
+                            ->placeholder('Jelaskan informasi penting tentang cabang')
                             ->maxLength(65535)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Tambahkan informasi seperti jam operasional atau layanan khusus'),
                         Forms\Components\Select::make('status')
-                            ->label('Status')
+                            ->label('Status Operasional')
                             ->options([
-                                'active' => 'Aktif',
-                                'inactive' => 'Tidak Aktif',
+                                'active' => 'Aktif Beroperasi',
+                                'inactive' => 'Tidak Beroperasi',
                             ])
                             ->required()
                             ->default('active'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Lokasi')
-                    ->description('Atur lokasi dan radius cabang')
+                Forms\Components\Section::make('Lokasi Geografis')
+                    ->description('Tentukan lokasi dan area jangkauan cabang')
                     ->icon('heroicon-o-map-pin')
                     ->schema([
                         Forms\Components\TextInput::make('latitude')
-                            ->label('Garis Lintang')
+                            ->label('Garis Lintang (Latitude)')
                             ->live(onBlur: true)
                             ->step(0.000001),
                         Forms\Components\TextInput::make('longitude')
-                            ->label('Garis Bujur')
+                            ->label('Garis Bujur (Longitude)')
                             ->live(onBlur: true)
                             ->step(0.000001),
                         Forms\Components\TextInput::make('radius')
-                            ->label('Radius')
+                            ->label('Radius Jangkauan')
                             ->numeric()
                             ->step(1)
                             ->suffix('meter')
-                            ->helperText('Masukkan radius dalam meter'),
+                            ->helperText('Tentukan radius area operasional dalam satuan meter'),
                         OSMMap::make('location')
-                            ->label('Peta Lokasi')
+                            ->label('Peta Lokasi Cabang')
                             ->live(onBlur: true)
                             ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set, $record) {
                                 if ($record) {
@@ -154,16 +156,16 @@ class BranchResource extends Resource
                             ->tilesUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Informasi Tambahan')
-                    ->description('Informasi waktu pembuatan dan perubahan terakhir')
-                    ->icon('heroicon-o-information-circle')
+                Forms\Components\Section::make('Riwayat Data')
+                    ->description('Informasi waktu pembuatan dan pembaruan data')
+                    ->icon('heroicon-o-clock')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Dibuat pada')
+                            ->label('Tanggal Pembuatan')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Terakhir diubah')
+                            ->label('Pembaruan Terakhir')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -182,62 +184,65 @@ class BranchResource extends Resource
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Cabang')
-                    ->icon('heroicon-o-building-storefront')
+                    ->icon('heroicon-o-building-office-2')
                     ->sortable()
                     ->searchable()
                     ->weight('medium')
-                    ->color('primary'),
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('address')
-                    ->label('Alamat')
+                    ->label('Alamat Lengkap')
                     ->sortable()
                     ->html()
-                    ->icon('heroicon-o-globe-americas')
+                    ->icon('heroicon-o-map-pin')
                     ->wrap()
                     ->limit(50)
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telepon')
+                    ->label('Nomor Telepon')
                     ->sortable()
-                    ->icon('heroicon-o-phone')
+                    ->icon('heroicon-o-device-phone-mobile')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->color('primary')
+                    ->color('info')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                    ->label('Alamat Email')
                     ->sortable()
                     ->searchable()
                     ->icon('heroicon-o-envelope')
                     ->toggleable(isToggledHiddenByDefault: false)
-                    ->color('primary')
+                    ->color('info')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
+                    ->label('Keterangan')
                     ->limit(50)
                     ->html()
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('latitude')
-                    ->label('Garis Lintang')
+                    ->label('Koordinat Lintang')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-map')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('longitude')
-                    ->label('Garis Bujur')
+                    ->label('Koordinat Bujur')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-map')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('radius')
-                    ->label('Radius')
+                    ->label('Radius Area')
                     ->sortable()
                     ->suffix(' meter')
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-arrows-pointing-out')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Operasional')
                     ->sortable()
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
@@ -246,24 +251,26 @@ class BranchResource extends Resource
                         default => 'secondary',
                     })
                     ->icon(fn(string $state): string => match ($state) {
-                        'active' => 'heroicon-o-check-circle',
+                        'active' => 'heroicon-o-check-badge',
                         'inactive' => 'heroicon-o-x-circle',
                         default => 'heroicon-o-question-mark-circle',
                     })
-                    ->formatStateUsing(fn(string $state): string => $state === 'active' ? 'Aktif' : 'Tidak Aktif')
+                    ->formatStateUsing(fn(string $state): string => $state === 'active' ? 'Beroperasi' : 'Tidak Beroperasi')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
+                    ->label('Tanggal Pembuatan')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-calendar')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Diperbarui Pada')
+                    ->label('Terakhir Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
+                    ->icon('heroicon-o-clock')
                     ->size('sm'),
             ])->defaultSort('created_at', 'desc')
             ->filters([

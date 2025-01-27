@@ -51,7 +51,7 @@ class PositionResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Informasi Jabatan')
-                    ->description('Silakan isi informasi jabatan dengan lengkap')
+                    ->description('Lengkapi informasi jabatan sesuai dengan struktur organisasi perusahaan')
                     ->icon('heroicon-o-briefcase')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
@@ -61,7 +61,8 @@ class PositionResource extends Resource
                             ->preload()
                             ->live()
                             ->native(false)
-                            ->helperText('Pilih cabang tempat jabatan ini berada'),
+                            ->helperText('Pilih lokasi cabang tempat jabatan ini berada')
+                            ->prefixIcon('heroicon-o-building-office'),
                         Forms\Components\Select::make('department_id')
                             ->label('Departemen')
                             ->relationship(
@@ -74,16 +75,18 @@ class PositionResource extends Resource
                             ->preload()
                             ->native(false)
                             ->hidden(fn(Forms\Get $get): bool => ! $get('branch_id'))
-                            ->helperText('Pilih departemen untuk jabatan ini'),
+                            ->helperText('Pilih departemen yang menaungi jabatan ini')
+                            ->prefixIcon('heroicon-o-building-library'),
                         Forms\Components\TextInput::make('name')
                             ->label('Nama Jabatan')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('Masukkan nama jabatan')
-                            ->helperText('Contoh: Manager, Supervisor, Staff'),
+                            ->placeholder('Contoh: Direktur Utama, Manajer Keuangan, Staff Administrasi')
+                            ->helperText('Masukkan nama jabatan sesuai dengan struktur organisasi')
+                            ->prefixIcon('heroicon-o-identification'),
                         Forms\Components\RichEditor::make('description')
-                            ->label('Deskripsi')
-                            ->placeholder('Tuliskan deskripsi atau keterangan tambahan tentang jabatan ini')
+                            ->label('Deskripsi Jabatan')
+                            ->placeholder('Deskripsikan tugas, tanggung jawab, dan kewenangan jabatan ini')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -91,11 +94,13 @@ class PositionResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
+                            ->helperText('Jelaskan secara detail fungsi dan peran jabatan dalam organisasi')
                             ->columnSpanFull(),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->collapsible(),
                 Forms\Components\Section::make('Informasi Tambahan')
-                    ->description('Detail waktu pembuatan dan modifikasi data')
+                    ->description('Riwayat pembuatan dan perubahan data jabatan')
                     ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
@@ -103,7 +108,7 @@ class PositionResource extends Resource
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Terakhir diubah')
+                            ->label('Terakhir diperbarui')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -119,62 +124,74 @@ class PositionResource extends Resource
                     ->label('No.')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter()
+                    ->color('gray')
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Cabang')
+                    ->label('Kantor Cabang')
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-building-storefront')
+                    ->iconColor('primary')
                     ->toggleable()
                     ->size('sm')
                     ->weight('medium')
-                    ->tooltip('Lokasi Cabang')
+                    ->tooltip('Lokasi Kantor Cabang')
                     ->copyable()
-                    ->copyMessage('Nama cabang disalin')
-                    ->copyMessageDuration(1500),
+                    ->copyMessage('Nama kantor cabang berhasil disalin')
+                    ->copyMessageDuration(1500)
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('department.name')
                     ->label('Departemen')
                     ->searchable()
                     ->icon('heroicon-o-building-office-2')
+                    ->iconColor('success')
                     ->sortable()
                     ->toggleable()
                     ->size('sm')
                     ->weight('medium')
-                    ->tooltip('Nama Departemen')
+                    ->tooltip('Nama Departemen/Divisi')
                     ->copyable()
-                    ->copyMessage('Nama departemen disalin')
-                    ->copyMessageDuration(1500),
+                    ->copyMessage('Nama departemen berhasil disalin')
+                    ->copyMessageDuration(1500)
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Jabatan')
                     ->searchable()
                     ->icon('heroicon-o-briefcase')
+                    ->iconColor('warning')
                     ->sortable()
                     ->size('sm')
                     ->weight('medium')
-                    ->tooltip('Nama Posisi/Jabatan')
+                    ->tooltip('Nama Posisi/Jabatan dalam Struktur Organisasi')
                     ->copyable()
-                    ->copyMessage('Nama jabatan disalin')
-                    ->copyMessageDuration(1500),
+                    ->copyMessage('Nama jabatan berhasil disalin')
+                    ->copyMessageDuration(1500)
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
+                    ->label('Deskripsi Jabatan')
                     ->limit(50)
                     ->html()
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('sm')
-                    ->tooltip('Deskripsi Jabatan'),
+                    ->tooltip('Deskripsi Tugas dan Tanggung Jawab Jabatan')
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->size('xs'),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Terakhir Diubah')
-                    ->dateTime('d M Y H:i')
+                    ->label('Tanggal Pembuatan')
+                    ->dateTime('d F Y, H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->size('xs')
+                    ->since()
+                    ->color('gray'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime('d F Y, H:i')
+                    ->sortable()
+                    ->since()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->size('xs')
+                    ->color('gray')
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make()
@@ -250,7 +267,7 @@ class PositionResource extends Resource
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Tambah Data')
+                    ->label('Tambah Jabatan')
                     ->icon('heroicon-m-plus')
                     ->color('primary'),
                 ActionGroup::make([

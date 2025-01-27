@@ -9,9 +9,11 @@ use Doctrine\DBAL\Query;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +26,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\JournalEntryResource\Pages;
 use App\Filament\Resources\JournalEntryResource\RelationManagers;
 use App\Filament\Resources\JournalEntryResource\RelationManagers\AccountRelationManager;
-use Filament\Tables\Actions\CreateAction;
 
 class JournalEntryResource extends Resource
 {
@@ -53,22 +54,33 @@ class JournalEntryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Entri Jurnal')
+                    ->description('Masukkan informasi transaksi jurnal')
+                    ->icon('heroicon-o-document-text')
                     ->schema([
                         Forms\Components\Select::make('branch_id')
                             ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                             ->required()
                             ->label('Cabang')
+                            ->helperText('Pilih cabang tempat transaksi')
                             ->searchable()
                             ->preload()
                             ->columnSpanFull(),
                         Forms\Components\DatePicker::make('entry_date')
                             ->required()
                             ->default(now())
-                            ->label('Tanggal Entri')
+                            ->label('Tanggal Transaksi')
+                            ->helperText('Pilih tanggal transaksi jurnal')
                             ->columnSpanFull(),
                         Forms\Components\RichEditor::make('description')
                             ->nullable()
-                            ->label('Deskripsi')
+                            ->label('Keterangan Transaksi')
+                            ->helperText('Masukkan detail keterangan transaksi')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'bulletList',
+                                'orderedList',
+                            ])
                             ->columnSpanFull(),
                         Forms\Components\Select::make('entry_type')
                             ->options([
@@ -76,29 +88,36 @@ class JournalEntryResource extends Resource
                                 'credit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Tipe Entri'),
+                            ->label('Jenis Transaksi')
+                            ->helperText('Pilih jenis transaksi')
+                            ->native(false),
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
                             ->required()
-                            ->label('Jumlah')
-                            ->prefix('IDR')
+                            ->label('Nominal')
+                            ->helperText('Masukkan jumlah nominal transaksi')
+                            ->prefix('Rp')
+                            ->suffixIcon('heroicon-m-banknotes')
                             ->maxValue(429494324672.95),
                         Forms\Components\Select::make('account_id')
                             ->relationship('account', 'account_name', fn($query, $get) => $query->where('branch_id', $get('branch_id')))
                             ->required()
                             ->label('Akun')
+                            ->helperText('Pilih akun untuk transaksi')
                             ->searchable()
                             ->preload()
                             ->columnSpanFull(),
                     ])->columns(2),
                 Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Detail waktu pembuatan dan perubahan data')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Dibuat pada')
+                            ->label('Dibuat Pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Terakhir diubah pada')
+                            ->label('Terakhir Diperbarui')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -111,40 +130,42 @@ class JournalEntryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('No.')
+                    ->label('Nomor')
                     ->formatStateUsing(fn($state, $record, $column) => $column->getTable()->getRecords()->search($record) + 1)
                     ->alignCenter()
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('branch.name')
-                    ->label('Cabang')
+                    ->label('Kantor Cabang')
                     ->sortable()
-                    ->icon('heroicon-s-building-storefront')
+                    ->icon('heroicon-s-building-office-2')
                     ->toggleable()
                     ->searchable()
                     ->size('sm')
-                    ->color('primary'),
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('entry_date')
-                    ->label('Tanggal Entri')
+                    ->label('Tanggal Pencatatan')
                     ->date('d M Y')
                     ->sortable()
                     ->toggleable()
                     ->searchable()
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Deskripsi')
+                    ->label('Keterangan Transaksi')
                     ->limit(50)
                     ->html()
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable()
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('entry_type')
-                    ->label('Tipe Entri')
+                    ->label('Jenis Transaksi')
                     ->toggleable()
                     ->badge()
                     ->icon(fn(string $state): string => match ($state) {
-                        'credit' => 'heroicon-o-arrow-up-circle',
-                        'debit' => 'heroicon-o-arrow-down-circle',
-                        default => 'heroicon-o-question-mark-circle',
+                        'credit' => 'heroicon-o-arrow-trending-up',
+                        'debit' => 'heroicon-o-arrow-trending-down',
+                        default => 'heroicon-o-exclamation-circle',
                     })
                     ->colors([
                         'success' => 'debit',
@@ -154,80 +175,123 @@ class JournalEntryResource extends Resource
                     ->searchable()
                     ->size('sm'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Jumlah')
-                    ->money('IDR')
+                    ->label('Nominal Transaksi')
+                    ->money('IDR', true)
                     ->sortable()
                     ->toggleable()
                     ->searchable()
                     ->alignment('right')
                     ->size('sm')
                     ->weight('bold')
+                    ->color('primary')
                     ->summarize([
-                        'sum' => 'money',
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->money('IDR', true)
+                            ->label('Total')
                     ]),
                 Tables\Columns\TextColumn::make('account.account_name')
-                    ->label('Akun')
+                    ->label('Nama Akun')
+                    ->description(fn($record) => $record->branch->name)
                     ->sortable()
                     ->toggleable()
                     ->searchable()
                     ->size('sm')
-                    ->wrap(),
+                    ->wrap()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
-                    ->dateTime('d M Y H:i')
+                    ->label('Waktu Pembuatan')
+                    ->dateTime('d M Y, H:i')
                     ->sortable()
+                    ->since()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->size('sm'),
+                    ->size('sm')
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Diperbarui Pada')
-                    ->dateTime('d M Y H:i')
+                    ->label('Waktu Pembaruan')
+                    ->dateTime('d M Y, H:i')
                     ->sortable()
+                    ->since()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->size('sm'),
-            ])->defaultSort('created_at', 'desc')
+                    ->size('sm')
+                    ->color('gray'),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->groups([
+                Tables\Grouping\Group::make('branch.name')
+                    ->label('Cabang')
+                    ->collapsible()
+                    ->titlePrefixedWithLabel(false)
+            ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Arsip')
+                    ->indicator('Status Arsip'),
                 Tables\Filters\SelectFilter::make('branch')
-                    ->relationship('branch', 'name')
+                    ->relationship('branch', 'name', fn($query) => $query->where('status', 'active'))
                     ->label('Cabang')
                     ->multiple()
-                    ->preload(),
+                    ->searchable()
+                    ->preload()
+                    ->indicator('Cabang')
+                    ->columnSpanFull(),
                 Tables\Filters\SelectFilter::make('entry_type')
                     ->options([
                         'debit' => 'Debit',
-                        'credit' => 'Credit',
+                        'credit' => 'Kredit',
                     ])
-                    ->label('Tipe Entri')
-                    ->indicator('Entry Type'),
-
+                    ->label('Jenis Transaksi')
+                    ->indicator('Jenis Transaksi')
+                    ->searchable()
+                    ->native(false),
                 Tables\Filters\SelectFilter::make('account_id')
-                    ->relationship('account', 'account_name')
-                    ->label('Akun')
-                    ->indicator('Account'),
+                    ->relationship('account', 'account_name', fn($query) => $query->selectRaw("CONCAT(accounts.id, ' - ', accounts.account_name, ' - ', branch.name) as account_name")
+                        ->leftJoin('branches as branch', 'accounts.branch_id', '=', 'branch.id')
+                        ->select('accounts.*', DB::raw("CONCAT(accounts.id, ' - ', accounts.account_name, ' - ', branch.name) as account_name")))
+                    ->label('Akun Perkiraan')
+                    ->indicator('Akun Perkiraan')
+                    ->searchable()
+                    ->preload()
+                    ->native(false),
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ForceDeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreAction::make()
+                        ->label('Pulihkan Data')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('success'),
+                    Tables\Actions\EditAction::make()
+                        ->label('Sunting Data')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('primary'),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Rincian')
+                        ->icon('heroicon-o-document-magnifying-glass')
+                        ->color('info'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Arsipkan')
+                        ->icon('heroicon-o-archive-box')
+                        ->color('warning'),
                     Tables\Actions\Action::make('print')
-                        ->label('Print Journal Entry')
-                        ->icon('heroicon-o-printer')
+                        ->label('Unduh PDF')
+                        ->icon('heroicon-o-document-arrow-down')
                         ->color('success')
                         ->action(function (JournalEntry $record) {
                             $pdf = app('dompdf.wrapper')->loadView('pdf.journal-entry', ['journalEntry' => $record]);
                             return response()->streamDownload(function () use ($pdf) {
                                 echo $pdf->output();
-                            }, 'journal-entry-' . $record->id . '.pdf');
+                            }, 'jurnal-' . $record->id . '.pdf');
                         })
-                ])
+                ])->tooltip('Menu Tindakan')
+                    ->color('gray')
             ])
             ->headerActions([
                 CreateAction::make()
-                ->label('Buat Jurnal Baru')
-                ->icon('heroicon-o-plus'),
+                    ->label('Buat Jurnal Baru')
+                    ->icon('heroicon-o-plus'),
                 ActionGroup::make([
                     ExportAction::make()
                         ->exporter(JournalEntryExporter::class)
@@ -252,21 +316,31 @@ class JournalEntryResource extends Resource
                                 ->sendToDatabase(Auth::user());
                         })
                 ])->icon('heroicon-o-cog-6-tooth'),
-            ])->bulkActions([
+            ])
+            ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger'),
+                    Tables\Actions\RestoreBulkAction::make()
+                        ->label('Pulihkan')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('info'),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Arsipkan')
+                        ->icon('heroicon-o-archive-box')
+                        ->color('warning'),
                     Tables\Actions\BulkAction::make('updateEntryType')
-                        ->label('Ubah Tipe Entri')
+                        ->label('Perbarui Jenis Transaksi')
                         ->icon('heroicon-o-pencil-square')
                         ->color('primary')
                         ->form([
                             Forms\Components\Select::make('entry_type')
-                                ->label('Entry Type')
+                                ->label('Jenis Transaksi')
                                 ->options([
                                     'debit' => 'Debit',
-                                    'credit' => 'Credit',
+                                    'credit' => 'Kredit',
                                 ])
                                 ->required(),
                         ])
@@ -279,14 +353,14 @@ class JournalEntryResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('updateAmount')
-                        ->label('Ubah Jumlah')
-                        ->icon('heroicon-o-currency-dollar')
+                        ->label('Perbarui Nominal')
+                        ->icon('heroicon-o-banknotes')
                         ->color('success')
                         ->form([
                             Forms\Components\TextInput::make('amount')
-                                ->label('Amount')
+                                ->label('Nominal')
                                 ->numeric()
-                                ->prefix('IDR')
+                                ->prefix('Rp')
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data) {
@@ -298,12 +372,12 @@ class JournalEntryResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('updateAccount')
-                        ->label('Ubah Akun')
-                        ->icon('heroicon-o-building-office')
+                        ->label('Perbarui Akun')
+                        ->icon('heroicon-o-building-library')
                         ->color('warning')
                         ->form([
                             Forms\Components\Select::make('account_id')
-                                ->label('Account')
+                                ->label('Pilih Akun')
                                 ->relationship('account', 'account_name')
                                 ->required(),
                         ])
@@ -316,22 +390,24 @@ class JournalEntryResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
                     ExportBulkAction::make()
+                        ->label('Ekspor Data')
                         ->exporter(JournalEntryExporter::class)
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->after(function () {
                             Notification::make()
-                                ->title('Akun berhasil diekspor' .  ' ' . now()->format('d-m-Y H:i:s'))
+                                ->title('Data jurnal berhasil diekspor pada ' . now()->format('d-m-Y H:i:s'))
                                 ->icon('heroicon-o-check-circle')
                                 ->success()
                                 ->sendToDatabase(Auth::user());
                         }),
-                ]),
+                ])->tooltip('Tindakan Massal'),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Buat Jurnal Baru')
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->color('primary'),
             ]);
     }
 

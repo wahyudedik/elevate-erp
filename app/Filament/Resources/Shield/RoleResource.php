@@ -95,72 +95,79 @@ class RoleResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->badge()
-                    ->label(__('filament-shield::filament-shield.column.name'))
+                    ->label('Nama Peran')
                     ->formatStateUsing(fn($state): string => Str::headline($state))
-                    ->colors(['primary'])
+                    ->colors(['blue'])
                     ->searchable()
                     ->sortable()
-                    ->tooltip(fn($record) => "Role: {$record->name}")
+                    ->tooltip(fn($record) => "Peran: {$record->name}")
                     ->copyable()
                     ->icon('heroicon-o-user-group')
                     ->iconPosition('before')
                     ->size('lg'),
                 Tables\Columns\TextColumn::make('guard_name')
                     ->badge()
-                    ->label(__('filament-shield::filament-shield.column.guard_name'))
-                    ->tooltip('Guard Name')
+                    ->label('Tipe Akses')
+                    ->tooltip('Tipe Akses Sistem')
                     ->copyable()
+                    ->colors(['emerald'])
                     ->icon('heroicon-o-shield-check')
-                    ->iconPosition('before')
-                    ->size('lg'),
+                    ->iconPosition('before'),
                 Tables\Columns\TextColumn::make('permissions_count')
                     ->badge()
-                    ->label(__('filament-shield::filament-shield.column.permissions'))
+                    ->label('Hak Akses')
                     ->counts('permissions')
-                    ->colors(['success'])
-                    ->tooltip('Number of Permissions')
+                    ->colors(['amber'])
+                    ->tooltip('Jumlah Hak Akses')
                     ->sortable()
                     ->icon('heroicon-o-key')
-                    ->iconPosition('before')
-                    ->size('lg'),
+                    ->iconPosition('before'),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('filament-shield::filament-shield.column.updated_at'))
+                    ->label('Terakhir Diperbarui')
                     ->dateTime()
                     ->sortable()
-                    ->tooltip(fn($record) => "Last updated: {$record->updated_at}")
+                    ->tooltip(fn($record) => "Diperbarui: {$record->updated_at}")
                     ->since()
+                    ->colors(['slate'])
                     ->icon('heroicon-o-clock')
-                    ->iconPosition('before')
-                    ->size('lg'),
+                    ->iconPosition('before'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('guard_name')
-                    ->label(__('filament-shield::filament-shield.column.guard_name'))
+                    ->label('Tipe Akses')
                     ->options([
                         'web' => 'Web',
                         'api' => 'API',
                     ])
-                    ->placeholder('All Guards')
+                    ->placeholder('Semua Tipe Akses')
                     ->default(null),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil')
-                    ->tooltip('Edit Role')
-                    ->modalWidth('lg'),
+                    ->color('warning')
+                    ->tooltip('Ubah Peran')
+                    ->modalHeading('Ubah Data Peran')
+                    ->modalWidth('md'),
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-trash')
-                    ->tooltip('Delete Role')
-                    ->modalDescription('Are you sure you want to delete this role? This action cannot be undone.'),
+                    ->color('danger')
+                    ->tooltip('Hapus Peran')
+                    ->modalHeading('Hapus Data Peran')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus peran ini? Tindakan ini tidak dapat dibatalkan.'),
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
-                    ->tooltip('View Role Details')
-                    ->modalWidth('lg'),
+                    ->color('info')
+                    ->tooltip('Lihat Detail Peran')
+                    ->modalHeading('Detail Data Peran')
+                    ->modalWidth('md'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
                     ->icon('heroicon-o-trash')
-                    ->modalDescription('Are you sure you want to delete these roles? This action cannot be undone.')
+                    ->color('danger')
+                    ->modalHeading('Hapus Data Peran')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus peran yang dipilih? Tindakan ini tidak dapat dibatalkan.')
                     ->deselectRecordsAfterCompletion(),
             ]);
     }

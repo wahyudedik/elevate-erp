@@ -15,7 +15,7 @@ use Spatie\Activitylog\LogOptions;
 
 class ProjectMonitoring extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
+    use HasFactory, Notifiable, SoftDeletes, LogsActivity; 
 
     protected $table = 'project_monitorings';
 

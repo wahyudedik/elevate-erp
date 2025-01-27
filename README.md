@@ -13,7 +13,7 @@
 
 Notes :
 
--   [] Setiap fitur role dan widget maupun page perlu di set permission pada role resource
+-   [] Setiap fitur baru dan widget maupun page perlu di set permission pada role resource
 
 bug :
 
@@ -22,73 +22,160 @@ bug :
 -   [] laporan keuangan belum otomatis tergenerate untuk laba rugi, neraca dan kas
 -   [] group data cabang di laporan keuangan seperti akun dan lain lainnya belum ke filter
 -   [] menu laporan masih kosong datanya
--   [] setelah sebulan, menu laporan keuangan dan buku besar dan jurnal akan terkunci
+-   [] setelah sebulan, menu laporan keuangan dan buku besar dan jurnal akan terkunci -> proses
 -   [] revisi projek manajement disamakan dengan pbo
 -   [] menambahkan data saldo awal
 -   [] menambahkan jumlah di jurnal dan buku besar
 -   [] perbaikan responsive map pada mobile
 -   [] rename page themes
 -   [] perbaikan widget pada page analitics
--   [] perbaikan role resource kenapa role sudah di pilih tidak tercentang
+-   [] mengubah menjadi android
 
-Kekurangan aplikasi :
-Priority 1 - Core Concrete Business Features:
-1. Production & Operations
-- Volume calculation system
-- Mix design management
-- Quality control workflows
-- Delivery scheduling
-- GPS tracking integration
+PRODUKSI FITUR :
+1. BPO SHEET (Oktober, November, Desember)
+
+    - Informasi tanggal dan plant (lokasi produksi) dicatat
+    - Tidak ada tabel yang jelas di bagian ini, lebih menyerupai header laporan
+
+2. Saran Implementasi BPO Sheet
+
+    - Tambahkan modul "Manajemen Lokasi Produksi" untuk mengelola data plant
+    - Tampilkan informasi tanggal dan plant secara otomatis di setiap laporan
+
+3. Laporan Material Keluar (Oktober, November, Desember)
+   a. Kolom Utama:
+
+    - No, Hari, Tanggal
+    - Total volume harian
+    - Semen
+    - Split
+    - Pasir
+    - Admix (aditif)
+    - BBM
+    - Harga unit (per kg/liter/kubik)
+    - Total harga produksi per hari
+
+4. Saran Implementasi Material Keluar
+   a. Modul Manajemen Material:
+
+    - Fitur pencatatan dan monitoring material
+    - Fitur perhitungan kebutuhan material berdasarkan volume
+
+    b. Modul Biaya Produksi:
+
+    - Perhitungan otomatis total biaya produksi harian
+    - Grafik tren biaya produksi
+
+    c. Integrasi dengan Inventory:
+
+    - Hubungkan data penggunaan material dengan stok
+    - Notifikasi otomatis untuk restock
+
+    d. Driver & Transportasi:
+
+    - Pencatatan kilometer perjalanan driver
+    - Pencatatan biaya transportasi
+    - Pelacakan efisiensi operasional
+
+5. Kolom Penting untuk ERP
+   a. Material:
+
+    - Nama material
+    - Total penggunaan
+    - Harga per unit
+
+    b. Transportasi:
+
+    - Kilometer driver
+    - Harga per kilometer
+    - Total biaya BBM
+
+    c. Produksi Harian:
+
+    - Volume produksi
+    - Total biaya
+
+    d. Waktu & Lokasi:
+
+    - Tanggal
+    - Hari
+    - Lokasi (plant)
+
+6. Rekomendasi Fitur ERP
+    - Dashboard ringkasan produksi dan biaya
+    - Laporan bulanan otomatis
+    - Sistem notifikasi pengadaan dan laporan
+    - Analisis biaya dengan grafik perbandingan
+    - User roles (operator, manajer, admin)
+      Kekurangan aplikasi :
+      Priority 1 - Core Concrete Business Features:
+7. Production & Operations
+
+-   Volume calculation system
+-   Mix design management
+-   Quality control workflows
+-   Delivery scheduling
+-   GPS tracking integration
 
 2. Financial Core
-- Automated journal entries
-- Distance-based pricing
-- Real-time cash flow
-- Basic financial reports
+
+-   Automated journal entries
+-   Distance-based pricing
+-   Real-time cash flow
+-   Basic financial reports
 
 3. Inventory & Materials
-- Raw material tracking
-- Stock alerts
-- Batch management
-- Quality checks
+
+-   Raw material tracking
+-   Stock alerts
+-   Batch management
+-   Quality checks
 
 Priority 2 - Business Enhancement:
+
 1. Fleet Management
-- Truck maintenance system
-- Fuel consumption tracking
-- Route optimization
-- Driver management
+
+-   Truck maintenance system
+-   Fuel consumption tracking
+-   Route optimization
+-   Driver management
 
 2. Sales & Customer Management
-- Quote generation
-- Order processing
-- Customer portal
-- Delivery tracking
+
+-   Quote generation
+-   Order processing
+-   Customer portal
+-   Delivery tracking
 
 3. Advanced Financial Features
-- Forecasting
-- Cost analysis
-- Multi-currency support
-- Tax management
+
+-   Forecasting
+-   Cost analysis
+-   Multi-currency support
+-   Tax management
 
 Priority 3 - System Enhancement:
+
 1. Integration & APIs
-- Mobile app development
-- External system connections
-- Weather API integration
-- Payment gateway integration
+
+-   Mobile app development
+-   External system connections
+-   Weather API integration
+-   Payment gateway integration
 
 2. Analytics & Reporting
-- Custom dashboards
-- Business intelligence
-- Performance metrics
-- Export capabilities
+
+-   Custom dashboards
+-   Business intelligence
+-   Performance metrics
+-   Export capabilities
 
 3. Compliance & Documentation
-- Digital documentation
-- Audit trails
-- Regulatory compliance
-- Quality certifications
+
+-   Digital documentation
+-   Audit trails
+-   Regulatory compliance
+-   Quality certifications
 
 ### Integrasi Modul Keuangan:
 
@@ -211,6 +298,7 @@ Priority 3 - System Enhancement:
 -   Sistem umpan balik
 
 Berikut perbedaan komponen-komponen Laravel dalam bahasa Indonesia:
+
 ## Laravel Components
 
 ### Job

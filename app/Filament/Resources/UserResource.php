@@ -45,8 +45,8 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('User Information')
-                    ->description('Manage user profile information and settings')
+                Forms\Components\Section::make('Informasi Pengguna')
+                    ->description('Kelola informasi profil dan pengaturan pengguna')
                     ->icon('heroicon-o-user-circle')
                     ->schema([
                         Forms\Components\FileUpload::make('image')
@@ -58,28 +58,36 @@ class UserResource extends Resource
                             ->maxSize(5024)
                             ->imageEditor()
                             ->columnSpanFull()
-                            ->label('Profile Image')
-                            ->helperText('Upload a profile picture (max 5MB)'),
+                            ->label('Foto Profil')
+                            ->helperText('Unggah foto profil (maksimal 5MB)')
+                            ->imagePreviewHeight('250')
+                            ->panelAspectRatio('2:1'),
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
                             ->prefixIcon('heroicon-o-user')
-                            ->placeholder('Enter full name'),
+                            ->placeholder('Masukkan nama lengkap')
+                            ->label('Nama Lengkap'),
                         Forms\Components\TextInput::make('email')
                             ->email()
                             ->required()
                             ->maxLength(255)
                             ->prefixIcon('heroicon-o-envelope')
-                            ->placeholder('Enter email address'),
+                            ->placeholder('Masukkan alamat email')
+                            ->label('Alamat Email'),
                         Forms\Components\DateTimePicker::make('email_verified_at')
                             ->prefixIcon('heroicon-o-calendar')
-                            ->native(false),
+                            ->native(false)
+                            ->label('Tanggal Verifikasi Email'),
                         Forms\Components\Select::make('roles')
                             ->relationship('roles', 'name')
                             ->preload()
                             ->searchable()
                             ->prefixIcon('heroicon-o-user-group')
-                            ->placeholder('Select user role'),
+                            ->placeholder('Pilih peran pengguna')
+                            ->label('Peran')
+                            ->searchPrompt('Cari peran pengguna')
+                            ->noSearchResultsMessage('Peran tidak ditemukan'),
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->maxLength(255)
@@ -88,29 +96,29 @@ class UserResource extends Resource
                             ->required(fn(string $context): bool => $context === 'create')
                             ->prefixIcon('heroicon-o-key')
                             ->revealable()
-                            ->placeholder('Enter password'),
+                            ->placeholder('Masukkan kata sandi')
+                            ->label('Kata Sandi'),
                         Forms\Components\Select::make('usertype')
                             ->options([
-                                'staff' => 'Staff',
-                                'member' => 'Member',
+                                'staff' => 'Staf',
+                                'member' => 'Anggota',
                             ])
                             ->required()
                             ->default('staff')
                             ->prefixIcon('heroicon-o-identification')
-                            ->placeholder('Select user type'),
+                            ->placeholder('Pilih tipe pengguna')
+                            ->label('Tipe Pengguna'),
                     ])->columns(2),
-                Forms\Components\Section::make('Additional Information')
-                    ->description('System generated information')
+                Forms\Components\Section::make('Informasi Tambahan')
+                    ->description('Informasi yang dihasilkan oleh sistem')
                     ->icon('heroicon-o-information-circle')
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
-                            // ->icon('heroicon-o-clock')
+                            ->label('Dibuat pada')
                             ->content(fn($record): string => $record?->created_at ? $record->created_at->diffForHumans() : '-'),
 
                         Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
-                            // ->icon('heroicon-o-arrow-path')
+                            ->label('Terakhir diubah')
                             ->content(fn($record): string => $record?->updated_at ? $record->updated_at->diffForHumans() : '-'),
                     ])
                     ->columns(2)
@@ -130,47 +138,48 @@ class UserResource extends Resource
                     ->size('sm')
                     ->color('gray'),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Nama Lengkap')
                     ->toggleable()
                     ->searchable()
                     ->icon('heroicon-o-user')
                     ->weight('medium')
-                    ->copyable(),
+                    ->copyable()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                    ->label('Alamat Email')
                     ->icon('heroicon-o-envelope')
                     ->toggleable()
                     ->searchable()
                     ->copyable()
-                    ->color('primary'),
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('email_verified_at')
-                    ->label('Verifikasi Email')
-                    ->icon('heroicon-o-check-badge')
+                    ->label('Status Verifikasi')
+                    ->icon('heroicon-o-shield-check')
                     ->toggleable()
                     ->dateTime()
                     ->sortable()
                     ->badge()
                     ->color(fn($state) => $state ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('usertype')
-                    ->label('Tipe Pengguna')
+                    ->label('Kategori Pengguna')
                     ->toggleable()
                     ->badge()
                     ->icon('heroicon-o-identification')
                     ->color('warning'),
                 Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Peran')
+                    ->label('Hak Akses')
                     ->icon('heroicon-o-user-group')
                     ->badge()
-                    ->color('info'),
+                    ->color('success'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat Pada')
+                    ->label('Tanggal Pembuatan')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->icon('heroicon-o-clock')
+                    ->icon('heroicon-o-calendar')
                     ->since(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Diperbarui Pada')
+                    ->label('Terakhir Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
